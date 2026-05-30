@@ -1,42 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Furnitures
+
+Modern furniture storefront built with Next.js 16, React 19, TypeScript, Tailwind CSS 4, and shadcn/ui.
+
+## Overview
+
+This project showcases a furniture catalog with a marketing site, product browsing, and admin tools.
+
+Key features:
+
+- Brand-based product filtering
+- Product pagination
+- Cloudinary-backed image storage and delivery
+- Background removal and transparent image delivery
+- Brand-specific watermark handling
+- Admin product and brand management
+- Contact and about pages with a consistent storefront layout
+
+## Tech Stack
+
+- Next.js App Router
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- shadcn/ui
+- Cloudinary
+- sharp
 
 ## Getting Started
 
-Set the following environment variables to enable Cloudinary image uploads and the one-time migration of legacy product images:
+Install dependencies:
 
-- `CLOUDINARY_CLOUD_NAME`
-- `CLOUDINARY_API_KEY`
-- `CLOUDINARY_API_SECRET`
+```bash
+npm install
+```
 
-First, run the development server:
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open the app at `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` - start the development server
+- `npm run build` - build the app for production
+- `npm run start` - start the production server
+- `npm run lint` - run Biome checks
+- `npm run format` - format the codebase with Biome
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Cloudinary is required for image upload and image processing features.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Set these variables in your environment:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
 
-## Deploy on Vercel
+If these are missing, Cloudinary upload and derived image features will not work.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+src/
+  app/        Next.js routes and pages
+  components/ Reusable UI and custom storefront components
+  lib/        Shared helpers for products, Cloudinary, caching, and utilities
+data/         JSON-backed content stores used by the app
+public/       Static assets, including brand logos
+```
+
+## Main Pages
+
+- `/` - storefront home page
+- `/about` - brand story and values
+- `/contact` - contact page
+- `/collections` - product browsing page
+- `/admin` - admin dashboard
+
+## Notes
+
+- Product data is backed by JSON files in `data/`.
+- Legacy images can be migrated to Cloudinary through the existing product management flow.
+- Images displayed in the storefront are routed through the app to keep the UI consistent and support watermarking/background removal.
