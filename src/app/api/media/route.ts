@@ -188,7 +188,7 @@ export async function GET(request: Request) {
   headers.set("x-robots-tag", "noindex, nofollow, noimageindex");
   headers.set("cross-origin-resource-policy", "same-site");
 
-  return new NextResponse(finalBuffer, {
+  return new NextResponse(new Uint8Array(finalBuffer), {
     status: 200,
     headers,
   });
