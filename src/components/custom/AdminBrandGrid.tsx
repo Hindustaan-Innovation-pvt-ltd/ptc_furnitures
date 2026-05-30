@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -8,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { Product } from "@/lib/products";
+import { getBrandLogoSrc, getBrandLogo } from "@/lib/brand-logos";
 
 type BrandSummary = {
   brand: string;
@@ -59,7 +61,21 @@ export default function AdminBrandGrid({
           >
             <CardHeader className="border-b border-slate-200 p-4 sm:p-6 dark:border-white/10">
               <CardDescription>Brand</CardDescription>
-              <CardTitle className="text-xl sm:text-2xl">{summary.brand}</CardTitle>
+              <div className="mt-3 flex items-center gap-3">
+                {getBrandLogoSrc(summary.brand) ? (
+                  <span className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-white/5">
+                    <Image
+                      src={getBrandLogoSrc(summary.brand) ?? ""}
+                      alt={getBrandLogo(summary.brand)?.alt ?? `${summary.brand} logo`}
+                      width={80}
+                      height={80}
+                      className="h-auto w-full object-contain"
+                      unoptimized
+                    />
+                  </span>
+                ) : null}
+                <CardTitle className="text-xl sm:text-2xl">{summary.brand}</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col gap-2 p-4 pt-4 sm:p-6 sm:pt-4">
               <p className="text-sm text-slate-600 dark:text-slate-300">
