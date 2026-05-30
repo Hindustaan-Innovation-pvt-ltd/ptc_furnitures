@@ -77,7 +77,7 @@ export default function ProductsCollections({ initialProducts, initialBrands }: 
                     setBrands(brandsData.brands as string[]);
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
 
         return () => {
             mounted = false;
@@ -210,7 +210,7 @@ export default function ProductsCollections({ initialProducts, initialBrands }: 
                     pagination.pageItems.map((product) => (
                         <div key={product.id} className="relative grid border border-slate-200/80 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-[#292929]">
                             <div className='overflow-hidden rounded-md'>
-                                <AssetImage brand={product.brand} src={product.images?.[0] ?? ""} alt={product.name ?? product.brand ?? ""} width={300} height={300} className="aspect-[4/3] w-full object-cover transition-transform duration-500 hover:scale-105" />
+                                <AssetImage brand={product.brand} src={product.images?.[0] ?? ""} alt={product.name ?? product.brand ?? ""} width={300} height={300} className="size-80 object-contain transition-transform duration-500 hover:scale-105" />
                             </div>
                             <div className="mt-4 flex flex-1 flex-col gap-1 text-start">
                                 <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50 sm:text-lg">{product.name ?? ''}</h3>

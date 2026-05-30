@@ -23,10 +23,10 @@ export default function Navigation() {
                     </Link>
                     <ul className="hidden lg:flex flex-wrap gap-x-4 gap-y-2 text-sm">
                         <li><Link href="/collections" className={isActive("/collections") ? "text-red-500 underline underline-offset-4 font-medium" : "text-stone-500 font-medium dark:text-slate-200"}>Collections</Link></li>
-                        <li><Link href="/materials" className={isActive("/materials") ? "text-red-500 underline underline-offset-4 font-medium" : "text-stone-500 font-medium dark:text-slate-200"}>Materials</Link></li>
-                        <li><Link href="/spaces" className={isActive("/spaces") ? "text-red-500 underline underline-offset-4 font-medium" : "text-stone-500 font-medium dark:text-slate-200"}>Spaces</Link></li>
+                        <li>
+                            <Link href="/contact" className={isActive("/contact") ? "text-red-500 underline underline-offset-4 font-medium" : "text-stone-500 font-medium dark:text-slate-200"}>Contacts</Link>
+                        </li>
                         <li><Link href="/about" className={isActive("/about") ? "text-red-500 underline underline-offset-4 font-medium" : "text-stone-500 font-medium dark:text-slate-200"}>About</Link></li>
-                        <li><Link href="/admin" className={isActive("/admin") ? "text-red-500 underline underline-offset-4 font-medium" : "text-stone-500 font-medium dark:text-slate-200"}>Admin</Link></li>
                     </ul>
                 </div>
                 <div className="flex items-center gap-2">

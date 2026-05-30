@@ -81,46 +81,16 @@ export function filterAndSortProducts(
   products: Product[],
   filters: ProductFiltersState,
 ) {
+  // Only filter by brand; other filters removed per UX decision.
   const filteredProducts = products.filter((product) => {
-    const brandMatches =
-      filters.brand === "all" || normalizeValue(product.brand) === normalizeValue(filters.brand);
-
-    const categoryMatches =
-      filters.category === "all" || normalizeValue(product.tag) === normalizeValue(filters.category);
-
-    const materialMatches =
-      filters.material === "all" || normalizeValue(product.material) === normalizeValue(filters.material);
-
     return (
-      brandMatches &&
-      categoryMatches &&
-      materialMatches &&
-      true
+      filters.brand === "all" || normalizeValue(product.brand) === normalizeValue(filters.brand)
     );
   });
 
+  // Always sort oldest -> newest (ascending by createdAt)
   return filteredProducts.slice().sort((left, right) => {
-    switch (filters.sort) {
-      case "newest":
-        return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
-      case "price-asc": {
-        const leftPrice = parsePriceValue(left.price) ?? Number.POSITIVE_INFINITY;
-        const rightPrice = parsePriceValue(right.price) ?? Number.POSITIVE_INFINITY;
-        return leftPrice - rightPrice;
-      }
-      case "price-desc": {
-        const leftPrice = parsePriceValue(left.price) ?? Number.NEGATIVE_INFINITY;
-        const rightPrice = parsePriceValue(right.price) ?? Number.NEGATIVE_INFINITY;
-        return rightPrice - leftPrice;
-      }
-      case "name-asc":
-        return (left.name ?? "").localeCompare(right.name ?? "");
-      case "brand-asc":
-        return left.brand.localeCompare(right.brand);
-      case "featured":
-      default:
-        return 0;
-    }
+    return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
   });
 }
 
