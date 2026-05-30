@@ -28,7 +28,7 @@ export default function Reviews() {
     return (
         <div className='mx-auto max-w-7xl px-4 py-20 text-center transition-colors duration-300 sm:px-6 lg:px-8 lg:py-28'>
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase">reviews</span>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50 sm:text-4xl">What Our <span className="text-red-800 dark:text-red-300">Customers</span> Say</h1>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50 sm:text-4xl">What Our <span className="text-red-800 dark:text-red-600">Customers</span> Say</h1>
             <div className='mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
                 {reviews.map((review, index) => (
                     <div key={index} className='flex flex-col gap-4 rounded-lg border border-slate-200/80 bg-white p-5 text-left shadow-md shadow-black/5 dark:border-white/10 dark:bg-[#111318] dark:shadow-black/20 sm:p-6'>

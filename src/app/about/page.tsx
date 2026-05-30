@@ -14,7 +14,7 @@ export default function page() {
                 <p className="mx-auto mt-4 max-w-lg text-sm text-slate-400 sm:text-base">Furniture crafted for considered living — built to endure, designed to inspire.</p>
             </header>
 
-            <section className='h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse lg:grid lg:grid-cols-[1.1fr_0.9fr] '>
+            <section className='h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse mt-24 lg:grid lg:grid-cols-[1.1fr_0.9fr] '>
                 <div className='flex w-full flex-1 flex-col'>
                     <div className='flex-1 space-y-6 bg-transparent p-6 sm:p-8 dark:bg-[#323232] lg:space-y-8 lg:p-10'>
 
@@ -170,8 +170,8 @@ export default function page() {
                                     description: "We partner with ateliers that have mastered their medium over decades. The furniture we carry is built to be repaired, not replaced."
                                 }
                             ].map((item, index) => (
-                                <div key={`${item.title}-${index}`} className="border bg-white p-4 dark:border-white/10 dark:bg-stone-900">
-                                    <div className="mx-auto mb-4 flex h-52 w-full items-center justify-center bg-black/10 dark:bg-stone-800 sm:h-60 lg:h-80">
+                                <div key={`${item.title}-${index}`} className="border bg-white p-4 dark:border-white/10 dark:bg-white/6">
+                                    <div className="mx-auto mb-4 flex h-52 w-full items-center justify-center bg-black/10 dark:bg-[#3B3B3B] sm:h-60 lg:h-80">
                                         {item.icon}
                                     </div>
                                     <div className="text-start">

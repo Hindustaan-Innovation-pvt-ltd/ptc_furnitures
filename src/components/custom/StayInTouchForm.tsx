@@ -27,7 +27,7 @@ export default function StayInTouchForm() {
                 className="w-full rounded-full border-stone-600 bg-white/5 px-4 py-4 text-white placeholder:text-gray-500"
             />
 
-            <Button variant="destructive" size="lg" type="submit" className="w-full rounded-full px-8 sm:w-auto">
+            <Button size="lg" type="submit" className="w-full rounded-full px-8 sm:w-auto bg-red-800 hover:bg-red-600 dark:bg-red-600/80 dark:hover:bg-red-500 text-white">
                 Subscribe
             </Button>
         </form>
