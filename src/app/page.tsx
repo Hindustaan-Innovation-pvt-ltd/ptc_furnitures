@@ -21,7 +21,7 @@ export default async function Home() {
         <main className="pt-10 sm:pt-12 lg:pt-20">
           <div className="grid place-content-center">
             <div className="mb-10 flex flex-col items-center gap-5 text-center sm:mb-12 lg:gap-8">
-              <h1 className="max-w-2xl text-4xl font-semibold text-slate-900 dark:text-slate-50 sm:text-5xl lg:text-6xl lg:leading-[1.05]">Discover the most <span className="text-red-800 dark:text-red-300 italic">considered pieces.</span></h1>
+              <h1 className="max-w-2xl text-4xl font-semibold text-slate-900 dark:text-slate-50 sm:text-5xl lg:text-6xl lg:leading-[1.05]">Discover the most <span className="text-red-800 dark:text-red-600 italic">considered pieces.</span></h1>
               <span className="max-w-md text-sm font-medium leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
                 Furniture crafted for considered living — built to endure, designed to inspire.
               </span>
