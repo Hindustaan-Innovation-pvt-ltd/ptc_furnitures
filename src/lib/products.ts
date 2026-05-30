@@ -1,7 +1,12 @@
 import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { deleteCloudinaryImage, hasCloudinaryCredentials, isCloudinaryUrl, uploadProductImage } from "@/lib/cloudinary";
+import {
+    deleteCloudinaryImage,
+    hasCloudinaryCredentials,
+    uploadProductImage,
+} from "@/lib/cloudinary";
+import { isCloudinaryUrl } from "@/lib/cloudinary-url";
 
 export type Product = {
     id: string;

@@ -1,6 +1,17 @@
+import "server-only";
+
 import { Readable } from "node:stream";
 import { randomUUID } from "node:crypto";
 import { v2 as cloudinary } from "cloudinary";
+import { isCloudinaryUrl } from "@/lib/cloudinary-url";
+import { getCachedBgVariantByKey, setCachedBgVariantByKey } from "@/lib/bg-cache";
+
+type WatermarkOptions = {
+  url: string;
+  size?: "small" | "medium" | "large";
+  opacity?: number;
+  position?: string;
+};
 
 const cloudinaryFolder = "furnitures/products";
 
@@ -45,15 +56,6 @@ export function hasCloudinaryCredentials(): boolean {
   );
 }
 
-export function isCloudinaryUrl(imageUrl: string): boolean {
-  try {
-    const url = new URL(imageUrl);
-    return url.hostname === "res.cloudinary.com";
-  } catch {
-    return false;
-  }
-}
-
 function getCloudinaryPublicId(imageUrl: string): string | null {
   if (!isCloudinaryUrl(imageUrl)) {
     return null;
@@ -62,13 +64,15 @@ function getCloudinaryPublicId(imageUrl: string): string | null {
   try {
     const url = new URL(imageUrl);
     const segments = url.pathname.split("/").filter(Boolean);
-    const uploadIndex = segments.indexOf("upload");
+    const deliveryTypeIndex = segments.findIndex(
+      (segment) => segment === "upload" || segment === "authenticated" || segment === "private",
+    );
 
-    if (uploadIndex < 0) {
+    if (deliveryTypeIndex < 0) {
       return null;
     }
 
-    const deliverySegments = segments.slice(uploadIndex + 1);
+    const deliverySegments = segments.slice(deliveryTypeIndex + 1);
     if (deliverySegments.length === 0) {
       return null;
     }
@@ -89,6 +93,88 @@ function getCloudinaryPublicId(imageUrl: string): string | null {
   } catch {
     return null;
   }
+}
+
+function getCloudinaryDeliveryType(imageUrl: string): "upload" | "authenticated" | "private" | null {
+  if (!isCloudinaryUrl(imageUrl)) {
+    return null;
+  }
+
+  try {
+    const url = new URL(imageUrl);
+    const segments = url.pathname.split("/").filter(Boolean);
+    const deliveryTypeIndex = segments.findIndex(
+      (segment) => segment === "upload" || segment === "authenticated" || segment === "private",
+    );
+
+    if (deliveryTypeIndex < 0) {
+      return null;
+    }
+
+    const deliveryType = segments[deliveryTypeIndex];
+
+    if (deliveryType === "authenticated" || deliveryType === "private") {
+      return deliveryType;
+    }
+
+    return "upload";
+  } catch {
+    return null;
+  }
+}
+
+function getCloudinaryFormat(imageUrl: string): string | null {
+  if (!isCloudinaryUrl(imageUrl)) {
+    return null;
+  }
+
+  try {
+    const url = new URL(imageUrl);
+    const segments = url.pathname.split("/").filter(Boolean);
+    const deliveryTypeIndex = segments.findIndex(
+      (segment) => segment === "upload" || segment === "authenticated" || segment === "private",
+    );
+
+    if (deliveryTypeIndex < 0) {
+      return null;
+    }
+
+    const deliverySegments = segments.slice(deliveryTypeIndex + 1);
+    const lastSegment = deliverySegments[deliverySegments.length - 1];
+
+    if (!lastSegment || !lastSegment.includes(".")) {
+      return null;
+    }
+
+    return lastSegment.split(".").pop() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function buildAuthenticatedCloudinaryUrl(
+  imageUrl: string,
+  removeBackground = false,
+): string | null {
+  const publicId = getCloudinaryPublicId(imageUrl);
+  const deliveryType = getCloudinaryDeliveryType(imageUrl) ?? "upload";
+
+  if (!publicId) {
+    return null;
+  }
+
+  ensureCloudinaryConfigured();
+
+  const format = removeBackground ? "png" : getCloudinaryFormat(imageUrl) ?? undefined;
+
+  return cloudinary.url(publicId, {
+    secure: true,
+    sign_url: deliveryType !== "upload",
+    type: deliveryType,
+    resource_type: "image",
+    format,
+    transformation: removeBackground ? "e_background_removal" : undefined,
+  });
 }
 
 export async function uploadProductImage(
@@ -142,4 +228,90 @@ export async function deleteCloudinaryImage(imageUrl: string): Promise<void> {
     resource_type: "image",
     invalidate: true,
   });
+}
+
+export async function createBackgroundRemovedVariant(
+  imageUrl: string,
+  removeTrademark = false,
+  watermark?: WatermarkOptions,
+): Promise<string | null> {
+  const variantKey = JSON.stringify({ imageUrl, removeTrademark, watermark: watermark ?? null });
+
+  // Check cache first
+  try {
+    const cached = await getCachedBgVariantByKey(variantKey);
+    if (cached) return cached;
+  } catch {
+    // ignore cache errors
+  }
+
+  const publicId = getCloudinaryPublicId(imageUrl);
+  const deliveryType = getCloudinaryDeliveryType(imageUrl) ?? "upload";
+
+  if (!publicId) {
+    return null;
+  }
+
+  ensureCloudinaryConfigured();
+
+  const transformationParts = ["e_background_removal"];
+
+  if (removeTrademark) {
+    transformationParts.push("e_cloudinary_ai:remove_logo");
+  }
+
+  if (watermark?.url) {
+    const watermarkPublicId = getCloudinaryPublicId(watermark.url);
+    if (watermarkPublicId) {
+      const overlayId = watermarkPublicId.replace(/\//g, ":");
+      const sizeMap: Record<string, number> = { small: 120, medium: 220, large: 360 };
+      const size = watermark.size && sizeMap[watermark.size] ? sizeMap[watermark.size] : sizeMap.medium;
+      const opacity = typeof watermark.opacity === "number" ? Math.max(0, Math.min(100, watermark.opacity)) : 80;
+      const position = watermark.position || "center";
+
+      transformationParts.push(`l_${overlayId}`, `g_${position}`, `w_${size}`, `o_${opacity}`, "fl_layer_apply");
+    }
+  }
+
+  transformationParts.push("f_png");
+  const transformation = transformationParts.join(",");
+
+  try {
+    const result = await cloudinary.uploader.explicit(publicId, {
+      type: deliveryType,
+      resource_type: "image",
+      eager: [{ transformation }],
+    });
+
+    let derived: string | null = null;
+
+    // Prefer the eager-derived secure URL if Cloudinary returned one.
+    if (result && Array.isArray(result.eager) && result.eager.length > 0) {
+      const first = result.eager[0] as any;
+      if (first.secure_url) {
+        derived = first.secure_url as string;
+      }
+    }
+
+    // Fallback: build a delivery URL that includes the transformation.
+    if (!derived) {
+      derived = cloudinary.url(publicId, {
+        secure: true,
+        type: deliveryType,
+        resource_type: "image",
+        transformation,
+        format: "png",
+      });
+    }
+
+    try {
+      await setCachedBgVariantByKey(variantKey, derived);
+    } catch {
+      // ignore cache write errors
+    }
+
+    return derived;
+  } catch (err) {
+    return null;
+  }
 }

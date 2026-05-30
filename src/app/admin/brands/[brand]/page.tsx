@@ -61,6 +61,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
 
         <AdminProductsManager
           products={brandProducts}
+          brands={brands}
           initialBrand={selectedBrand}
           brandLocked
           showAddTile

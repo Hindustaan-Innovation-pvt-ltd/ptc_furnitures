@@ -9,6 +9,8 @@ import {
 import { uploadProductImage } from "@/lib/cloudinary";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function getStringField(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -151,7 +153,14 @@ async function parseProductRequest(
 
 export async function GET() {
   const products = await readProducts();
-  return NextResponse.json({ products });
+  return NextResponse.json(
+    { products },
+    {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+      },
+    },
+  );
 }
 
 export async function POST(request: Request) {

@@ -10,6 +10,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Product, ProductCustomField } from "@/lib/products";
 
 type EditableCustomField = ProductCustomField & {
@@ -24,6 +25,7 @@ type ProductFormState = {
 type AdminProductFormProps = {
   product?: Product | null;
   initialBrand?: string;
+  brands: string[];
   brandLocked?: boolean;
   onSaved?: (savedProduct: Product) => void;
   onCancelEdit?: () => void;
@@ -60,6 +62,7 @@ function createCustomField(): EditableCustomField {
 export default function AdminProductForm({
   product,
   initialBrand,
+  brands,
   brandLocked,
   onSaved,
   onCancelEdit,
@@ -146,7 +149,7 @@ export default function AdminProductForm({
       return;
     }
 
-    setFormState(getInitialState(null));
+    setFormState(getInitialState(null, initialBrand));
     setCustomFields([]);
     setImageFiles([]);
     setImagePreviews([]);
@@ -237,23 +240,48 @@ export default function AdminProductForm({
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="brand">Brand</Label>
-                <Input
-                  id="brand"
-                  disabled={brandLocked}
-                  value={formState.brand}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      brand: event.target.value,
-                    }))
-                  }
-                  placeholder="PTC GOLD"
-                />
-                {brandLocked ? (
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    This workspace is fixed to the selected brand.
-                  </p>
-                ) : null}
+                {brands.length > 0 ? (
+                  <Select
+                    value={formState.brand}
+                    onValueChange={(value) =>
+                      setFormState((current) => ({
+                        ...current,
+                        brand: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger id="brand" className="rounded-2xl">
+                      <SelectValue placeholder="Select brand" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl p-0">
+                      <SelectGroup>
+                        {brands.map((brand) => (
+                          <SelectItem key={brand} value={brand}>
+                            {brand}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="brand"
+                    disabled={brandLocked}
+                    value={formState.brand}
+                    onChange={(event) =>
+                      setFormState((current) => ({
+                        ...current,
+                        brand: event.target.value,
+                      }))
+                    }
+                    placeholder="PTC GOLD"
+                  />
+                )}
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {brandLocked
+                    ? "This workspace starts on the selected brand, but you can reassign before saving."
+                    : "Choose the brand that should own this upload batch."}
+                </p>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="name">Product name</Label>

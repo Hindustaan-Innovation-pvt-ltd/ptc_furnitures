@@ -10,6 +10,7 @@ import { fetchProducts, PRODUCTS_CACHE_KEY } from "@/lib/product-cache";
 
 type AdminProductsManagerProps = {
   products: Product[];
+  brands: string[];
   initialBrand?: string;
   brandLocked?: boolean;
   showAddTile?: boolean;
@@ -17,6 +18,7 @@ type AdminProductsManagerProps = {
 
 export default function AdminProductsManager({
   products,
+  brands,
   initialBrand,
   brandLocked,
   showAddTile,
@@ -97,22 +99,10 @@ export default function AdminProductsManager({
       <AdminProductForm
         product={editingProduct}
         initialBrand={initialBrand}
+        brands={brands}
         brandLocked={brandLocked}
         onSaved={(savedProduct) => {
           setEditingProduct(null);
-          if (savedProduct) {
-            void mutate(
-              (currentProducts = []) => {
-                const filteredProducts = currentProducts.filter(
-                  (product) => product.id !== savedProduct.id,
-                );
-
-                return [savedProduct, ...filteredProducts];
-              },
-              { revalidate: false },
-            );
-          }
-
           void mutate();
         }}
         onCancelEdit={() => setEditingProduct(null)}
@@ -158,8 +148,8 @@ export default function AdminProductsManager({
               key={product.id}
               className="rounded-2xl border border-slate-200 p-4 dark:border-white/10"
             >
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-red-700 dark:text-red-300">
                       {product.brand}
@@ -217,20 +207,21 @@ export default function AdminProductsManager({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="w-full flex flex-row overflow-x-auto gap-2">
                   {product.images.length > 0 ? (
                     product.images.map((image, index) => (
                       <div
                         key={`${product.id}-${image}-${index}`}
-                        className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/5"
+                        className="group relative size-52 aspect-square overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/5"
                       >
                         <AssetImage
+                          brand={product.brand}
                           src={image}
                           alt={`${product.name} image ${index + 1}`}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
-                        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 bg-gradient-to-b from-black/65 to-transparent p-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
+                        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 bg-gradient-to-b from-black/65 to-transparent p-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
                           <span className="rounded-full bg-black/35 px-2 py-1 backdrop-blur-sm">
                             {product.name}
                           </span>

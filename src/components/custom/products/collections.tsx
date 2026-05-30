@@ -93,6 +93,11 @@ export default function ProductsCollections({ initialProducts, initialBrands }: 
         () => paginateProducts(visibleProducts, currentPage, itemsPerPage),
         [currentPage, visibleProducts],
     )
+    const [pageWindowStart, setPageWindowStart] = React.useState(1)
+
+    React.useEffect(() => {
+        setPageWindowStart(1)
+    }, [visibleProducts.length])
     const activeFilters = hasActiveProductFilters(filters)
     const brandOptions = brands.length > 0 ? brands : products.map((product) => product.brand)
 
@@ -205,7 +210,7 @@ export default function ProductsCollections({ initialProducts, initialBrands }: 
                     pagination.pageItems.map((product) => (
                         <div key={product.id} className="relative grid border border-slate-200/80 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-[#292929]">
                             <div className='overflow-hidden rounded-md'>
-                                <AssetImage src={product.images?.[0] ?? ""} alt={product.name ?? product.brand ?? ""} width={300} height={300} className="aspect-[4/3] w-full object-cover transition-transform duration-500 hover:scale-105" />
+                                <AssetImage brand={product.brand} src={product.images?.[0] ?? ""} alt={product.name ?? product.brand ?? ""} width={300} height={300} className="aspect-[4/3] w-full object-cover transition-transform duration-500 hover:scale-105" />
                             </div>
                             <div className="mt-4 flex flex-1 flex-col gap-1 text-start">
                                 <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50 sm:text-lg">{product.name ?? ''}</h3>
@@ -241,20 +246,66 @@ export default function ProductsCollections({ initialProducts, initialBrands }: 
                                     }}
                                 />
                             </PaginationItem>
-                            {Array.from({ length: pagination.totalPages }, (_, index) => index + 1).map((page) => (
-                                <PaginationItem key={page}>
-                                    <PaginationLink
-                                        href="#"
-                                        isActive={page === pagination.currentPage}
-                                        onClick={(event) => {
-                                            event.preventDefault()
-                                            goToPage(page)
-                                        }}
-                                    >
-                                        {page}
-                                    </PaginationLink>
-                                </PaginationItem>
-                            ))}
+                            {
+                                (() => {
+                                    const total = pagination.totalPages
+                                    const windowStart = pageWindowStart
+                                    const windowSize = 3
+                                    const windowEnd = Math.min(total, windowStart + windowSize - 1)
+                                    const items = [] as React.ReactNode[]
+
+                                    if (windowStart > 1) {
+                                        items.push(
+                                            <PaginationItem key="lead-ellipsis">
+                                                <button
+                                                    className="rounded-full"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        setPageWindowStart(Math.max(1, windowStart - windowSize))
+                                                    }}
+                                                >
+                                                    <PaginationEllipsis />
+                                                </button>
+                                            </PaginationItem>,
+                                        )
+                                    }
+
+                                    for (let p = windowStart; p <= windowEnd; p += 1) {
+                                        items.push(
+                                            <PaginationItem key={p}>
+                                                <PaginationLink
+                                                    href="#"
+                                                    isActive={p === pagination.currentPage}
+                                                    onClick={(event) => {
+                                                        event.preventDefault()
+                                                        goToPage(p)
+                                                    }}
+                                                >
+                                                    {p}
+                                                </PaginationLink>
+                                            </PaginationItem>,
+                                        )
+                                    }
+
+                                    if (windowEnd < total) {
+                                        items.push(
+                                            <PaginationItem key="trail-ellipsis">
+                                                <button
+                                                    className="rounded-full"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        setPageWindowStart(Math.min(total - windowSize + 1, windowStart + windowSize))
+                                                    }}
+                                                >
+                                                    <PaginationEllipsis />
+                                                </button>
+                                            </PaginationItem>,
+                                        )
+                                    }
+
+                                    return items
+                                })()
+                            }
                             <PaginationItem>
                                 <PaginationNext
                                     href="#"
@@ -262,7 +313,13 @@ export default function ProductsCollections({ initialProducts, initialBrands }: 
                                     onClick={(event) => {
                                         event.preventDefault()
                                         if (pagination.currentPage < pagination.totalPages) {
-                                            goToPage(pagination.currentPage + 1)
+                                            const next = pagination.currentPage + 1
+                                            goToPage(next)
+                                            const windowSize = 3
+                                            const windowEnd = pageWindowStart + windowSize - 1
+                                            if (next > windowEnd) {
+                                                setPageWindowStart(Math.min(pagination.totalPages - windowSize + 1, pageWindowStart + windowSize))
+                                            }
                                         }
                                     }}
                                 />
