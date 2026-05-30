@@ -76,7 +76,7 @@ export default function AssetImage({
   }, [fallbackSrc, removeBackground, src]);
 
   return (
-    <span className={fill ? `relative block ${className ?? ""}` : "relative inline-block"} style={fill ? style : undefined}>
+    <span className={fill ? "absolute inset-0 block" : "relative inline-block"} style={fill ? style : undefined}>
       <Image
         {...props}
         className={className}

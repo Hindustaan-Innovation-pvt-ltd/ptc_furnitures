@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getBrandLogo, getBrandLogos } from "@/lib/brand-logos";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 type AdminBrandsManagerProps = {
   brands: string[];
@@ -19,6 +20,9 @@ export default function AdminBrandsManager({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [logoBrand, setLogoBrand] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoMessage, setLogoMessage] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,6 +53,45 @@ export default function AdminBrandsManager({
 
     setBrandName("");
     setSuccessMessage(`Added ${nextBrand}.`);
+
+    startTransition(() => {
+      router.refresh();
+    });
+  }
+
+  async function handleLogoUpload(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLogoMessage(null);
+
+    if (!logoBrand) {
+      setLogoMessage("Select a brand logo to update.");
+      return;
+    }
+
+    if (!logoFile) {
+      setLogoMessage("Select a logo file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("brand", logoBrand);
+    formData.append("file", logoFile);
+
+    const response = await fetch("/api/admin/brand-logos", {
+      method: "POST",
+      body: formData,
+    });
+
+    const payload = (await response.json()) as { error?: string };
+
+    if (!response.ok) {
+      setLogoMessage(payload.error ?? "Unable to update brand logo.");
+      return;
+    }
+
+    setLogoMessage(`Updated ${logoBrand} logo.`);
+    setLogoBrand("");
+    setLogoFile(null);
 
     startTransition(() => {
       router.refresh();
@@ -123,7 +166,7 @@ export default function AdminBrandsManager({
             Brand logos
           </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            These public assets are used as the watermark overlay in the UI.
+            These public assets are used as the transparent watermark overlay in the UI.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -147,6 +190,42 @@ export default function AdminBrandsManager({
             </div>
           ))}
         </div>
+
+        <form className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#111318]" onSubmit={handleLogoUpload}>
+          <div className="grid gap-3 md:grid-cols-[1.2fr_1fr_auto] md:items-end">
+            <div className="grid gap-1">
+              <label className="text-xs font-medium text-slate-500">Brand</label>
+              <Select value={logoBrand} onValueChange={(value) => setLogoBrand(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a brand to update" />
+                </SelectTrigger>
+                <SelectContent>
+                  {brands.map((brand) => (
+                    <SelectItem key={brand} value={brand}>
+                      {brand}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-1">
+              <label className="text-xs font-medium text-slate-500">Logo file</label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)}
+              />
+            </div>
+
+            <Button type="submit" className="rounded-full px-5">
+              Update logo
+            </Button>
+          </div>
+          {logoMessage ? (
+            <p className="text-sm text-slate-500 dark:text-slate-400">{logoMessage}</p>
+          ) : null}
+        </form>
       </div>
 
       <div className="min-h-[1.25rem] text-sm">

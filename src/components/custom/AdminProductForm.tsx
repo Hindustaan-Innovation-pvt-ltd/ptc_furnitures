@@ -34,13 +34,13 @@ type AdminProductFormProps = {
 function getInitialState(product?: Product | null, initialBrand?: string) {
   return product
     ? {
-        brand: product.brand,
-        name: product.name ?? "",
-      }
+      brand: product.brand,
+      name: product.name ?? "",
+    }
     : {
-        brand: initialBrand ?? "PTC GOLD",
-        name: "",
-      };
+      brand: initialBrand ?? "PTC GOLD",
+      name: "",
+    };
 }
 
 function getInitialCustomFields(product?: Product | null): EditableCustomField[] {
@@ -227,7 +227,7 @@ export default function AdminProductForm({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="grid gap-6">
+        <div className="flex flex-col gap-6">
           <section className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -238,51 +238,6 @@ export default function AdminProductForm({
               </p>
             </div>
             <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="brand">Brand</Label>
-                {brands.length > 0 ? (
-                  <Select
-                    value={formState.brand}
-                    onValueChange={(value) =>
-                      setFormState((current) => ({
-                        ...current,
-                        brand: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger id="brand" className="rounded-2xl">
-                      <SelectValue placeholder="Select brand" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl p-0">
-                      <SelectGroup>
-                        {brands.map((brand) => (
-                          <SelectItem key={brand} value={brand}>
-                            {brand}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    id="brand"
-                    disabled={brandLocked}
-                    value={formState.brand}
-                    onChange={(event) =>
-                      setFormState((current) => ({
-                        ...current,
-                        brand: event.target.value,
-                      }))
-                    }
-                    placeholder="PTC GOLD"
-                  />
-                )}
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {brandLocked
-                    ? "This workspace starts on the selected brand, but you can reassign before saving."
-                    : "Choose the brand that should own this upload batch."}
-                </p>
-              </div>
               <div className="grid gap-2">
                 <Label htmlFor="name">Product name</Label>
                 <Input
@@ -412,8 +367,7 @@ export default function AdminProductForm({
                     height={720}
                     className="h-80 w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.01]"
                   />
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/75 to-transparent p-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
-                    <span>{formState.brand.trim() || initialBrand || "Brand"}</span>
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 bg-gradient-to-t from-black/75 to-transparent p-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
                     <span>#{index + 1}</span>
                   </div>
                 </div>
@@ -440,9 +394,6 @@ export default function AdminProductForm({
           <div className="flex flex-wrap gap-2">
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300">
               {imageFiles.length > 0 ? `${imageFiles.length} selected` : "Live preview"}
-            </span>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300">
-              {formState.brand.trim() || initialBrand || "Brand"}
             </span>
           </div>
         </section>
