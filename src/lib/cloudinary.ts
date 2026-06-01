@@ -51,8 +51,8 @@ function ensureCloudinaryConfigured() {
 export function hasCloudinaryCredentials(): boolean {
   return Boolean(
     process.env.CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET,
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET,
   );
 }
 
@@ -264,12 +264,16 @@ export async function createBackgroundRemovedVariant(
     const watermarkPublicId = getCloudinaryPublicId(watermark.url);
     if (watermarkPublicId) {
       const overlayId = watermarkPublicId.replace(/\//g, ":");
-      const sizeMap: Record<string, number> = { small: 120, medium: 220, large: 360 };
-      const size = watermark.size && sizeMap[watermark.size] ? sizeMap[watermark.size] : sizeMap.medium;
-      const opacity = typeof watermark.opacity === "number" ? Math.max(0, Math.min(100, watermark.opacity)) : 80;
       const position = watermark.position || "center";
 
-      transformationParts.push(`l_${overlayId}`, `g_${position}`, `w_${size}`, `o_${opacity}`, "fl_layer_apply");
+      transformationParts.push(
+        `l_${overlayId}`,
+        `g_${position}`,
+        "w_0.3",
+        "fl_relative",
+        "o_100",
+        "fl_layer_apply",
+      );
     }
   }
 

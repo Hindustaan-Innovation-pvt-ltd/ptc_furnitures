@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 const collections = ["Chairs", "Tables", "Lighting", "Storage"];
-const company = ["About PTC", "Our Story", "Careers", "Press", "Sustainability"];
+const company = ["About PTC", "Our Story", "Brochures & Catalogs", "Careers", "Sustainability"];
 const legal = ["Privacy Policy", "Terms of Use", "Cookie Settings", "Accessibility"];
 
 export default function Footer() {
@@ -12,7 +13,7 @@ export default function Footer() {
             <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
                 <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 xl:grid-cols-[1.3fr_1fr_1fr_1fr]">
                     <div>
-                        <Image src="/logo-light.png" alt="PTC Furniture" width={160} height={56} className="h-12 w-auto object-contain sm:h-14" style={{ width: "auto" }} priority />
+                        <Image src="/logo-white.svg" alt="PTC Furniture" width={160} height={56} className="h-12 w-auto object-contain sm:h-14" style={{ width: "auto" }} priority />
                         <p className="mt-6 max-w-sm text-sm leading-relaxed text-stone-400">
                             Curated furniture for considered living. Crafted with intention, built to endure.
                         </p>
@@ -78,7 +79,7 @@ export default function Footer() {
                 </div>
 
                 <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs tracking-wide sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-slate-300">© 2025 PTC Furniture. All rights reserved.</p>
+                    <p className="text-slate-300">&copy;2026 PTC Furniture. All rights reserved.</p>
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                         {
                             ["Visa", "Mastercard", "American Express", "PayPal"].map((card) => (
@@ -100,17 +101,37 @@ type FooterColumnProps = {
 };
 
 function FooterColumn({ title, links }: FooterColumnProps) {
+    const getHref = (link: string) => {
+        if (link === "Brochures & Catalogs") return "/catalogs";
+        if (link === "About PTC" || link === "Our Story") return "/about";
+        if (link === "Chairs") return "/collections?q=chair";
+        if (link === "Tables") return "/collections?q=table";
+        if (link === "Lighting") return "/collections?q=lighting";
+        if (link === "Storage") return "/collections?q=storage";
+        return "#";
+    };
+
     return (
         <div>
             <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">{title}</h3>
             <ul className="mt-5 space-y-3">
-                {links.map((link) => (
-                    <li key={link}>
-                        <a href="#" className="text-base text-stone-300 transition hover:text-stone-100">
-                            {link}
-                        </a>
-                    </li>
-                ))}
+                {links.map((link) => {
+                    const href = getHref(link);
+                    const isExternal = href === "#";
+                    return (
+                        <li key={link}>
+                            {isExternal ? (
+                                <a href={href} className="text-base text-stone-300 transition hover:text-stone-100">
+                                    {link}
+                                </a>
+                            ) : (
+                                <Link href={href} className="text-base text-stone-300 transition hover:text-stone-100">
+                                    {link}
+                                </Link>
+                            )}
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );

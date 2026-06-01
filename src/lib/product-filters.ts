@@ -13,6 +13,7 @@ export type ProductFiltersState = {
   category: string;
   material: string;
   sort: ProductSortValue;
+  search: string;
 };
 
 export type ProductPaginationState = {
@@ -28,6 +29,20 @@ export type ProductFilterOptions = {
 
 function normalizeValue(value?: string) {
   return value?.trim().toLowerCase() ?? "";
+}
+
+function buildSearchIndex(product: Product) {
+  return [
+    product.name,
+    product.brand,
+    product.material,
+    product.tag,
+    product.craftedBy,
+    product.price,
+    ...(product.customFields ?? []).flatMap((field) => [field.label, field.value]),
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
 }
 
 function uniqueValues(values: Array<string | undefined | null>) {
@@ -81,11 +96,16 @@ export function filterAndSortProducts(
   products: Product[],
   filters: ProductFiltersState,
 ) {
-  // Only filter by brand; other filters removed per UX decision.
+  const searchQuery = normalizeValue(filters.search);
+
   const filteredProducts = products.filter((product) => {
-    return (
-      filters.brand === "all" || normalizeValue(product.brand) === normalizeValue(filters.brand)
-    );
+    const matchesBrand =
+      filters.brand === "all" || normalizeValue(product.brand) === normalizeValue(filters.brand);
+
+    const matchesSearch =
+      searchQuery.length === 0 || normalizeValue(buildSearchIndex(product)).includes(searchQuery);
+
+    return matchesBrand && matchesSearch;
   });
 
   // Always sort oldest -> newest (ascending by createdAt)
@@ -99,7 +119,8 @@ export function hasActiveProductFilters(filters: ProductFiltersState) {
     filters.brand !== "all" ||
     filters.category !== "all" ||
     filters.material !== "all" ||
-    filters.sort !== "featured"
+    filters.sort !== "featured" ||
+    filters.search.trim() !== ""
   );
 }
 

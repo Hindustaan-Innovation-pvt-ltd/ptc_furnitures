@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import AdminProductsManager from "@/components/custom/AdminProductsManager";
-import Footer from "@/components/custom/Footer";
-import Navigation from "@/components/custom/Navigation";
 import { readBrands, readProducts } from "@/lib/products";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function normalizeBrand(value: string): string {
   try {
@@ -35,28 +38,21 @@ export default async function BrandPage({ params }: BrandPageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8f8f8] text-slate-900 transition-colors duration-300 dark:bg-[#08090d] dark:text-slate-100">
-      <Navigation />
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col gap-4">
+    <AdminDashboardShell
+      title={`${selectedBrand} Workspace`}
+      subtitle={`Workspace uploader and drag-and-drop staging area for ${selectedBrand}`}
+    >
+      <div className="grid gap-6">
+        <div className="flex items-center">
           <Link
             href="/admin"
-            className="text-sm font-medium text-red-700 hover:text-red-800 dark:text-red-300 dark:hover:text-red-200"
+            className="rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-2 text-xs font-semibold text-red-700 dark:text-red-300 flex items-center gap-1.5 border border-slate-200/50 dark:border-white/5"
           >
-            Back to brands
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Back to Overview
           </Link>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-red-700 dark:text-red-300">
-              Brand workspace
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold lg:text-5xl">
-              {selectedBrand}
-            </h1>
-            <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
-              Upload multiple images for this brand, then review the saved
-              batches below.
-            </p>
-          </div>
         </div>
 
         <AdminProductsManager
@@ -66,8 +62,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
           brandLocked
           showAddTile
         />
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </AdminDashboardShell>
   );
 }

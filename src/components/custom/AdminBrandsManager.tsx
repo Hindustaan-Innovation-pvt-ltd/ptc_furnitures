@@ -5,15 +5,17 @@ import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getBrandLogo, getBrandLogos } from "@/lib/brand-logos";
+import type { BrandLogo } from "@/lib/brand-logos";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 type AdminBrandsManagerProps = {
   brands: string[];
+  initialBrandLogos: BrandLogo[];
 };
 
 export default function AdminBrandsManager({
   brands,
+  initialBrandLogos,
 }: AdminBrandsManagerProps) {
   const router = useRouter();
   const [brandName, setBrandName] = useState("");
@@ -23,6 +25,15 @@ export default function AdminBrandsManager({
   const [logoBrand, setLogoBrand] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoMessage, setLogoMessage] = useState<string | null>(null);
+
+  const getLogo = (brandName: string) => {
+    const norm = brandName.trim().replace(/\s+/g, " ").toLowerCase();
+    return initialBrandLogos.find(
+      (entry) =>
+        entry.brand.trim().replace(/\s+/g, " ").toLowerCase() === norm ||
+        entry.aliases.some((alias) => alias.trim().replace(/\s+/g, " ").toLowerCase() === norm),
+    ) ?? null;
+  };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,10 +133,10 @@ export default function AdminBrandsManager({
               key={brand}
               className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
             >
-              {getBrandLogo(brand) ? (
+              {getLogo(brand) ? (
                 <Image
-                  src={getBrandLogo(brand)?.src ?? ""}
-                  alt={getBrandLogo(brand)?.alt ?? brand}
+                  src={getLogo(brand)?.src ?? ""}
+                  alt={getLogo(brand)?.alt ?? brand}
                   width={24}
                   height={24}
                   className="h-5 w-5 object-contain"
@@ -170,7 +181,7 @@ export default function AdminBrandsManager({
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          {getBrandLogos().map((logo) => (
+          {initialBrandLogos.map((logo) => (
             <div
               key={logo.brand}
               className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-white/10 dark:bg-[#111318]"
@@ -228,7 +239,7 @@ export default function AdminBrandsManager({
         </form>
       </div>
 
-      <div className="min-h-[1.25rem] text-sm">
+      <div className="min-h-5 text-sm">
         {errorMessage ? (
           <p className="text-red-600 dark:text-red-400">{errorMessage}</p>
         ) : null}

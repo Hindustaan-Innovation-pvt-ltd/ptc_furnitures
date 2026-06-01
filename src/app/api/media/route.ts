@@ -113,10 +113,17 @@ async function compositeBrandWatermark(imageBuffer: Buffer, brand: string): Prom
     ]);
 
     const sourceWidth = sourceMeta.width ?? 0;
-    const watermarkWidth = sourceWidth > 0 ? Math.max(120, Math.min(420, Math.round(sourceWidth * 0.22))) : 220;
+    const sourceHeight = sourceMeta.height ?? 0;
+    const watermarkWidth = sourceWidth > 0 ? Math.round(sourceWidth * 0.5) : undefined;
+    const watermarkHeight = sourceHeight > 0 ? Math.round(sourceHeight * 0.5) : undefined;
 
     const overlay = await sharp(logoBuffer)
-      .resize({ width: watermarkWidth, fit: "contain" })
+      .resize({
+        width: watermarkWidth,
+        height: watermarkHeight,
+        fit: "contain",
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
       .png()
       .toBuffer();
 

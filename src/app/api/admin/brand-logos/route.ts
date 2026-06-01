@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import fs from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
-import { getBrandLogo } from "@/lib/brand-logos";
+import { getBrandLogo, setBrandLogo } from "@/lib/brand-logos";
 
 export const runtime = "nodejs";
 
@@ -21,10 +21,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Logo file is required." }, { status: 400 });
     }
 
-    const logo = getBrandLogo(brand);
+    let logo = getBrandLogo(brand);
 
+    // If it doesn't exist, we create a new dynamic entry!
     if (!logo) {
-      return NextResponse.json({ error: "Unknown brand." }, { status: 400 });
+      const safeSlug = brand.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      logo = {
+        brand,
+        src: `/uploads/logos/${safeSlug}.png`,
+        alt: `${brand} logo`,
+        aliases: [brand.toLowerCase()],
+      };
     }
 
     const arrayBuffer = await file.arrayBuffer();
@@ -33,6 +40,9 @@ export async function POST(request: Request) {
 
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await sharp(buffer).png().toFile(outputPath);
+
+    // Persist in dynamic database
+    setBrandLogo(brand, logo);
 
     return NextResponse.json({ brand, src: logo.src });
   } catch (error) {

@@ -8,11 +8,18 @@ import { readBrands, readProducts } from "@/lib/products";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string | string[] }>
+}) {
   const [initialProducts, initialBrands] = await Promise.all([
     readProducts(),
     readBrands(),
   ]);
+  const params = searchParams ? await searchParams : undefined;
+  const q = params?.q;
+  const initialSearchTerm = Array.isArray(q) ? q[0] ?? "" : q ?? "";
 
   return (
     <div className="min-h-screen bg-[#f8f8f8] text-slate-900 dark:bg-[#08090d] dark:text-slate-100 transition-colors duration-300">
@@ -39,7 +46,7 @@ export default async function Home() {
         </main>
       </section>
       <hr className="border-slate-200 dark:border-white/10" />
-      <Products initialProducts={initialProducts} initialBrands={initialBrands} />
+      <Products initialProducts={initialProducts} initialBrands={initialBrands} initialSearchTerm={initialSearchTerm} />
       <hr className="border-slate-200 dark:border-white/10" />
       <Reviews />
       <StayInTouch />

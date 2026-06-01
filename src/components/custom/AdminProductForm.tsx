@@ -104,7 +104,6 @@ export default function AdminProductForm({
   }, [imageFiles, product]);
 
   const canSubmit =
-    formState.brand.trim().length > 0 &&
     formState.name.trim().length > 0 &&
     (imageFiles.length > 0 || (product?.images?.length ?? 0) > 0);
 
@@ -237,7 +236,7 @@ export default function AdminProductForm({
                 Start with the name and brand. Add extra details only when needed.
               </p>
             </div>
-            <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="name">Product name</Label>
                 <Input
@@ -252,6 +251,33 @@ export default function AdminProductForm({
                   placeholder="e.g. Meridian Armchair"
                 />
               </div>
+
+              {!brandLocked ? (
+                <div className="grid gap-2">
+                  <Label htmlFor="brand">Assign Brand Workspace</Label>
+                  <Select
+                    value={formState.brand || "UNASSIGNED"}
+                    onValueChange={(val) =>
+                      setFormState((current) => ({
+                        ...current,
+                        brand: val === "UNASSIGNED" ? "" : val,
+                      }))
+                    }
+                  >
+                    <SelectTrigger id="brand" className="w-full h-9 rounded-lg">
+                      <SelectValue placeholder="No Brand (Unassigned)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UNASSIGNED">No Brand (Unassigned)</SelectItem>
+                      {brands.map((b) => (
+                        <SelectItem key={b} value={b}>
+                          {b}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
             </div>
           </section>
 

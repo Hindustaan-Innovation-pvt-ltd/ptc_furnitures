@@ -32,6 +32,7 @@ import {
 type ProductsCollectionsProps = {
     initialProducts: Product[]
     initialBrands: string[]
+    initialSearchTerm: string
 }
 
 const sortOptions = [
@@ -48,14 +49,18 @@ const initialFilters: ProductFiltersState = {
     category: 'all',
     material: 'all',
     sort: 'featured',
+    search: '',
 }
 
 const itemsPerPage = 6
 
-export default function ProductsCollections({ initialProducts, initialBrands }: ProductsCollectionsProps) {
+export default function ProductsCollections({ initialProducts, initialBrands, initialSearchTerm }: ProductsCollectionsProps) {
     const [products, setProducts] = React.useState<Product[]>(initialProducts)
     const [brands, setBrands] = React.useState<string[]>(initialBrands)
-    const [filters, setFilters] = React.useState<ProductFiltersState>(initialFilters)
+    const [filters, setFilters] = React.useState<ProductFiltersState>({
+        ...initialFilters,
+        search: initialSearchTerm,
+    })
     const [currentPage, setCurrentPage] = React.useState(1)
 
     React.useEffect(() => {
@@ -102,8 +107,15 @@ export default function ProductsCollections({ initialProducts, initialBrands }: 
     const brandOptions = brands.length > 0 ? brands : products.map((product) => product.brand)
 
     React.useEffect(() => {
+        setFilters((current) => ({
+            ...current,
+            search: initialSearchTerm,
+        }))
+    }, [initialSearchTerm])
+
+    React.useEffect(() => {
         setCurrentPage(1)
-    }, [filters.brand, filters.category, filters.material, filters.sort])
+    }, [filters.brand, filters.category, filters.material, filters.sort, filters.search])
 
     function updateFilter<K extends keyof ProductFiltersState>(key: K, value: ProductFiltersState[K]) {
         setFilters((current) => ({
@@ -208,22 +220,14 @@ export default function ProductsCollections({ initialProducts, initialBrands }: 
                     <p className="col-span-full text-center text-sm text-slate-500">No products yet.</p>
                 ) : (
                     pagination.pageItems.map((product) => (
-                        <div key={product.id} className="relative grid border border-slate-200/80 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-[#292929]">
+                        <div key={product.id} className="relative grid border border-slate-200/80 bg-white p-4 shadow-sm transition-colors duration-300">
                             <div className='overflow-hidden rounded-md'>
                                 <AssetImage brand={product.brand} src={product.images?.[0] ?? ""} alt={product.name ?? product.brand ?? ""} width={300} height={300} className="size-80 object-contain transition-transform duration-500 hover:scale-105" />
                             </div>
                             <div className="mt-4 flex flex-1 flex-col gap-1 text-start">
-                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50 sm:text-lg">{product.name ?? ''}</h3>
-                                <div className="mt-2 flex flex-wrap gap-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                                <h3 className="text-base font-semibold text-slate-900 sm:text-lg">{product.name ?? ''}</h3>
+                                <div className="mt-2 flex flex-wrap gap-2 text-xs leading-5 text-slate-500">
                                     {product.brand ? <span>{product.brand}</span> : null}
-                                    {product.material ? <span>{product.material}</span> : null}
-                                    {product.price ? <span>{product.price}</span> : null}
-                                    {product.tag ? <span>{product.tag}</span> : null}
-                                    {product.customFields?.map((field) => (
-                                        <span key={`${product.id}-${field.label}`}>
-                                            {field.label}: {field.value}
-                                        </span>
-                                    ))}
                                 </div>
                             </div>
                         </div>
