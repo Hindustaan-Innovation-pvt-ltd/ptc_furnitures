@@ -6,15 +6,15 @@ export type BrandWatermark = {
   size?: "small" | "medium" | "large";
   opacity?: number; // 0-100
   position?:
-    | "center"
-    | "north"
-    | "south"
-    | "east"
-    | "west"
-    | "north_east"
-    | "north_west"
-    | "south_east"
-    | "south_west";
+  | "center"
+  | "north"
+  | "south"
+  | "east"
+  | "west"
+  | "north_east"
+  | "north_west"
+  | "south_east"
+  | "south_west";
 };
 
 let cachedWatermarks: Record<string, BrandWatermark> = {};
@@ -61,7 +61,7 @@ export async function setBrandWatermark(
         brand: normalized,
         url: watermark.url,
         size: watermark.size || "medium",
-        opacity: watermark.opacity ?? 50,
+        opacity: watermark.opacity ?? 20,
         position: watermark.position || "center",
       },
     },
