@@ -32,7 +32,7 @@ export default async function Home({
               <span className="max-w-md text-sm font-medium leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
                 Furniture crafted for considered living — built to endure, designed to inspire.
               </span>
-              <Button className="z-50 rounded-full px-8 py-4 shadow-lg shadow-black/10 dark:shadow-black/30 sm:px-12 lg:px-10" asChild>
+              <Button className="rounded-full px-8 py-4 shadow-lg shadow-black/10 dark:shadow-black/30 sm:px-12 lg:px-10" asChild>
                 <Link href="/collections" className="flex items-center gap-2 text-base font-medium sm:text-lg">
                   Catalogue
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

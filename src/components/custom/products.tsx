@@ -116,7 +116,7 @@ export default function Products({ initialProducts, initialBrands, initialSearch
         <div className="border-t border-slate-200 pb-12 pt-4 transition-colors duration-300 dark:border-white/10">
             <div className="mx-auto mb-8 flex max-w-7xl items-center gap-4 px-4 py-4 text-slate-900 dark:text-slate-100 sm:px-6 lg:px-8">
                 <div className="w-full">
-                    <div className="flex items-center gap-3 overflow-x-auto pb-2 sm:flex-wrap sm:pb-0">
+                    <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0">
                         <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Brand</span>
                         {['all', ...brandOptions].map((brand) => {
                             const label = brand === 'all' ? 'All Brands' : brand

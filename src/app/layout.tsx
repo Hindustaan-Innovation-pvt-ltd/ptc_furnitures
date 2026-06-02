@@ -41,7 +41,7 @@ export default function RootLayout({
       <body className="min-h-screen overflow-x-hidden">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >

@@ -138,7 +138,7 @@ export default function ProductsCollections({ initialProducts, initialBrands, in
         <div className="border-t border-slate-200 py-4 transition-colors duration-300 dark:border-white/10">
             <div className="mx-auto mb-8 flex max-w-7xl items-center gap-4 px-4 py-4 text-slate-900 dark:text-slate-100 sm:px-6 lg:px-8">
                 <div className="w-full">
-                    <div className="flex items-center gap-3 overflow-x-auto pb-2 sm:flex-wrap sm:pb-0">
+                    <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0">
                         <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Brand</span>
                         {['all', ...brandOptions].map((brand) => {
                             const label = brand === 'all' ? 'All Brands' : brand
@@ -156,63 +156,6 @@ export default function ProductsCollections({ initialProducts, initialBrands, in
                             )
                         })}
                     </div>
-                </div>
-            </div>
-            <hr className="border-slate-200 dark:border-white/10" />
-            <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 text-slate-900 dark:text-slate-100 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                    <Select value={filters.category} onValueChange={(value) => updateFilter('category', value)}>
-                        <SelectTrigger className="w-full rounded-2xl sm:w-44">
-                            <SelectValue placeholder="Category" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl p-0">
-                            <SelectGroup>
-                                <SelectItem value="all">All Categories</SelectItem>
-                                {filterOptions.categories.map((category) => (
-                                    <SelectItem key={category} value={category}>
-                                        {category}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <Select value={filters.material} onValueChange={(value) => updateFilter('material', value)}>
-                        <SelectTrigger className="w-full rounded-2xl sm:w-44">
-                            <SelectValue placeholder="Material" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl p-0">
-                            <SelectGroup>
-                                <SelectItem value="all">All Materials</SelectItem>
-                                {filterOptions.materials.map((material) => (
-                                    <SelectItem key={material} value={material}>
-                                        {material}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="flex flex-col gap-3 text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:gap-4 lg:justify-end">
-                    <span className="text-sm">{visibleProducts.length} of {products.length} items</span>
-                    {activeFilters ? (
-                        <Button variant="ghost" size="sm" className="rounded-full" onClick={clearFilters}>
-                            Clear filters
-                        </Button>
-                    ) : null}
-                    <Select value={filters.sort} onValueChange={(value) => updateFilter('sort', value as ProductFiltersState['sort'])}>
-                        <SelectTrigger className="w-full rounded-2xl sm:w-44">
-                            <SelectValue placeholder="Sort" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl p-0">
-                            <SelectGroup>
-                                {sortOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
                 </div>
             </div>
             <hr className="border-slate-200 dark:border-white/10" />

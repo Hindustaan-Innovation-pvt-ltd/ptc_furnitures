@@ -20,6 +20,8 @@ export default function DealersPage() {
   const [submitResult, setSubmitResult] = useState<{
     success: boolean;
     leadId?: string;
+    dealerPhone?: string;
+    dealerName?: string;
     error?: string;
   } | null>(null);
 
@@ -27,6 +29,9 @@ export default function DealersPage() {
     e.preventDefault();
     setLoading(true);
     setSubmitResult(null);
+
+    const submittedPhone = formData.phone;
+    const submittedName = formData.name;
 
     try {
       const response = await fetch("/api/leads", {
@@ -39,7 +44,17 @@ export default function DealersPage() {
 
       const data = await response.json();
       if (response.ok && data.success) {
-        setSubmitResult({ success: true, leadId: data.lead.id });
+        const leadId = data.lead.id;
+        const city = formData.city;
+        // Immediately open WhatsApp to business number with dealer's details
+        const notifyUrl = buildOwnerNotifyUrl(submittedName, submittedPhone, city, leadId);
+        window.open(notifyUrl, "_blank", "noopener,noreferrer");
+        setSubmitResult({
+          success: true,
+          leadId,
+          dealerPhone: submittedPhone,
+          dealerName: submittedName,
+        });
         setFormData({
           name: "",
           phone: "",
@@ -56,12 +71,20 @@ export default function DealersPage() {
     }
   }
 
+  /** Opens a wa.me chat to the BUSINESS number with the dealer's details pre-filled */
+  function buildOwnerNotifyUrl(name: string, phone: string, city: string, leadId: string) {
+    const message = encodeURIComponent(
+      `Hello PTC Furnitures! 🙋\n\nI just submitted a dealer application. Here are my details:\n\n👤 Name: ${name}\n📞 Phone: ${phone}\n🏙️ City: ${city}\n🔖 Reference ID: ${leadId}\n\nLooking forward to partnering with you!`
+    );
+    return `https://wa.me/919294512259?text=${message}`;
+  }
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#08090d] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <Navigation />
 
       {/* Decorative Grid Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-40" />
+      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none opacity-40" />
 
       <header className="relative mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 sm:py-24 lg:px-8">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-xs font-semibold tracking-wider uppercase mb-5">
@@ -78,7 +101,7 @@ export default function DealersPage() {
 
       <main className="relative mx-auto max-w-7xl px-4 pb-32 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-12 items-start">
-          
+
           {/* Left Column: Benefits Cards */}
           <section className="lg:col-span-5 space-y-6">
             <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
@@ -143,7 +166,7 @@ export default function DealersPage() {
           {/* Right Column: Simplified Form */}
           <section className="lg:col-span-7">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 shadow-lg shadow-slate-100 dark:border-white/5 dark:bg-[#0f1116] dark:shadow-none relative overflow-hidden">
-              
+
               {/* Top Accent line */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-red-600 to-red-500" />
 
@@ -226,7 +249,7 @@ export default function DealersPage() {
               {submitResult?.success && (
                 <div className="absolute inset-0 bg-white/95 dark:bg-[#0f1116]/98 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center animate-scale-up z-10">
                   <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-500 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/10">
-                    <Check className="size-8 stroke-[3]" />
+                    <Check className="size-8 stroke-3" />
                   </div>
                   <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
                     Application Logged!
@@ -237,10 +260,14 @@ export default function DealersPage() {
                   <p className="max-w-md text-sm text-slate-500 dark:text-slate-400 mt-6 leading-relaxed">
                     Thank you for applying to the PTC Furniture authorized dealer program. A regional distribution consultant has been assigned to your reference and will review your credentials soon.
                   </p>
+
+                  {/* WhatsApp chat opened automatically — dealer can check phone for your message */}
+                  <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">We've opened a WhatsApp chat for you. Please tap "Send" in the opened window to notify us.</p>
+
                   <Button
                     onClick={() => setSubmitResult(null)}
                     variant="outline"
-                    className="mt-8 rounded-xl px-6 cursor-pointer font-bold text-xs tracking-wider uppercase"
+                    className="mt-4 rounded-xl px-6 cursor-pointer font-bold text-xs tracking-wider uppercase"
                   >
                     Send Another Inquiry
                   </Button>
