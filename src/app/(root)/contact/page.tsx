@@ -50,16 +50,16 @@ export default function ContactPage() {
 
                     <aside className="rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-white/10 dark:bg-stone-900">
                         <h3 className="text-lg font-semibold">Contact details</h3>
-                        <p className="mt-3 text-sm text-slate-500">Prefer email? Reach us at <a className="font-medium text-red-600" href="mailto:hello@example.com">hello@example.com</a></p>
+                        <p className="mt-3 text-sm text-slate-500">Prefer email? Reach us at <a className="font-medium text-red-600" href="mailto:pankajtradingco.14@gmail.com">pankajtradingco.14@gmail.com</a></p>
 
                         <div className="mt-6 space-y-4 text-sm text-slate-500">
                             <div>
-                                <div className="font-semibold text-slate-900 dark:text-slate-100">Headquarters</div>
-                                <div>Oslo, Norway</div>
+                                <div className="font-semibold text-slate-900 dark:text-slate-100">Address</div>
+                                <div>Pankaj Traders M.G. Road Raipur (C.G).</div>
                             </div>
                             <div>
                                 <div className="font-semibold text-slate-900 dark:text-slate-100">Customer care</div>
-                                <div>Mon–Fri, 9am–5pm CET</div>
+                                <div>Mon–Sat, 10am–8pm IST</div>
                             </div>
                         </div>
                     </aside>

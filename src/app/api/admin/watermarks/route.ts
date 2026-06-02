@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       const uploadedUrl = `data:${mimeType};base64,${base64}`;
 
       const size = String(form.get("size") ?? "medium");
-      const opacity = Number(form.get("opacity") ?? 80);
+      const opacity = Number(form.get("opacity") ?? 20);
       const position = String(form.get("position") ?? "center");
       const allowedPositions: NonNullable<BrandWatermark["position"]>[] = [
         "center",
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       const wm: BrandWatermark = {
         url: uploadedUrl,
         size: (size as BrandWatermark["size"]) ?? "medium",
-        opacity: Number.isFinite(opacity) ? Math.max(0, Math.min(100, opacity)) : 80,
+        opacity: Number.isFinite(opacity) ? Math.max(0, Math.min(100, opacity)) : 20,
         position: safePosition,
       };
 

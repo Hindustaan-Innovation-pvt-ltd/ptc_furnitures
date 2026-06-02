@@ -2,6 +2,7 @@ import sharp from "sharp";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { getBrandLogo } from "./brand-logos";
+import { readBrandWatermarks } from "./brand-watermarks";
 import { connectToDatabase } from "./mongodb";
 import { StoredFile } from "./db-models";
 
@@ -92,8 +93,15 @@ export async function compositeBrandWatermark(imageBuffer: Buffer, brand: string
     // Every watermark must be of the exact same size (200px)
     const watermarkSize = 200;
 
+    // Look up the configured opacity for this brand (0-100 scale, default 30)
+    const watermarks = readBrandWatermarks();
+    const normalizedBrand = brand.trim();
+    const brandWatermark = watermarks[normalizedBrand];
+    const opacityPct = brandWatermark?.opacity ?? 30;
+    const opacityFactor = Math.max(0, Math.min(100, opacityPct)) / 100;
+
     // Use .trim() to strip transparent margins around the logo to make sizes optically identical
-    const overlay = await sharp(logoBuffer)
+    const resizedOverlay = await sharp(logoBuffer)
       .trim()
       .resize({
         width: watermarkSize,
@@ -101,6 +109,20 @@ export async function compositeBrandWatermark(imageBuffer: Buffer, brand: string
         fit: "contain",
         background: { r: 0, g: 0, b: 0, alpha: 0 },
       })
+      .ensureAlpha()
+      .png()
+      .toBuffer();
+
+    // Apply configured opacity by scaling each pixel's alpha channel
+    const { data: rawData, info: rawInfo } = await sharp(resizedOverlay)
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    for (let i = 3; i < rawData.length; i += 4) {
+      rawData[i] = Math.round(rawData[i] * opacityFactor);
+    }
+    const overlay = await sharp(rawData, {
+      raw: { width: rawInfo.width, height: rawInfo.height, channels: 4 },
+    })
       .png()
       .toBuffer();
 

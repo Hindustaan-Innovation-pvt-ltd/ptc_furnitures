@@ -1,25 +1,24 @@
-import React from 'react'
 
 const reviews = [
     {
-        name: "Camille L.",
+        name: "Tushar Mehta",
         review: "The Tusk Lounge Chair transformed our reading nook. The wool fabric is exquisite — incredibly comfortable and beautifully made.",
         rating: 5,
-        location: "Paris",
+        location: "Raipur",
         product: "FR · Tusk Lounge Chair"
     },
     {
-        name: "Marcus D.",
+        name: "Rahul Sharma",
         review: "PTC's curation is unparalleled. We furnished our entire apartment through them and every single piece exceeded our expectations.",
         rating: 5,
-        location: "New York",
+        location: "Raipur",
         product: "IJS Ravenna Sectional"
     },
     {
-        name: "Yuki T.",
+        name: "Suryakant Sahu",
         review: "The Oslo Dining Table is a work of art. Solid oak, perfect proportions, and it has held up beautifully for over two years now.",
         rating: 5,
-        location: "Tokyo",
+        location: "Raipur",
         product: "JP · Oslo Dining Table"
     }
 ]
