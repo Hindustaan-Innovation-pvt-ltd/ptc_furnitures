@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const collections = ["Chairs", "Tables", "Lighting", "Storage"];
-const company = ["About PTC", "Our Story", "Brochures & Catalogs", "Careers", "Sustainability"];
+const collections = ["PTC GOLD", "REX", "ALTECH", "ARIPLAST", "HALLMARK", "PANKAJ"];
+const company = ["About PTC", "Brochures & Catalogs", "Authorized Dealers", "Contact Us", "Careers", "Sustainability"];
 const legal = ["Privacy Policy", "Terms of Use", "Cookie Settings", "Accessibility"];
 
 export default function Footer() {
@@ -104,10 +104,14 @@ function FooterColumn({ title, links }: FooterColumnProps) {
     const getHref = (link: string) => {
         if (link === "Brochures & Catalogs") return "/catalogs";
         if (link === "About PTC" || link === "Our Story") return "/about";
-        if (link === "Chairs") return "/collections?q=chair";
-        if (link === "Tables") return "/collections?q=table";
-        if (link === "Lighting") return "/collections?q=lighting";
-        if (link === "Storage") return "/collections?q=storage";
+        if (link === "Authorized Dealers") return "/dealers";
+        if (link === "Contact Us") return "/contact";
+        if (link === "PTC GOLD") return "/collections?q=PTC%20GOLD";
+        if (link === "REX") return "/collections?q=REX";
+        if (link === "ALTECH") return "/collections?q=ALTECH";
+        if (link === "ARIPLAST") return "/collections?q=ARIPLAST";
+        if (link === "HALLMARK") return "/collections?q=HALLMARK";
+        if (link === "PANKAJ") return "/collections?q=PANKAJ";
         return "#";
     };
 
