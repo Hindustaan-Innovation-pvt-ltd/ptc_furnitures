@@ -51,8 +51,8 @@ export default function page() {
                         }
                     </div>
                 </div>
-                <div className='flex min-h-[18rem] w-full items-center justify-center bg-black/10 px-6 py-12 dark:bg-black sm:min-h-[24rem] lg:min-h-full'>
-                    <svg width="377" height="135" className="w-full max-w-[20rem] dark:hidden sm:max-w-[26rem] lg:max-w-none lg:w-full" viewBox="0 0 377 135" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div className='flex min-h-72 w-full items-center justify-center bg-black/10 px-6 py-12 dark:bg-black sm:min-h-96 lg:min-h-full'>
+                    <svg width="377" height="135" className="w-full max-w-[20rem] dark:hidden sm:max-w-104 lg:max-w-none lg:w-full" viewBox="0 0 377 135" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M44.5707 116.655H74.4591V131.356C74.4591 133.063 73.0634 134.458 71.357 134.458H47.6729C45.9665 134.458 44.5707 133.063 44.5707 131.356V116.655Z" fill="url(#paint0_linear_92_10)" />
                         <path d="M44.5708 127.593H74.4592V104.741C74.9348 94.2926 74.1842 81.1307 74.1787 73.8338C74.1651 56.153 73.3451 46.8999 84.4726 37.0439C93.5505 29.0026 107.841 26.6054 120.096 34.0845C129.11 39.587 123.176 40.9827 136.607 40.8425C144.418 40.7607 152.33 40.7643 160.14 40.8615C157.232 23.9614 137.96 8.25593 122.401 3.13847C99.8122 -4.2914 78.2381 3.45287 64.8467 15.3425C44.431 33.4686 44.0982 58.1161 44.6138 87.7609C44.5854 87.9282 44.5708 88.1005 44.5708 88.2758V127.593Z" fill="url(#paint1_linear_92_10)" />
                         <path d="M78.3428 113.134C102.849 124.399 130.957 119.101 148.455 98.94C151.867 95.0092 159.837 85.164 159.863 78.3799C151.069 78.4971 142.259 78.3211 133.472 78.3367C123.311 78.3547 128.658 81.8516 116.246 87.2152C109.18 90.2689 100.64 90.3855 93.1633 87.6112C85.8841 84.9099 82.873 80.2563 78.4289 75.8164L78.3428 113.134Z" fill="url(#paint2_linear_92_10)" />
@@ -82,7 +82,7 @@ export default function page() {
                             </linearGradient>
                         </defs>
                     </svg>
-                    <svg width="550" height="205" className="hidden w-full max-w-[20rem] dark:block sm:max-w-[26rem] lg:max-w-none lg:w-full" viewBox="0 0 550 205" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="550" height="205" className="hidden w-full max-w-[20rem] dark:block sm:max-w-104 lg:max-w-none lg:w-full" viewBox="0 0 550 205" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <g filter="url(#filter0_d_93_2)">
                             <path d="M69.1227 170.446H112.793V191.926C112.793 194.419 110.754 196.458 108.26 196.458H73.6553C71.162 196.458 69.1227 194.419 69.1227 191.926V170.446Z" fill="url(#paint0_linear_93_2)" />
                             <path d="M69.1227 186.427H112.793V153.038C113.488 137.772 112.391 118.541 112.383 107.879C112.363 82.0456 111.165 68.5259 127.424 54.1252C140.687 42.376 161.568 38.8734 179.473 49.8011C192.643 57.8409 183.974 59.8802 203.598 59.6753C215.01 59.5559 226.57 59.5611 237.982 59.7032C233.734 35.0102 205.574 12.0628 182.842 4.58564C149.837 -6.2702 118.314 5.04501 98.7482 22.417C68.9186 48.9013 68.4323 84.9139 69.1857 128.228C69.1442 128.473 69.1227 128.724 69.1227 128.981V186.427Z" fill="url(#paint1_linear_93_2)" />

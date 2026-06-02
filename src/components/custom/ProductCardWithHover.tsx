@@ -338,7 +338,7 @@ export default function ProductCardWithHover({ product }: ProductCardWithHoverPr
                             )}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-3 gap-2 max-h-[110px] overflow-y-auto pr-0.5 scrollbar-thin">
+                        <div className="grid grid-cols-3 gap-2 max-h-27.5 overflow-y-auto pr-0.5 scrollbar-thin">
                             {product.images && product.images.length > 0 ? (
                                 product.images.map((image, idx) => (
                                     <div key={idx} className="relative aspect-square border border-slate-100 rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center group/grid-thumbnail hover:border-red-500/30 transition-all duration-300">
@@ -382,7 +382,7 @@ export default function ProductCardWithHover({ product }: ProductCardWithHoverPr
                 {/* 4. Customer Reviews List */}
                 <div className="pt-3 border-t border-slate-100">
                     <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Reviews ({reviews.length})</span>
-                    <div className="max-h-[105px] overflow-y-auto mt-2 pr-0.5 flex flex-col gap-2 scrollbar-thin">
+                    <div className="max-h-26.25 overflow-y-auto mt-2 pr-0.5 flex flex-col gap-2 scrollbar-thin">
                         {reviews.length === 0 ? (
                             <span className="text-xs text-slate-400 italic">No reviews yet. Be the first!</span>
                         ) : (

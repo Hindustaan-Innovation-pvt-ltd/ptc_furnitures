@@ -266,7 +266,7 @@ export default function AdminProductsCatalog({
 
                 {/* Metadata Details Tag Badges */}
                 {product.price || product.material || product.tag ? (
-                  <div className="flex flex-wrap gap-1.5 min-h-[22px]">
+                  <div className="flex flex-wrap gap-1.5 min-h-5.5">
                     {product.price ? (
                       <span className="rounded-full bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-white/5 dark:border-white/5 dark:text-slate-300">
                         {product.price}

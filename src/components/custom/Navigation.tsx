@@ -8,7 +8,7 @@ import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { Search, Download, Loader2, Check, Menu, X } from "lucide-react";
 import { sendGAEvent } from "@next/third-parties/google";
 
-export default function Navigation() {
+function NavigationContent() {
     const [open, setOpen] = React.useState(false);
     const [searchValue, setSearchValue] = React.useState("");
     const [downloadState, setDownloadState] = React.useState<"idle" | "loading" | "downloading" | "success" | "error">("idle");
@@ -349,4 +349,12 @@ export default function Navigation() {
             </header>
         </>
     )
+}
+
+export default function Navigation() {
+    return (
+        <React.Suspense fallback={<div className="h-16.25 w-full border-b border-slate-200/50 bg-white/75 backdrop-blur-md dark:border-white/10 dark:bg-[#08090d]/80" />}>
+            <NavigationContent />
+        </React.Suspense>
+    );
 }

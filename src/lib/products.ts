@@ -205,7 +205,7 @@ export async function updateProduct(
   // If there are updated images, delete orphaned StoredFiles from MongoDB
   if (normalizedImages.length > 0) {
     const removedImages = (existingDoc.images || []).filter(
-      (image) => !normalizedImages.includes(image),
+      (image: string) => !normalizedImages.includes(image),
     );
     await deleteStoredFiles(removedImages);
   }

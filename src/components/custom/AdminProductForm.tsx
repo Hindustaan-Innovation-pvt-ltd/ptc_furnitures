@@ -382,7 +382,7 @@ export default function AdminProductForm({
           </Button>
 
           {imagePreviews.length > 0 ? (
-            <div className="grid max-h-[34rem] gap-3 overflow-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#0f1116] sm:grid-cols-2 xl:grid-cols-1">
+            <div className="grid max-h-136 gap-3 overflow-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#0f1116] sm:grid-cols-2 xl:grid-cols-1">
               {imagePreviews.map((imagePreview, index) => (
                 <div
                   key={`${imagePreview}-${index}`}
@@ -396,14 +396,14 @@ export default function AdminProductForm({
                     height={720}
                     className="h-80 w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.01]"
                   />
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 bg-gradient-to-t from-black/75 to-transparent p-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 bg-linear-to-t from-black/75 to-transparent p-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
                     <span>#{index + 1}</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex min-h-[28rem] flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center dark:border-white/10 dark:bg-[#0f1116]">
+            <div className="flex min-h-112 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center dark:border-white/10 dark:bg-[#0f1116]">
               <div className="flex size-14 items-center justify-center rounded-full bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M4 16.5 8.2 12.3c.7-.7 1.8-.7 2.5 0l3.5 3.5 2.7-2.7c.7-.7 1.8-.7 2.5 0L20 14.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />

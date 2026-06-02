@@ -365,7 +365,7 @@ function ProductCard({
                     fill
                     className="object-cover pointer-events-none transition-transform duration-300 group-hover:scale-105"
                   />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
+                  <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
                     <span className="rounded-full bg-black/40 px-2 py-0.5 backdrop-blur-sm">
                       {index + 1}/{product.images.length}
                     </span>
@@ -382,7 +382,7 @@ function ProductCard({
 
         {/* Metadata Details Tag Badges */}
         {product.price || product.material || product.tag || (product.customFields && product.customFields.length > 0) ? (
-          <div className="flex flex-wrap gap-1.5 min-h-[22px]">
+          <div className="flex flex-wrap gap-1.5 min-h-5.5">
             {product.price ? (
               <span className="rounded-full bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-white/5 dark:border-white/5 dark:text-slate-300">
                 {product.price}
