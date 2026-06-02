@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readLeads, addLead, updateLead, updateLeadStatus, deleteLead } from "@/lib/leads";
 import { sendDealerWhatsAppMessage } from "@/lib/whatsapp";
+import { sendLeadSmsNotification } from "@/lib/sms";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,6 +31,9 @@ export async function POST(request: Request) {
     
     // Asynchronously trigger the WhatsApp dispatch which persists the whatsappStatus
     await sendDealerWhatsAppMessage(newLead);
+
+    // Asynchronously trigger the Twilio SMS alert
+    await sendLeadSmsNotification(newLead);
     
     // Retrieve the fully updated lead with its WhatsApp status populated
     const leads = await readLeads();
