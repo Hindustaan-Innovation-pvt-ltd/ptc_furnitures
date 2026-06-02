@@ -1,4 +1,3 @@
-
 const reviews = [
     {
         name: "Tushar Mehta",
