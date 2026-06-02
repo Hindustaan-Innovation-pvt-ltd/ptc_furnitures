@@ -62,6 +62,10 @@ export default function AdminProductsManager({
       formData.set("id", product.id);
       formData.set("brand", targetBrand);
       formData.set("existingImages", JSON.stringify(product.images));
+      // Always pass originalImages so the server can re-watermark from pristine images
+      if (product.originalImages && product.originalImages.length > 0) {
+        formData.set("existingOriginalImages", JSON.stringify(product.originalImages));
+      }
       if (product.name) formData.set("name", product.name);
       if (product.price) formData.set("price", product.price);
       if (product.material) formData.set("material", product.material);

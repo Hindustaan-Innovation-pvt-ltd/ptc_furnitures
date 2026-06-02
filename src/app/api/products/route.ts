@@ -6,7 +6,9 @@ import {
   readProducts,
   updateProduct,
 } from "@/lib/products";
-import { uploadProductImage } from "@/lib/cloudinary";
+import { connectToDatabase } from "@/lib/mongodb";
+import { Product } from "@/lib/db-models";
+import { removeWhiteBackground, compositeBrandWatermark, rewatermarkImage } from "@/lib/image-processor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,16 +38,38 @@ function getOptionalStringField(
   return trimmedValue.length > 0 ? trimmedValue : undefined;
 }
 
-async function storeProductImage(file: File): Promise<string> {
+async function storeProductImage(file: File, brand: string): Promise<{ watermarked: string; unwatermarked: string }> {
   const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-  return uploadProductImage(fileBuffer);
+  try {
+    // 1. Process background removal (feathered)
+    const bgRemoved = await removeWhiteBackground(fileBuffer);
+    
+    // 2. Add brand watermark
+    const watermarked = await compositeBrandWatermark(bgRemoved, brand);
+
+    const contentType = file.type || "image/png";
+    return {
+      watermarked: `data:${contentType};base64,${watermarked.toString("base64")}`,
+      unwatermarked: `data:${contentType};base64,${bgRemoved.toString("base64")}`,
+    };
+  } catch (err) {
+    // Fallback to raw base64 if sharp processing fails
+    const base64 = fileBuffer.toString("base64");
+    const contentType = file.type || "image/png";
+    const dataUri = `data:${contentType};base64,${base64}`;
+    return {
+      watermarked: dataUri,
+      unwatermarked: dataUri,
+    };
+  }
 }
 
 type ParsedProductRequest = {
   product: {
     brand: string;
     images: string[];
+    originalImages?: string[];
     name?: string;
     price?: string;
     material?: string;
@@ -66,29 +90,53 @@ async function parseProductRequest(
     const formData = await request.formData();
     const id = formData.get("id");
     const existingImages = getOptionalStringField(formData, "existingImages");
+    const existingOriginalImages = getOptionalStringField(formData, "existingOriginalImages");
     const customFields = getOptionalStringField(formData, "customFields");
     const imageEntries = formData
       .getAll("images")
       .filter(
         (value): value is File => value instanceof File && value.size > 0,
       );
-    const uploadedImages = await Promise.all(
-      imageEntries.map((file) => storeProductImage(file)),
-    );
-    let fallbackImages: unknown = [];
-
-    if (existingImages) {
-      try {
-        fallbackImages = JSON.parse(existingImages) as unknown;
-      } catch {
-        fallbackImages = [];
-      }
+    const brand = getStringField(formData, "brand");
+    
+    let uploadedImages: Array<{ watermarked: string; unwatermarked: string }> = [];
+    if (imageEntries.length > 0) {
+      uploadedImages = await Promise.all(
+        imageEntries.map((file) => storeProductImage(file, brand)),
+      );
     }
-    const storedFallbackImages = Array.isArray(fallbackImages)
-      ? fallbackImages.filter(
-          (value): value is string => typeof value === "string",
-        )
-      : [];
+
+    let finalImages: string[] = [];
+    let finalOriginalImages: string[] = [];
+
+    if (uploadedImages.length > 0) {
+      finalImages = uploadedImages.map((img) => img.watermarked);
+      finalOriginalImages = uploadedImages.map((img) => img.unwatermarked);
+    } else {
+      let fallbackImages: unknown = [];
+      if (existingImages) {
+        try {
+          fallbackImages = JSON.parse(existingImages) as unknown;
+        } catch {
+          fallbackImages = [];
+        }
+      }
+      finalImages = Array.isArray(fallbackImages)
+        ? fallbackImages.filter((value): value is string => typeof value === "string")
+        : [];
+
+      let fallbackOriginalImages: unknown = [];
+      if (existingOriginalImages) {
+        try {
+          fallbackOriginalImages = JSON.parse(existingOriginalImages) as unknown;
+        } catch {
+          fallbackOriginalImages = [];
+        }
+      }
+      finalOriginalImages = Array.isArray(fallbackOriginalImages)
+        ? fallbackOriginalImages.filter((value): value is string => typeof value === "string")
+        : [];
+    }
 
     let parsedCustomFields: Array<{ label: string; value: string }> = [];
 
@@ -118,8 +166,7 @@ async function parseProductRequest(
     }
 
     if (
-      uploadedImages.length === 0 &&
-      storedFallbackImages.length === 0 &&
+      finalImages.length === 0 &&
       !allowMissingImage
     ) {
       throw new Error("An image file is required.");
@@ -130,8 +177,8 @@ async function parseProductRequest(
         typeof id === "string" && id.trim().length > 0 ? id.trim() : undefined,
       product: {
         brand: getStringField(formData, "brand"),
-        images:
-          uploadedImages.length > 0 ? uploadedImages : storedFallbackImages,
+        images: finalImages,
+        originalImages: finalOriginalImages,
         name: getOptionalStringField(formData, "name"),
         price: getOptionalStringField(formData, "price"),
         material: getOptionalStringField(formData, "material"),
@@ -148,7 +195,12 @@ async function parseProductRequest(
     throw new Error("Invalid product payload.");
   }
 
-  return { product: body };
+  const productInput = body as any;
+  if (!productInput.originalImages) {
+    productInput.originalImages = productInput.images;
+  }
+
+  return { product: productInput };
 }
 
 export async function GET() {
@@ -186,6 +238,34 @@ export async function PUT(request: Request) {
         { error: "Missing product id." },
         { status: 400 },
       );
+    }
+
+    // Connect to database and re-watermark ONLY if brand is changing!
+    await connectToDatabase();
+    const existingProduct = await Product.findOne({ id });
+
+    if (existingProduct) {
+      if (existingProduct.brand !== product.brand) {
+        console.log(`==> Product ${id} brand changed from "${existingProduct.brand}" to "${product.brand}". Re-applying watermarks...`);
+
+        const originalImagesToUse = existingProduct.originalImages && existingProduct.originalImages.length > 0
+          ? existingProduct.originalImages
+          : existingProduct.images;
+
+        const newImages: string[] = [];
+        for (const img of originalImagesToUse) {
+          const rewatermarked = await rewatermarkImage(img, product.brand);
+          newImages.push(rewatermarked);
+        }
+
+        product.images = newImages;
+        product.originalImages = originalImagesToUse;
+      } else {
+        // Keep existing original images pristine in DB
+        product.originalImages = existingProduct.originalImages && existingProduct.originalImages.length > 0
+          ? existingProduct.originalImages
+          : existingProduct.images;
+      }
     }
 
     const savedProduct = await updateProduct(id, product);

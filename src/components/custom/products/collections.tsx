@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/pagination"
 import AssetImage from '@/components/custom/AssetImage'
 import type { Product } from '@/lib/products'
+import ProductCardWithHover from '@/components/custom/ProductCardWithHover'
 import {
     filterAndSortProducts,
     getProductFilterOptions,
@@ -220,17 +221,7 @@ export default function ProductsCollections({ initialProducts, initialBrands, in
                     <p className="col-span-full text-center text-sm text-slate-500">No products yet.</p>
                 ) : (
                     pagination.pageItems.map((product) => (
-                        <div key={product.id} className="relative grid border border-slate-200/80 bg-white p-4 shadow-sm transition-colors duration-300">
-                            <div className='overflow-hidden rounded-md'>
-                                <AssetImage brand={product.brand} src={product.images?.[0] ?? ""} alt={product.name ?? product.brand ?? ""} width={300} height={300} className="size-80 object-contain transition-transform duration-500 hover:scale-105" />
-                            </div>
-                            <div className="mt-4 flex flex-1 flex-col gap-1 text-start">
-                                <h3 className="text-base font-semibold text-slate-900 sm:text-lg">{product.name ?? ''}</h3>
-                                <div className="mt-2 flex flex-wrap gap-2 text-xs leading-5 text-slate-500">
-                                    {product.brand ? <span>{product.brand}</span> : null}
-                                </div>
-                            </div>
-                        </div>
+                        <ProductCardWithHover key={product.id} product={product} />
                     ))
                 )}
             </div>

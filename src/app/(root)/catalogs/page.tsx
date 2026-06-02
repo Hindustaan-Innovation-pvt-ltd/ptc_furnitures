@@ -2,7 +2,7 @@ import Navigation from "@/components/custom/Navigation";
 import Footer from "@/components/custom/Footer";
 import StayInTouch from "@/components/custom/StayInTouch";
 import { readCatalogs } from "@/lib/catalogs";
-import { readProducts } from "@/lib/products";
+import { readProducts, readBrands } from "@/lib/products";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,8 +10,19 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function PublicCatalogsPage() {
-  const [catalogs, products] = await Promise.all([readCatalogs(), readProducts()]);
+type PublicCatalogsPageProps = {
+  searchParams: Promise<{ brand?: string }>;
+};
+
+export default async function PublicCatalogsPage({ searchParams }: PublicCatalogsPageProps) {
+  const resolvedParams = await searchParams;
+  const activeBrandFilter = resolvedParams.brand || "";
+
+  const [catalogs, products, brands] = await Promise.all([
+    readCatalogs(),
+    readProducts(),
+    readBrands(),
+  ]);
 
   // Helper to find product images for custom catalogs
   const getCatalogPreviewImages = (productIds: string[]): string[] => {
@@ -45,7 +56,36 @@ export default async function PublicCatalogsPage() {
             </p>
           </div>
 
-          {catalogs.length === 0 ? (
+          {/* Brand Filter Pills Storefront */}
+          {brands.length > 0 && (
+            <div className="flex items-center justify-center gap-2 flex-wrap mb-12 select-none">
+              <Link
+                href="/catalogs"
+                className={`px-4.5 py-2.5 rounded-full text-xs font-bold transition shadow-xs ${
+                  activeBrandFilter === ""
+                    ? "bg-red-700 text-white shadow-md shadow-red-500/10"
+                    : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                }`}
+              >
+                All Collections
+              </Link>
+              {brands.map((b) => (
+                <Link
+                  key={b}
+                  href={`/catalogs?brand=${encodeURIComponent(b)}`}
+                  className={`px-4.5 py-2.5 rounded-full text-xs font-bold transition shadow-xs ${
+                    activeBrandFilter === b
+                      ? "bg-red-700 text-white shadow-md shadow-red-500/10"
+                      : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                  }`}
+                >
+                  {b}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {catalogs.filter((c) => (activeBrandFilter === "" ? true : c.brand === activeBrandFilter)).length === 0 ? (
             <div className="text-center py-20 bg-white dark:bg-[#111318] border border-slate-200/60 dark:border-white/5 rounded-3xl p-8 max-w-md mx-auto">
               <svg
                 width="40"
@@ -60,14 +100,18 @@ export default async function PublicCatalogsPage() {
               </svg>
               <h3 className="text-base font-bold">No catalogs published yet</h3>
               <p className="text-xs text-slate-400 mt-1">
-                Check back soon or contact us to receive physical copy mailers.
+                {activeBrandFilter 
+                  ? "We haven't uploaded copy brochures for this specific brand collection yet. Please select another collection."
+                  : "Check back soon or contact us to receive physical copy mailers."}
               </p>
             </div>
           ) : (
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {catalogs.map((catalog) => {
-                const previews = getCatalogPreviewImages(catalog.productIds || []);
-                const isPdf = catalog.type === "pdf";
+              {catalogs
+                .filter((c) => (activeBrandFilter === "" ? true : c.brand === activeBrandFilter))
+                .map((catalog) => {
+                  const previews = getCatalogPreviewImages(catalog.productIds || []);
+                  const isPdf = catalog.type === "pdf";
 
                 return (
                   <div
@@ -133,6 +177,13 @@ export default async function PublicCatalogsPage() {
                       <span className="absolute bottom-3 right-3 text-[9px] font-bold uppercase tracking-wider bg-slate-950/80 backdrop-blur-xs text-white px-2 py-0.5 rounded-md">
                         Style: {catalog.theme || "minimal"}
                       </span>
+
+                      {/* Brand Label Overlay */}
+                      {catalog.brand && (
+                        <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-wider bg-red-700 text-white px-2.5 py-1 rounded-md shadow-md shadow-red-500/10">
+                          {catalog.brand}
+                        </span>
+                      )}
                     </div>
 
                     {/* Catalog Content Details */}

@@ -74,7 +74,7 @@ export default async function AdminPage() {
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Image Assets</p>
               <h3 className="text-3xl font-extrabold mt-1.5 text-slate-900 dark:text-slate-100">{totalImages}</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Total Cloudinary stored assets</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Total MongoDB stored assets</p>
             </div>
             <div className="p-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 rounded-xl">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

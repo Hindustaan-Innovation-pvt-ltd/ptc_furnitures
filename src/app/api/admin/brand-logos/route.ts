@@ -1,9 +1,10 @@
 import "server-only";
 import { NextResponse } from "next/server";
-import fs from "node:fs/promises";
-import path from "node:path";
 import sharp from "sharp";
 import { getBrandLogo, setBrandLogo } from "@/lib/brand-logos";
+import { Product } from "@/lib/db-models";
+import { rewatermarkImage } from "@/lib/image-processor";
+import { connectToDatabase } from "@/lib/mongodb";
 
 export const runtime = "nodejs";
 
@@ -21,28 +22,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Logo file is required." }, { status: 400 });
     }
 
-    let logo = getBrandLogo(brand);
-
-    // If it doesn't exist, we create a new dynamic entry!
-    if (!logo) {
-      const safeSlug = brand.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      logo = {
-        brand,
-        src: `/uploads/logos/${safeSlug}.png`,
-        alt: `${brand} logo`,
-        aliases: [brand.toLowerCase()],
-      };
-    }
-
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const outputPath = path.join(process.cwd(), "public", logo.src.replace(/^\//, ""));
 
-    await fs.mkdir(path.dirname(outputPath), { recursive: true });
-    await sharp(buffer).png().toFile(outputPath);
+    // Process the logo with sharp (convert to PNG, optimize)
+    const pngBuffer = await sharp(buffer).png().toBuffer();
+    const base64 = pngBuffer.toString("base64");
+    const logoSrc = `data:image/png;base64,${base64}`;
 
-    // Persist in dynamic database
-    setBrandLogo(brand, logo);
+    const logo = getBrandLogo(brand) ?? {
+      brand,
+      src: logoSrc,
+      alt: `${brand} logo`,
+      aliases: [brand.toLowerCase()],
+    };
+
+    // Always update the src to the new Base64 URL
+    logo.src = logoSrc;
+
+    // Persist in MongoDB database
+    await connectToDatabase();
+    await setBrandLogo(brand, logo);
+
+    // Re-watermark all products belonging to this brand instantly using their pristine originalImages!
+    const productsToUpdate = await Product.find({ brand });
+    console.log(`==> [Brand Logo Update] Re-applying new watermark for brand "${brand}" onto ${productsToUpdate.length} products...`);
+    
+    for (const prod of productsToUpdate) {
+      const originalImages = prod.originalImages && prod.originalImages.length > 0
+        ? prod.originalImages
+        : prod.images;
+
+      const newImages: string[] = [];
+      for (const img of originalImages) {
+        const rewatermarked = await rewatermarkImage(img, brand);
+        newImages.push(rewatermarked);
+      }
+
+      prod.images = newImages;
+      prod.originalImages = originalImages;
+      await prod.save();
+    }
 
     return NextResponse.json({ brand, src: logo.src });
   } catch (error) {

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
-import FloatingActionButton from "@/components/custom/floating-action-button";
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -30,12 +30,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
   return (
     <html
       lang="en"
       suppressHydrationWarning
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
+      {gaId && <GoogleAnalytics gaId={gaId} />}
       <body className="min-h-screen overflow-x-hidden">
         <ThemeProvider
           attribute="class"
@@ -44,7 +46,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-
         </ThemeProvider>
       </body>
     </html>

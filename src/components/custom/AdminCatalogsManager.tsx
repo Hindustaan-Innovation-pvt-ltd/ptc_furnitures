@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import type { Catalog } from "@/lib/catalogs";
 import type { Product } from "@/lib/products";
 
@@ -29,6 +30,8 @@ export default function AdminCatalogsManager({
   const [description, setDescription] = useState("");
   const [type, setType] = useState<"pdf" | "custom">("custom");
   const [theme, setTheme] = useState<"minimal" | "gold" | "dark">("minimal");
+  const [selectedBrand, setSelectedBrand] = useState<string>("");
+  const [listBrandFilter, setListBrandFilter] = useState<string>("");
 
   // PDF File Upload State
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -111,6 +114,7 @@ export default function AdminCatalogsManager({
         formData.append("description", description);
         formData.append("type", "pdf");
         formData.append("theme", theme);
+        formData.append("brand", selectedBrand);
         formData.append("pdfFile", pdfFile);
 
         const response = await fetch("/api/catalogs", {
@@ -140,6 +144,7 @@ export default function AdminCatalogsManager({
             description,
             type: "custom",
             theme,
+            brand: selectedBrand || undefined,
             productIds: selectedProductIds,
           }),
         });
@@ -155,6 +160,7 @@ export default function AdminCatalogsManager({
       // Reset Form state
       setTitle("");
       setDescription("");
+      setSelectedBrand("");
       setPdfFile(null);
       setSelectedProductIds([]);
       setActiveTab("list");
@@ -258,83 +264,150 @@ export default function AdminCatalogsManager({
               </Button>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {catalogs.map((catalog) => (
-                <div
-                  key={catalog.id}
-                  className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-all duration-300"
+            <div>
+              {/* Brand filter pill bar */}
+              <div className="flex items-center gap-2 flex-wrap mb-6 bg-slate-50 dark:bg-[#0c0d11]/30 p-2.5 rounded-2xl border border-slate-200/50 dark:border-white/5">
+                <span className="text-xs font-bold text-slate-500 px-2 select-none">Filter by Brand:</span>
+                <button
+                  type="button"
+                  onClick={() => setListBrandFilter("")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer select-none ${
+                    listBrandFilter === ""
+                      ? "bg-red-600 text-white dark:bg-red-700"
+                      : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/5 hover:bg-slate-50"
+                  }`}
                 >
-                  <div>
-                    {/* Badge type */}
-                    <div className="flex items-center justify-between gap-2 mb-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                        catalog.type === "pdf"
-                          ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400"
-                      }`}>
-                        {catalog.type === "pdf" ? "PDF Catalog File" : "Digital Custom Brochure"}
-                      </span>
-                      <span className="text-[10px] text-slate-400">
-                        {new Date(catalog.createdAt).toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
+                  All Catalogs
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setListBrandFilter("generic")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer select-none ${
+                    listBrandFilter === "generic"
+                      ? "bg-red-600 text-white dark:bg-red-700"
+                      : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/5 hover:bg-slate-50"
+                  }`}
+                >
+                  Generic (No Brand)
+                </button>
+                {brands.map((b) => (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => setListBrandFilter(b)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer select-none ${
+                      listBrandFilter === b
+                        ? "bg-red-600 text-white dark:bg-red-700"
+                        : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/5 hover:bg-slate-50"
+                    }`}
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
 
-                    <h4 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 line-clamp-1">{catalog.title}</h4>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 line-clamp-2 min-h-[2rem]">
-                      {catalog.description || "No description provided."}
-                    </p>
-
-                    {/* Metadata specs */}
-                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 flex gap-4 text-xs text-slate-500">
-                      <div>
-                        Theme: <span className="font-bold capitalize">{catalog.theme || "minimal"}</span>
-                      </div>
-                      {catalog.type === "custom" && (
-                        <div>
-                          Products: <span className="font-bold text-slate-900 dark:text-slate-200">{(catalog.productIds || []).length}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 dark:border-white/5 pt-4">
-                    <a
-                      href={catalog.type === "pdf" ? catalog.pdfUrl : `/catalogs/${catalog.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
-                    >
-                      {catalog.type === "pdf" ? (
-                        <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                          </svg>
-                          Download PDF
-                        </>
-                      ) : (
-                        <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
-                          </svg>
-                          Open Portfolios
-                        </>
-                      )}
-                    </a>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(catalog.id, catalog.title)}
-                      className="text-xs font-bold text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition"
-                    >
-                      Delete
-                    </button>
-                  </div>
+              {/* Grid lists */}
+              {catalogs.filter((c) => {
+                if (listBrandFilter === "") return true;
+                if (listBrandFilter === "generic") return !c.brand;
+                return c.brand === listBrandFilter;
+              }).length === 0 ? (
+                <div className="text-center py-12 text-slate-400">
+                  <p className="text-sm font-semibold">No catalogs found under this brand filter.</p>
                 </div>
-              ))}
+              ) : (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {catalogs
+                    .filter((c) => {
+                      if (listBrandFilter === "") return true;
+                      if (listBrandFilter === "generic") return !c.brand;
+                      return c.brand === listBrandFilter;
+                    })
+                    .map((catalog) => (
+                      <div
+                        key={catalog.id}
+                        className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-all duration-300"
+                      >
+                        <div>
+                          {/* Badge type */}
+                          <div className="flex items-center justify-between gap-2 mb-4">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                                catalog.type === "pdf"
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
+                                  : "bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400"
+                              }`}>
+                                {catalog.type === "pdf" ? "PDF" : "Digital"}
+                              </span>
+                              {catalog.brand && (
+                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300">
+                                  {catalog.brand}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[9px] text-slate-400">
+                              {new Date(catalog.createdAt).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </div>
+
+                          <h4 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 line-clamp-1">{catalog.title}</h4>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 line-clamp-2 min-h-[2rem]">
+                            {catalog.description || "No description provided."}
+                          </p>
+
+                          {/* Metadata specs */}
+                          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 flex gap-4 text-xs text-slate-500">
+                            <div>
+                              Theme: <span className="font-bold capitalize">{catalog.theme || "minimal"}</span>
+                            </div>
+                            {catalog.type === "custom" && (
+                              <div>
+                                Products: <span className="font-bold text-slate-900 dark:text-slate-200">{(catalog.productIds || []).length}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 dark:border-white/5 pt-4">
+                          <a
+                            href={catalog.type === "pdf" ? catalog.pdfUrl : `/catalogs/${catalog.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            {catalog.type === "pdf" ? (
+                              <>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                                </svg>
+                                Download PDF
+                              </>
+                            ) : (
+                              <>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+                                </svg>
+                                Open Portfolios
+                              </>
+                            )}
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(catalog.id, catalog.title)}
+                            className="text-xs font-bold text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -348,7 +421,7 @@ export default function AdminCatalogsManager({
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Configure layout, details, and selections of catalogs.</p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-3">
             <div className="grid gap-1.5">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Catalog Title *</label>
               <Input
@@ -357,6 +430,20 @@ export default function AdminCatalogsManager({
                 placeholder="e.g. Autumn Premium Collection"
                 required
               />
+            </div>
+            <div className="grid gap-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Associated Brand (Optional)</label>
+              <Select value={selectedBrand || "generic"} onValueChange={(value) => setSelectedBrand(value === "generic" ? "" : value)}>
+                <SelectTrigger className="w-full text-xs font-medium border-slate-200/60 dark:border-white/10 bg-slate-50/50 dark:bg-[#08090d]">
+                  <SelectValue placeholder="Generic (General Catalog)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="generic">Generic (General Catalog)</SelectItem>
+                  {brands.map((b) => (
+                    <SelectItem key={b} value={b}>{b}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-1.5">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Short Description</label>
@@ -475,25 +562,26 @@ export default function AdminCatalogsManager({
               <div className="grid xl:grid-cols-[1.3fr_1fr] gap-6 items-start">
                 {/* Left Side: Product database search */}
                 <div className="grid gap-3 bg-white dark:bg-[#111318] border border-slate-200/60 dark:border-white/10 rounded-2xl p-4">
-                  <div className="grid gap-2 sm:grid-cols-[1fr_1.5fr] items-center">
-                    <select
-                      value={brandFilter}
-                      onChange={(e) => setBrandFilter(e.target.value)}
-                      className="w-full h-10 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300"
-                    >
-                      <option value="">All Brands</option>
-                      {brands.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="grid gap-2 sm:grid-cols-[1.3fr_1.7fr] items-center">
+                    <Select value={brandFilter || "all"} onValueChange={(value) => setBrandFilter(value === "all" ? "" : value)}>
+                      <SelectTrigger className="w-full h-10 text-xs font-semibold text-slate-600 dark:text-slate-300 border-slate-200/60 dark:border-white/10 bg-slate-50 dark:bg-white/5 rounded-xl">
+                        <SelectValue placeholder="All Brands" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Brands</SelectItem>
+                        {brands.map((b) => (
+                          <SelectItem key={b} value={b}>
+                            {b}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
                     <Input
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       placeholder="Search items by name, material, tags..."
-                      className="h-10 text-xs"
+                      className="h-10 text-xs bg-white dark:bg-transparent"
                     />
                   </div>
 

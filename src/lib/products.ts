@@ -1,474 +1,275 @@
 import { randomUUID } from "node:crypto";
-import fs from "node:fs/promises";
-import path from "node:path";
-import {
-    deleteCloudinaryImage,
-    hasCloudinaryCredentials,
-    uploadProductImage,
-} from "@/lib/cloudinary";
-import { isCloudinaryUrl } from "@/lib/cloudinary-url";
+import { connectToDatabase } from "./mongodb";
+import { Product as ProductModel, BrandModel, StoredFile } from "./db-models";
 
 export type Product = {
-    id: string;
-    brand: string;
-    images: string[];
-    createdAt: string;
-    name?: string;
-    price?: string;
-    material?: string;
-    craftedBy?: string;
-    tag?: string;
-    customFields?: ProductCustomField[];
+  id: string;
+  brand: string;
+  images: string[];
+  originalImages?: string[];
+  createdAt: string;
+  name?: string;
+  price?: string;
+  material?: string;
+  craftedBy?: string;
+  tag?: string;
+  customFields?: ProductCustomField[];
 };
 
 export type ProductCustomField = {
-    label: string;
-    value: string;
+  label: string;
+  value: string;
 };
 
 export type ProductInput = {
-    brand: string;
-    images: string[];
-    name?: string;
-    price?: string;
-    material?: string;
-    craftedBy?: string;
-    tag?: string;
-    customFields?: ProductCustomField[];
+  brand: string;
+  images: string[];
+  originalImages?: string[];
+  name?: string;
+  price?: string;
+  material?: string;
+  craftedBy?: string;
+  tag?: string;
+  customFields?: ProductCustomField[];
 };
 
 export type ProductUpdateInput = ProductInput;
 
 export type Brand = string;
 
-const dataDirectory = path.join(process.cwd(), "data");
-const productsFile = path.join(dataDirectory, "products.json");
-const brandsFile = path.join(dataDirectory, "brands.json");
-const legacyManagedUploadsPrefix = "/uploads/products/";
-
 const seedBrands: Brand[] = [
-    "PTC GOLD",
-    "REX",
-    "ALTECH",
-    "ARIPLAST",
-    "HALLMARK",
-    "PANKAJ",
+  "PTC GOLD",
+  "REX",
+  "ALTECH",
+  "ARIPLAST",
+  "HALLMARK",
+  "PANKAJ",
 ];
 
-const seedProducts: Product[] = [
-    {
-        id: randomUUID(),
-        brand: "PTC GOLD",
-        images: ["/Image (Meridian Armchair)-1.png"],
-        createdAt: new Date().toISOString(),
-    },
-    {
-        id: randomUUID(),
-        brand: "REX",
-        images: ["/Image (Forma Lounge).png"],
-        createdAt: new Date().toISOString(),
-    },
-    {
-        id: randomUUID(),
-        brand: "ALTECH",
-        images: ["/Image (Meridian Armchair).png"],
-        createdAt: new Date().toISOString(),
-    },
-];
-
-function isNonEmptyString(value: unknown): value is string {
-    return typeof value === "string" && value.trim().length > 0;
-}
-
-function normalizeImageList(value: unknown): string[] {
-    const items = Array.isArray(value) ? value : [];
-
-    return items
-        .filter(isNonEmptyString)
-        .map((image) => image.trim())
-        .filter((image, index, list) => list.indexOf(image) === index);
-}
-
-function normalizeBrandName(value: string): string {
-    return value.trim().replace(/\s+/g, " ");
-}
-
-function normalizeCustomFields(value: unknown): ProductCustomField[] {
-    if (!Array.isArray(value)) {
-        return [];
-    }
-
-    return value
-        .map((entry) => {
-            if (!entry || typeof entry !== "object") {
-                return null;
-            }
-
-            const candidate = entry as Record<string, unknown>;
-
-            if (
-                typeof candidate.label !== "string" ||
-                typeof candidate.value !== "string"
-            ) {
-                return null;
-            }
-
-            const label = candidate.label.trim();
-            const value = candidate.value.trim();
-
-            if (!label || !value) {
-                return null;
-            }
-
-            return { label, value };
-        })
-        .filter((field): field is ProductCustomField => field !== null)
-        .filter(
-            (field, index, list) =>
-                index ===
-                list.findIndex(
-                    (entry) =>
-                        entry.label.toLowerCase() === field.label.toLowerCase(),
-                ),
-        );
-}
-
-function normalizeProduct(record: Record<string, unknown>): Product {
-    const images = normalizeImageList(record.images);
-    const primaryImage =
-        images[0] ?? (isNonEmptyString(record.image) ? record.image.trim() : "");
-
-    return {
-        id: isNonEmptyString(record.id) ? record.id.trim() : randomUUID(),
-        brand: isNonEmptyString(record.brand) ? record.brand.trim() : "",
-        images: images.length > 0 ? images : primaryImage ? [primaryImage] : [],
-        createdAt: isNonEmptyString(record.createdAt)
-            ? record.createdAt.trim()
-            : new Date().toISOString(),
-        name: isNonEmptyString(record.name) ? record.name.trim() : undefined,
-        price: isNonEmptyString(record.price) ? record.price.trim() : undefined,
-        material: isNonEmptyString(record.material)
-            ? record.material.trim()
-            : undefined,
-        craftedBy: isNonEmptyString(record.craftedBy)
-            ? record.craftedBy.trim()
-            : undefined,
-        tag: isNonEmptyString(record.tag) ? record.tag.trim() : undefined,
-        customFields: normalizeCustomFields(record.customFields),
-    };
-}
-
-async function ensureStore() {
-    await fs.mkdir(dataDirectory, { recursive: true });
-
+async function deleteStoredFileByURL(imagePath: string) {
+  if (imagePath.startsWith("/api/images")) {
     try {
-        await fs.access(productsFile);
+      const urlObj = new URL(imagePath, "http://localhost");
+      const id = urlObj.searchParams.get("id");
+      if (id) {
+        await StoredFile.findByIdAndDelete(id);
+      }
     } catch {
-        await fs.writeFile(productsFile, JSON.stringify(seedProducts, null, 2), "utf8");
+      // Ignore
     }
-
-    try {
-        await fs.access(brandsFile);
-    } catch {
-        await fs.writeFile(brandsFile, JSON.stringify(seedBrands, null, 2), "utf8");
-    }
+  }
 }
 
-async function writeProducts(products: Product[]) {
-    await fs.writeFile(productsFile, JSON.stringify(products, null, 2), "utf8");
-}
-
-async function writeBrands(brands: Brand[]) {
-    await fs.writeFile(brandsFile, JSON.stringify(brands, null, 2), "utf8");
-}
-
-async function deleteManagedImage(imagePath: string) {
-    if (isCloudinaryUrl(imagePath)) {
-        await deleteCloudinaryImage(imagePath);
-        return;
-    }
-
-    if (!imagePath.startsWith(legacyManagedUploadsPrefix)) {
-        return;
-    }
-
-    const filePath = path.join(process.cwd(), "public", imagePath);
-
-    try {
-        await fs.unlink(filePath);
-    } catch {
-        // Ignore missing files so delete/update stays resilient.
-    }
-}
-
-async function deleteManagedImages(imagePaths: string[]) {
-    await Promise.all(imagePaths.map((imagePath) => deleteManagedImage(imagePath)));
-}
-
-function isLegacyProductImage(imagePath: string) {
-    return imagePath.startsWith("/") && !isCloudinaryUrl(imagePath);
-}
-
-let legacyImageMigrationPromise: Promise<Product[]> | null = null;
-
-async function migrateLegacyProductImages(products: Product[]): Promise<Product[]> {
-    if (!hasCloudinaryCredentials()) {
-        return products;
-    }
-
-    const legacyImages = new Set<string>();
-
-    for (const product of products) {
-        for (const image of product.images) {
-            if (isLegacyProductImage(image)) {
-                legacyImages.add(image);
-            }
-        }
-    }
-
-    if (legacyImages.size === 0) {
-        return products;
-    }
-
-    const migratedImages = new Map<string, string>();
-
-    await Promise.all(
-        Array.from(legacyImages).map(async (imagePath) => {
-            const filePath = path.join(process.cwd(), "public", imagePath);
-
-            try {
-                await fs.access(filePath);
-            } catch {
-                return;
-            }
-
-            const fileBuffer = await fs.readFile(filePath);
-            const cloudinaryUrl = await uploadProductImage(fileBuffer);
-
-            migratedImages.set(imagePath, cloudinaryUrl);
-
-            try {
-                await fs.unlink(filePath);
-            } catch {
-                // Ignore missing files so migration stays resilient.
-            }
-        }),
-    );
-
-    if (migratedImages.size === 0) {
-        return products;
-    }
-
-    const migratedProducts = products.map((product) => ({
-        ...product,
-        images: product.images.map(
-            (image) => migratedImages.get(image) ?? image,
-        ),
-    }));
-
-    await writeProducts(migratedProducts);
-
-    return migratedProducts;
+async function deleteStoredFiles(imagePaths: string[]) {
+  await Promise.all(imagePaths.map((imagePath) => deleteStoredFileByURL(imagePath)));
 }
 
 export function isProductInput(value: unknown): value is ProductInput {
-    if (!value || typeof value !== "object") {
-        return false;
-    }
+  if (!value || typeof value !== "object") {
+    return false;
+  }
 
-    const candidate = value as Record<string, unknown>;
+  const candidate = value as Record<string, unknown>;
 
-    return (
-        typeof candidate.brand === "string" &&
-        Array.isArray(candidate.images) &&
-        candidate.images.every((image) => typeof image === "string") &&
-        (candidate.customFields === undefined ||
-            (Array.isArray(candidate.customFields) &&
-                candidate.customFields.every((field) => {
-                    if (!field || typeof field !== "object") {
-                        return false;
-                    }
+  return (
+    typeof candidate.brand === "string" &&
+    Array.isArray(candidate.images) &&
+    candidate.images.every((image) => typeof image === "string") &&
+    (candidate.customFields === undefined ||
+      (Array.isArray(candidate.customFields) &&
+        candidate.customFields.every((field) => {
+          if (!field || typeof field !== "object") {
+            return false;
+          }
 
-                    const customField = field as Record<string, unknown>;
+          const customField = field as Record<string, unknown>;
 
-                    return (
-                        typeof customField.label === "string" &&
-                        typeof customField.value === "string"
-                    );
-                })))
-    );
+          return (
+            typeof customField.label === "string" &&
+            typeof customField.value === "string"
+          );
+        })))
+  );
 }
 
 export function isBrandInput(value: unknown): value is { name: string } {
-    if (!value || typeof value !== "object") {
-        return false;
-    }
+  if (!value || typeof value !== "object") {
+    return false;
+  }
 
-    const candidate = value as Record<string, unknown>;
-    return typeof candidate.name === "string";
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.name === "string";
 }
 
 export async function readProducts(): Promise<Product[]> {
-    await ensureStore();
-
-    const fileContents = await fs.readFile(productsFile, "utf8");
-    const parsed = JSON.parse(fileContents) as unknown;
-
-    if (!Array.isArray(parsed)) {
-        return [];
-    }
-
-    const normalizedProducts = parsed.map((record) =>
-        normalizeProduct(record as Record<string, unknown>),
-    );
-
-    const hasLegacyImages = normalizedProducts.some((product) =>
-        product.images.some((image) => isLegacyProductImage(image)),
-    );
-
-    if (!hasLegacyImages) {
-        return normalizedProducts;
-    }
-
-    if (!legacyImageMigrationPromise) {
-        legacyImageMigrationPromise = migrateLegacyProductImages(
-            normalizedProducts,
-        ).finally(() => {
-            legacyImageMigrationPromise = null;
-        });
-    }
-
-    return legacyImageMigrationPromise;
+  await connectToDatabase();
+  const docs = await ProductModel.find().sort({ createdAt: -1 }).lean();
+  return docs.map((doc: any) => ({
+    id: doc.id,
+    brand: doc.brand,
+    images: doc.images || [],
+    originalImages: doc.originalImages || [],
+    createdAt: doc.createdAt,
+    name: doc.name || undefined,
+    price: doc.price || undefined,
+    material: doc.material || undefined,
+    craftedBy: doc.craftedBy || undefined,
+    tag: doc.tag || undefined,
+    customFields: doc.customFields || [],
+  }));
 }
 
 export async function readBrands(): Promise<Brand[]> {
-    await ensureStore();
-
-    const fileContents = await fs.readFile(brandsFile, "utf8");
-    const parsed = JSON.parse(fileContents) as unknown;
-
-    if (!Array.isArray(parsed)) {
-        return seedBrands;
-    }
-
-    return parsed
-        .filter(isNonEmptyString)
-        .map((brand) => normalizeBrandName(brand))
-        .filter(
-            (brand, index, list) =>
-                list.findIndex((entry) => entry.toLowerCase() === brand.toLowerCase()) === index,
-        );
+  await connectToDatabase();
+  const docs = await BrandModel.find().lean();
+  if (docs.length === 0) {
+    return seedBrands;
+  }
+  return docs.map((doc: any) => doc.name);
 }
 
 export async function addBrand(name: string): Promise<Brand> {
-    await ensureStore();
+  const normalizedBrand = name.trim().replace(/\s+/g, " ");
 
-    const normalizedBrand = normalizeBrandName(name);
+  if (!normalizedBrand) {
+    throw new Error("Brand name is required.");
+  }
 
-    if (!normalizedBrand) {
-        throw new Error("Brand name is required.");
-    }
+  await connectToDatabase();
 
-    const brands = await readBrands();
-    const existingBrand = brands.find(
-        (brand) => brand.toLowerCase() === normalizedBrand.toLowerCase(),
-    );
+  const existingBrand = await BrandModel.findOne({
+    name: { $regex: new RegExp(`^${normalizedBrand}$`, "i") },
+  });
 
-    if (existingBrand) {
-        throw new Error("Brand already exists.");
-    }
+  if (existingBrand) {
+    throw new Error("Brand already exists.");
+  }
 
-    const nextBrands = [normalizedBrand, ...brands];
-    await writeBrands(nextBrands);
-
-    return normalizedBrand;
+  await BrandModel.create({ name: normalizedBrand });
+  return normalizedBrand;
 }
 
 export async function addProduct(product: ProductInput): Promise<Product> {
-    await ensureStore();
+  await connectToDatabase();
 
-    const products = await readProducts();
-    const normalizedImages = product.images
-        .map((image) => image.trim())
-        .filter((image) => image.length > 0);
+  const normalizedImages = product.images
+    .map((image) => image.trim())
+    .filter((image) => image.length > 0);
 
-    const nextProduct: Product = {
-        id: randomUUID(),
-        brand: normalizeBrandName(product.brand),
-        images: normalizedImages,
-        createdAt: new Date().toISOString(),
-        name: product.name?.trim() || undefined,
-        price: product.price?.trim() || undefined,
-        material: product.material?.trim() || undefined,
-        craftedBy: product.craftedBy?.trim() || undefined,
-        tag: product.tag?.trim() || undefined,
-        customFields: normalizeCustomFields(product.customFields),
-    };
+  const newId = randomUUID();
 
-    products.unshift(nextProduct);
-    await writeProducts(products);
+  const doc = await ProductModel.create({
+    id: newId,
+    brand: product.brand.trim().replace(/\s+/g, " "),
+    images: normalizedImages,
+    originalImages: product.originalImages || normalizedImages,
+    createdAt: new Date().toISOString(),
+    name: product.name?.trim() || undefined,
+    price: product.price?.trim() || undefined,
+    material: product.material?.trim() || undefined,
+    craftedBy: product.craftedBy?.trim() || undefined,
+    tag: product.tag?.trim() || undefined,
+    customFields: product.customFields || [],
+  });
 
-    return nextProduct;
+  return {
+    id: doc.id,
+    brand: doc.brand,
+    images: doc.images,
+    originalImages: doc.originalImages,
+    createdAt: doc.createdAt,
+    name: doc.name || undefined,
+    price: doc.price || undefined,
+    material: doc.material || undefined,
+    craftedBy: doc.craftedBy || undefined,
+    tag: doc.tag || undefined,
+    customFields: doc.customFields || [],
+  };
 }
 
 export async function updateProduct(
-    productId: string,
-    product: ProductUpdateInput,
+  productId: string,
+  product: ProductUpdateInput,
 ): Promise<Product | null> {
-    await ensureStore();
+  await connectToDatabase();
 
-    const products = await readProducts();
-    const productIndex = products.findIndex((entry) => entry.id === productId);
+  const existingDoc = await ProductModel.findOne({ id: productId });
+  if (!existingDoc) {
+    return null;
+  }
 
-    if (productIndex < 0) {
-        return null;
-    }
+  const normalizedImages = product.images
+    .map((image) => image.trim())
+    .filter((image) => image.length > 0);
 
-    const currentProduct = products[productIndex];
-    const normalizedImages = product.images
-        .map((image) => image.trim())
-        .filter((image) => image.length > 0);
+  // If there are updated images, delete orphaned StoredFiles from MongoDB
+  if (normalizedImages.length > 0) {
+    const removedImages = (existingDoc.images || []).filter(
+      (image) => !normalizedImages.includes(image),
+    );
+    await deleteStoredFiles(removedImages);
+  }
 
-    if (normalizedImages.length > 0) {
-        const removedImages = currentProduct.images.filter(
-            (image) => !normalizedImages.includes(image),
-        );
-
-        await deleteManagedImages(removedImages);
-    }
-
-    const updatedProduct: Product = {
-        ...currentProduct,
-        brand: normalizeBrandName(product.brand),
-        images: normalizedImages.length > 0 ? normalizedImages : currentProduct.images,
-        // primary image will be derived from `images[0]` when needed
+  const updatedDoc = await ProductModel.findOneAndUpdate(
+    { id: productId },
+    {
+      $set: {
+        brand: product.brand.trim().replace(/\s+/g, " "),
+        images: normalizedImages.length > 0 ? normalizedImages : existingDoc.images,
+        originalImages: product.originalImages || existingDoc.originalImages || (normalizedImages.length > 0 ? normalizedImages : existingDoc.images),
         name: product.name?.trim() || undefined,
         price: product.price?.trim() || undefined,
         material: product.material?.trim() || undefined,
         craftedBy: product.craftedBy?.trim() || undefined,
         tag: product.tag?.trim() || undefined,
-        customFields: normalizeCustomFields(product.customFields),
-    };
+        customFields: product.customFields || [],
+      },
+    },
+    { new: true }
+  ).lean();
 
-    products[productIndex] = updatedProduct;
-    await writeProducts(products);
+  if (!updatedDoc) {
+    return null;
+  }
 
-    return updatedProduct;
+  return {
+    id: updatedDoc.id,
+    brand: updatedDoc.brand,
+    images: updatedDoc.images,
+    originalImages: updatedDoc.originalImages,
+    createdAt: updatedDoc.createdAt,
+    name: updatedDoc.name || undefined,
+    price: updatedDoc.price || undefined,
+    material: updatedDoc.material || undefined,
+    craftedBy: updatedDoc.craftedBy || undefined,
+    tag: updatedDoc.tag || undefined,
+    customFields: updatedDoc.customFields || [],
+  };
 }
 
 export async function deleteProduct(productId: string): Promise<Product | null> {
-    await ensureStore();
+  await connectToDatabase();
 
-    const products = await readProducts();
-    const productIndex = products.findIndex((entry) => entry.id === productId);
+  const doc = await ProductModel.findOneAndDelete({ id: productId }).lean();
+  if (!doc) {
+    return null;
+  }
 
-    if (productIndex < 0) {
-        return null;
-    }
+  // Delete all associated dynamic images
+  if (doc.images && doc.images.length > 0) {
+    await deleteStoredFiles(doc.images);
+  }
 
-    const [removedProduct] = products.splice(productIndex, 1);
-    await writeProducts(products);
-    await deleteManagedImages(removedProduct.images);
-
-    return removedProduct;
+  return {
+    id: doc.id,
+    brand: doc.brand,
+    images: doc.images || [],
+    createdAt: doc.createdAt,
+    name: doc.name || undefined,
+    price: doc.price || undefined,
+    material: doc.material || undefined,
+    craftedBy: doc.craftedBy || undefined,
+    tag: doc.tag || undefined,
+    customFields: doc.customFields || [],
+  };
 }

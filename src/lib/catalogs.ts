@@ -1,16 +1,17 @@
 import { randomUUID } from "node:crypto";
-import fs from "node:fs/promises";
-import path from "node:path";
+import { connectToDatabase } from "./mongodb";
+import { CatalogModel, StoredFile } from "./db-models";
 
 export type Catalog = {
   id: string;
   title: string;
   description?: string;
   type: "pdf" | "custom";
-  pdfUrl?: string; // Local public URL or Cloudinary URL
-  productIds?: string[]; // Included products (if custom)
+  pdfUrl?: string;
+  productIds?: string[];
   createdAt: string;
   theme?: "minimal" | "gold" | "dark";
+  brand?: string;
 };
 
 export type CatalogInput = {
@@ -20,41 +21,32 @@ export type CatalogInput = {
   pdfUrl?: string;
   productIds?: string[];
   theme?: "minimal" | "gold" | "dark";
+  brand?: string;
 };
 
-const dataDirectory = path.join(process.cwd(), "data");
-const catalogsFile = path.join(dataDirectory, "catalogs.json");
-
-async function ensureStore() {
-  await fs.mkdir(dataDirectory, { recursive: true });
-  try {
-    await fs.access(catalogsFile);
-  } catch {
-    await fs.writeFile(catalogsFile, JSON.stringify([], null, 2), "utf8");
-  }
-}
-
 export async function readCatalogs(): Promise<Catalog[]> {
-  await ensureStore();
-  try {
-    const fileContents = await fs.readFile(catalogsFile, "utf8");
-    const parsed = JSON.parse(fileContents) as unknown;
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    return parsed as Catalog[];
-  } catch {
-    return [];
-  }
+  await connectToDatabase();
+  const docs = await CatalogModel.find().sort({ createdAt: -1 }).lean();
+  return docs.map((doc: any) => ({
+    id: doc.id,
+    title: doc.title,
+    description: doc.description || undefined,
+    type: doc.type,
+    pdfUrl: doc.pdfUrl || undefined,
+    productIds: doc.productIds || [],
+    createdAt: doc.createdAt,
+    theme: doc.theme || "minimal",
+    brand: doc.brand || undefined,
+  }));
 }
 
 export async function writeCatalogs(catalogs: Catalog[]): Promise<void> {
-  await ensureStore();
-  await fs.writeFile(catalogsFile, JSON.stringify(catalogs, null, 2), "utf8");
+  // Deprecated no-op
 }
 
 export async function addCatalog(input: CatalogInput): Promise<Catalog> {
-  const catalogs = await readCatalogs();
+  await connectToDatabase();
+
   const newCatalog: Catalog = {
     id: randomUUID(),
     title: input.title.trim(),
@@ -64,10 +56,10 @@ export async function addCatalog(input: CatalogInput): Promise<Catalog> {
     productIds: input.productIds || [],
     createdAt: new Date().toISOString(),
     theme: input.theme || "minimal",
+    brand: input.brand?.trim() || undefined,
   };
 
-  catalogs.unshift(newCatalog);
-  await writeCatalogs(catalogs);
+  await CatalogModel.create(newCatalog);
   return newCatalog;
 }
 
@@ -75,50 +67,75 @@ export async function updateCatalog(
   id: string,
   input: Partial<CatalogInput>
 ): Promise<Catalog | null> {
-  const catalogs = await readCatalogs();
-  const index = catalogs.findIndex((c) => c.id === id);
-  if (index === -1) {
+  await connectToDatabase();
+
+  const existing = await CatalogModel.findOne({ id });
+  if (!existing) {
     return null;
   }
 
-  const updatedCatalog: Catalog = {
-    ...catalogs[index],
-    title: input.title !== undefined ? input.title.trim() : catalogs[index].title,
-    description:
-      input.description !== undefined
-        ? input.description.trim() || undefined
-        : catalogs[index].description,
-    type: input.type !== undefined ? input.type : catalogs[index].type,
-    pdfUrl:
-      input.pdfUrl !== undefined ? input.pdfUrl.trim() || undefined : catalogs[index].pdfUrl,
-    productIds: input.productIds !== undefined ? input.productIds : catalogs[index].productIds,
-    theme: input.theme !== undefined ? input.theme : catalogs[index].theme,
-  };
+  const updates: any = {};
+  if (input.title !== undefined) updates.title = input.title.trim();
+  if (input.description !== undefined) updates.description = input.description.trim() || undefined;
+  if (input.type !== undefined) updates.type = input.type;
+  if (input.pdfUrl !== undefined) updates.pdfUrl = input.pdfUrl.trim() || undefined;
+  if (input.productIds !== undefined) updates.productIds = input.productIds;
+  if (input.theme !== undefined) updates.theme = input.theme;
+  if (input.brand !== undefined) updates.brand = input.brand.trim() || undefined;
 
-  catalogs[index] = updatedCatalog;
-  await writeCatalogs(catalogs);
-  return updatedCatalog;
+  const doc = await CatalogModel.findOneAndUpdate(
+    { id },
+    { $set: updates },
+    { new: true }
+  ).lean();
+
+  if (!doc) {
+    return null;
+  }
+
+  return {
+    id: doc.id,
+    title: doc.title,
+    description: doc.description || undefined,
+    type: doc.type,
+    pdfUrl: doc.pdfUrl || undefined,
+    productIds: doc.productIds || [],
+    createdAt: doc.createdAt,
+    theme: doc.theme || "minimal",
+    brand: doc.brand || undefined,
+  };
 }
 
 export async function deleteCatalog(id: string): Promise<Catalog | null> {
-  const catalogs = await readCatalogs();
-  const index = catalogs.findIndex((c) => c.id === id);
-  if (index === -1) {
+  await connectToDatabase();
+
+  const doc = await CatalogModel.findOneAndDelete({ id }).lean();
+  if (!doc) {
     return null;
   }
 
-  const [removedCatalog] = catalogs.splice(index, 1);
-  await writeCatalogs(catalogs);
-
-  // If it was a PDF and stored locally, try to delete the file
-  if (removedCatalog.type === "pdf" && removedCatalog.pdfUrl?.startsWith("/uploads/catalogs/")) {
-    const filePath = path.join(process.cwd(), "public", removedCatalog.pdfUrl);
+  // Delete PDF stored in MongoDB if it exists
+  if (doc.type === "pdf" && doc.pdfUrl?.startsWith("/api/images")) {
     try {
-      await fs.unlink(filePath);
+      const urlObj = new URL(doc.pdfUrl, "http://localhost");
+      const fileId = urlObj.searchParams.get("id");
+      if (fileId) {
+        await StoredFile.findByIdAndDelete(fileId);
+      }
     } catch {
-      // Ignore errors if file is already missing
+      // Ignore
     }
   }
 
-  return removedCatalog;
+  return {
+    id: doc.id,
+    title: doc.title,
+    description: doc.description || undefined,
+    type: doc.type,
+    pdfUrl: doc.pdfUrl || undefined,
+    productIds: doc.productIds || [],
+    createdAt: doc.createdAt,
+    theme: doc.theme || "minimal",
+    brand: doc.brand || undefined,
+  };
 }

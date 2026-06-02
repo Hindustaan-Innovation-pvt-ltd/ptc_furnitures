@@ -1,0 +1,244 @@
+import mongoose, { Schema, Document } from "mongoose";
+
+// ==========================================
+// 1. Stored File (Binary Media storage)
+// ==========================================
+export interface IStoredFile extends Document {
+  filename: string;
+  contentType: string;
+  data: Buffer;
+  createdAt: Date;
+}
+
+const StoredFileSchema = new Schema<IStoredFile>({
+  filename: { type: String, required: true },
+  contentType: { type: String, required: true },
+  data: { type: Buffer, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
+
+export const StoredFile =
+  mongoose.models.StoredFile ||
+  mongoose.model<IStoredFile>("StoredFile", StoredFileSchema);
+
+// ==========================================
+// 2. Product Schema
+// ==========================================
+export interface IProductCustomField {
+  label: string;
+  value: string;
+}
+
+export interface IProduct extends Document {
+  id: string; // custom UUID string to match existing signature
+  brand: string;
+  images: string[];
+  originalImages?: string[];
+  createdAt: string;
+  name?: string;
+  price?: string;
+  material?: string;
+  craftedBy?: string;
+  tag?: string;
+  customFields?: IProductCustomField[];
+}
+
+const ProductCustomFieldSchema = new Schema<IProductCustomField>(
+  {
+    label: { type: String, required: true },
+    value: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+const ProductSchema = new Schema<IProduct>({
+  id: { type: String, required: true, unique: true },
+  brand: { type: String, default: "" },
+  images: { type: [String], default: [] },
+  originalImages: { type: [String], default: [] },
+  createdAt: { type: String, required: true },
+  name: { type: String },
+  price: { type: String },
+  material: { type: String },
+  craftedBy: { type: String },
+  tag: { type: String },
+  customFields: { type: [ProductCustomFieldSchema], default: [] },
+});
+
+export const Product =
+  mongoose.models.Product || mongoose.model<IProduct>("Product", ProductSchema);
+
+// ==========================================
+// 3. Brand Schema
+// ==========================================
+export interface IBrand extends Document {
+  name: string;
+}
+
+const BrandSchema = new Schema<IBrand>({
+  name: { type: String, required: true, unique: true },
+});
+
+export const BrandModel =
+  mongoose.models.Brand || mongoose.model<IBrand>("Brand", BrandSchema);
+
+// ==========================================
+// 4. Catalog Schema
+// ==========================================
+export interface ICatalog extends Document {
+  id: string;
+  title: string;
+  description?: string;
+  type: "pdf" | "custom";
+  pdfUrl?: string;
+  productIds?: string[];
+  createdAt: string;
+  theme?: "minimal" | "gold" | "dark";
+  brand?: string;
+}
+
+const CatalogSchema = new Schema<ICatalog>({
+  id: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  description: { type: String },
+  type: { type: String, required: true, enum: ["pdf", "custom"] },
+  pdfUrl: { type: String },
+  productIds: { type: [String], default: [] },
+  createdAt: { type: String, required: true },
+  theme: { type: String, enum: ["minimal", "gold", "dark"], default: "minimal" },
+  brand: { type: String },
+});
+
+export const CatalogModel =
+  mongoose.models.Catalog || mongoose.model<ICatalog>("Catalog", CatalogSchema);
+
+// ==========================================
+// 5. Dealer Lead Schema
+// ==========================================
+export interface IDealerLead extends Document {
+  id: string;
+  name: string;
+  phone: string;
+  city: string;
+  email?: string;
+  createdAt: string;
+  status: "new" | "contacted" | "approved" | "rejected";
+  whatsappStatus?: "sent" | "failed";
+  whatsappSentAt?: string;
+  whatsappMessage?: string;
+}
+
+const DealerLeadSchema = new Schema<IDealerLead>({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  phone: { type: String, required: true },
+  city: { type: String, required: true },
+  email: { type: String },
+  createdAt: { type: String, required: true },
+  status: {
+    type: String,
+    required: true,
+    enum: ["new", "contacted", "approved", "rejected"],
+    default: "new",
+  },
+  whatsappStatus: { type: String, enum: ["sent", "failed"] },
+  whatsappSentAt: { type: String },
+  whatsappMessage: { type: String },
+});
+
+export const DealerLeadModel =
+  mongoose.models.DealerLead ||
+  mongoose.model<IDealerLead>("DealerLead", DealerLeadSchema);
+
+// ==========================================
+// 6. Product Review Schema
+// ==========================================
+export interface IProductReview extends Document {
+  id: string;
+  productId: string;
+  productName: string;
+  rating: number;
+  text: string;
+  date: string;
+  status: "approved" | "pending" | "rejected";
+}
+
+const ProductReviewSchema = new Schema<IProductReview>({
+  id: { type: String, required: true, unique: true },
+  productId: { type: String, required: true },
+  productName: { type: String, required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  text: { type: String, required: true },
+  date: { type: String, required: true },
+  status: {
+    type: String,
+    required: true,
+    enum: ["approved", "pending", "rejected"],
+    default: "approved",
+  },
+});
+
+export const ProductReviewModel =
+  mongoose.models.ProductReview ||
+  mongoose.model<IProductReview>("ProductReview", ProductReviewSchema);
+
+// ==========================================
+// 7. Brand Watermark Schema
+// ==========================================
+export interface IBrandWatermark extends Document {
+  brand: string;
+  url: string;
+  size?: "small" | "medium" | "large";
+  opacity?: number;
+  position?: string;
+}
+
+const BrandWatermarkSchema = new Schema<IBrandWatermark>({
+  brand: { type: String, required: true, unique: true },
+  url: { type: String, required: true },
+  size: { type: String, enum: ["small", "medium", "large"], default: "medium" },
+  opacity: { type: Number, default: 50 },
+  position: { type: String, default: "center" },
+});
+
+export const BrandWatermarkModel =
+  mongoose.models.BrandWatermark ||
+  mongoose.model<IBrandWatermark>("BrandWatermark", BrandWatermarkSchema);
+
+// ==========================================
+// 8. Dynamic Brand Logo Schema
+// ==========================================
+export interface IBrandLogo extends Document {
+  brand: string;
+  src: string;
+  alt: string;
+  aliases: string[];
+}
+
+const BrandLogoSchema = new Schema<IBrandLogo>({
+  brand: { type: String, required: true, unique: true },
+  src: { type: String, required: true },
+  alt: { type: String, required: true },
+  aliases: { type: [String], default: [] },
+});
+
+export const BrandLogoModel =
+  mongoose.models.BrandLogo ||
+  mongoose.model<IBrandLogo>("BrandLogo", BrandLogoSchema);
+
+// ==========================================
+// 9. Background Removal Cache Schema
+// ==========================================
+export interface IBgRemovedCache extends Document {
+  originalImage: string;
+  derivedImage: string;
+}
+
+const BgRemovedCacheSchema = new Schema<IBgRemovedCache>({
+  originalImage: { type: String, required: true, unique: true },
+  derivedImage: { type: String, required: true },
+});
+
+export const BgRemovedCacheModel =
+  mongoose.models.BgRemovedCache ||
+  mongoose.model<IBgRemovedCache>("BgRemovedCache", BgRemovedCacheSchema);

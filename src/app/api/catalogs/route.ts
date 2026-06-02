@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { addCatalog, readCatalogs } from "@/lib/catalogs";
-import fs from "node:fs/promises";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
+import { connectToDatabase } from "@/lib/mongodb";
+import { StoredFile } from "@/lib/db-models";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,6 +28,7 @@ export async function POST(request: Request) {
       const title = formData.get("title") as string;
       const description = (formData.get("description") as string) || "";
       const theme = (formData.get("theme") as string) || "minimal";
+      const brand = (formData.get("brand") as string) || "";
       const pdfFile = formData.get("pdfFile") as File;
 
       if (!title || !title.trim()) {
@@ -39,19 +39,17 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "PDF file is required for upload." }, { status: 400 });
       }
 
-      // Save PDF locally under public/uploads/catalogs/
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "catalogs");
-      await fs.mkdir(uploadDir, { recursive: true });
-
-      const fileExtension = path.extname(pdfFile.name) || ".pdf";
-      const fileName = `${randomUUID()}${fileExtension}`;
-      const filePath = path.join(uploadDir, fileName);
-
       const arrayBuffer = await pdfFile.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      await fs.writeFile(filePath, buffer);
 
-      const pdfUrl = `/uploads/catalogs/${fileName}`;
+      await connectToDatabase();
+      const storedFile = await StoredFile.create({
+        filename: pdfFile.name,
+        contentType: pdfFile.type || "application/pdf",
+        data: buffer,
+      });
+
+      const pdfUrl = `/api/images?id=${storedFile._id}`;
 
       const savedCatalog = await addCatalog({
         title,
@@ -60,6 +58,7 @@ export async function POST(request: Request) {
         pdfUrl,
         productIds: [],
         theme: theme as "minimal" | "gold" | "dark",
+        brand: brand || undefined,
       });
 
       return NextResponse.json({ catalog: savedCatalog }, { status: 201 });
@@ -67,7 +66,7 @@ export async function POST(request: Request) {
 
     // JSON body (custom digital catalogs)
     const body = await request.json();
-    const { title, description, productIds, theme } = body;
+    const { title, description, productIds, theme, brand } = body;
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: "Catalog title is required." }, { status: 400 });
@@ -79,6 +78,7 @@ export async function POST(request: Request) {
       type: "custom",
       productIds: productIds || [],
       theme: theme || "minimal",
+      brand: brand || undefined,
     });
 
     return NextResponse.json({ catalog: savedCatalog }, { status: 201 });

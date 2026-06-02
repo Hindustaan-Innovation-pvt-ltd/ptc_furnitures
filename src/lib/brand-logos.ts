@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import { connectToDatabase } from "./mongodb";
+import { BrandLogoModel } from "./db-models";
 
 export type BrandLogo = {
   brand: string;
@@ -29,40 +29,35 @@ const defaultLogos: BrandLogo[] = [
   },
 ];
 
-const dataDirectory = path.join(process.cwd(), "data");
-const logosFile = path.join(dataDirectory, "brand-logos.json");
-
-function readDynamicLogos(): Record<string, BrandLogo> {
-  try {
-    if (fs.existsSync(logosFile)) {
-      const content = fs.readFileSync(logosFile, "utf8");
-      return JSON.parse(content) || {};
-    }
-  } catch {
-    // ignore
-  }
-  return {};
-}
-
-function writeDynamicLogos(logos: Record<string, BrandLogo>) {
-  try {
-    fs.mkdirSync(dataDirectory, { recursive: true });
-    fs.writeFileSync(logosFile, JSON.stringify(logos, null, 2), "utf8");
-  } catch {
-    // ignore
-  }
-}
+let cachedLogos: Record<string, BrandLogo> = {};
 
 function normalizeBrand(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
+export async function loadLogosIntoCache() {
+  try {
+    const docs = await BrandLogoModel.find().lean();
+    const newCache: Record<string, BrandLogo> = {};
+    for (const doc of docs) {
+      newCache[normalizeBrand(doc.brand)] = {
+        brand: doc.brand,
+        src: doc.src,
+        alt: doc.alt,
+        aliases: doc.aliases || [],
+      };
+    }
+    cachedLogos = newCache;
+  } catch (err) {
+    console.error("Failed to load dynamic logos into cache:", err);
+  }
+}
+
 export function getBrandLogo(brand: string): BrandLogo | null {
   const normalized = normalizeBrand(brand);
   
-  // 1. Check dynamic database first
-  const dynamicLogos = readDynamicLogos();
-  const dynamicEntry = Object.values(dynamicLogos).find(
+  // 1. Check memory cache populated from DB
+  const dynamicEntry = Object.values(cachedLogos).find(
     (entry) =>
       normalizeBrand(entry.brand) === normalized ||
       entry.aliases.some((alias) => normalizeBrand(alias) === normalized),
@@ -87,7 +82,6 @@ export function getBrandLogoSrc(brand: string): string | null {
 }
 
 export function getBrandLogos(): BrandLogo[] {
-  const dynamicLogos = readDynamicLogos();
   const mergedMap = new Map<string, BrandLogo>();
 
   // Add default logos
@@ -95,16 +89,33 @@ export function getBrandLogos(): BrandLogo[] {
     mergedMap.set(normalizeBrand(logo.brand), logo);
   }
 
-  // Override or add dynamic logos
-  for (const logo of Object.values(dynamicLogos)) {
+  // Override or add dynamic logos from database cache
+  for (const logo of Object.values(cachedLogos)) {
     mergedMap.set(normalizeBrand(logo.brand), logo);
   }
 
   return Array.from(mergedMap.values());
 }
 
-export function setBrandLogo(brand: string, logo: BrandLogo) {
-  const dynamicLogos = readDynamicLogos();
-  dynamicLogos[normalizeBrand(brand)] = logo;
-  writeDynamicLogos(dynamicLogos);
+export async function setBrandLogo(brand: string, logo: BrandLogo) {
+  await connectToDatabase();
+  
+  const targetBrand = brand.trim();
+  const normalized = normalizeBrand(targetBrand);
+
+  await BrandLogoModel.findOneAndUpdate(
+    { brand: { $regex: new RegExp(`^${targetBrand}$`, "i") } },
+    {
+      $set: {
+        brand: logo.brand,
+        src: logo.src,
+        alt: logo.alt,
+        aliases: logo.aliases || [],
+      },
+    },
+    { upsert: true, new: true }
+  );
+
+  // Update memory cache
+  cachedLogos[normalized] = logo;
 }

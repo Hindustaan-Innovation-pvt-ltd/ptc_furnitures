@@ -1,3 +1,4 @@
+// Trigger dev server reload to run the v5.0 MongoDB watermark synchronization pipeline
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

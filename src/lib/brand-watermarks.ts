@@ -1,18 +1,5 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-
-const dataDirectory = path.join(process.cwd(), "data");
-const filePath = path.join(dataDirectory, "brand-watermarks.json");
-
-async function ensureFile() {
-  await fs.mkdir(dataDirectory, { recursive: true });
-
-  try {
-    await fs.access(filePath);
-  } catch {
-    await fs.writeFile(filePath, JSON.stringify({}, null, 2), "utf8");
-  }
-}
+import { connectToDatabase } from "./mongodb";
+import { BrandWatermarkModel } from "./db-models";
 
 export type BrandWatermark = {
   url: string;
@@ -30,36 +17,69 @@ export type BrandWatermark = {
     | "south_west";
 };
 
-export async function readBrandWatermarks(): Promise<Record<string, BrandWatermark>> {
-  await ensureFile();
+let cachedWatermarks: Record<string, BrandWatermark> = {};
 
+function normalizeBrand(brand: string): string {
+  return brand.trim();
+}
+
+export async function loadWatermarksIntoCache() {
   try {
-    const contents = await fs.readFile(filePath, "utf8");
-    const parsed = JSON.parse(contents);
-    if (parsed && typeof parsed === "object") {
-      return parsed as Record<string, BrandWatermark>;
+    const docs = await BrandWatermarkModel.find().lean();
+    const newCache: Record<string, BrandWatermark> = {};
+    for (const doc of docs) {
+      newCache[normalizeBrand(doc.brand)] = {
+        url: doc.url,
+        size: doc.size as any,
+        opacity: doc.opacity,
+        position: doc.position as any,
+      };
     }
-  } catch {
-    // ignore
+    cachedWatermarks = newCache;
+  } catch (err) {
+    console.error("Failed to load brand watermarks into cache:", err);
   }
+}
 
-  return {};
+export function readBrandWatermarks(): Record<string, BrandWatermark> {
+  return cachedWatermarks;
 }
 
 export async function setBrandWatermark(
   brand: string,
   watermark: BrandWatermark,
 ): Promise<void> {
-  const normalized = brand.trim();
+  const normalized = normalizeBrand(brand);
   if (!normalized) throw new Error("Brand name required");
 
-  const map = await readBrandWatermarks();
-  map[normalized] = watermark;
-  await fs.writeFile(filePath, JSON.stringify(map, null, 2), "utf8");
+  await connectToDatabase();
+
+  await BrandWatermarkModel.findOneAndUpdate(
+    { brand: { $regex: new RegExp(`^${normalized}$`, "i") } },
+    {
+      $set: {
+        brand: normalized,
+        url: watermark.url,
+        size: watermark.size || "medium",
+        opacity: watermark.opacity ?? 50,
+        position: watermark.position || "center",
+      },
+    },
+    { upsert: true, new: true }
+  );
+
+  // Update memory cache
+  cachedWatermarks[normalized] = watermark;
 }
 
 export async function removeBrandWatermark(brand: string): Promise<void> {
-  const map = await readBrandWatermarks();
-  delete map[brand.trim()];
-  await fs.writeFile(filePath, JSON.stringify(map, null, 2), "utf8");
+  const normalized = normalizeBrand(brand);
+  await connectToDatabase();
+
+  await BrandWatermarkModel.findOneAndDelete({
+    brand: { $regex: new RegExp(`^${normalized}$`, "i") },
+  });
+
+  // Remove from memory cache
+  delete cachedWatermarks[normalized];
 }

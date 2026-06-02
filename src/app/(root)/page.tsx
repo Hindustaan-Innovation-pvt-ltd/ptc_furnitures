@@ -24,7 +24,7 @@ export default async function Home({
   return (
     <div className="min-h-screen bg-[#f8f8f8] text-slate-900 dark:bg-[#08090d] dark:text-slate-100 transition-colors duration-300">
       <Navigation />
-      <section aria-label="ptc furniture app" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section aria-label="ptc furniture app" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12 lg:pb-24">
         <main className="pt-10 sm:pt-12 lg:pt-20">
           <div className="grid place-content-center">
             <div className="mb-10 flex flex-col items-center gap-5 text-center sm:mb-12 lg:gap-8">
@@ -41,7 +41,7 @@ export default async function Home({
                 </Link>
               </Button>
             </div>
-            <Image src="/banner.png" alt="PTC Furniture Banner" width={1200} height={600} className="mt-8 w-full drop-shadow-2xl sm:-mt-4 lg:-mt-48" style={{ height: "auto" }} priority />
+            <Image src="/banner.png" alt="PTC Furniture Banner" width={1200} height={600} className="mt-8 w-full drop-shadow-2xl sm:-mt-4 lg:-mt-12" style={{ height: "auto" }} priority />
           </div>
         </main>
       </section>

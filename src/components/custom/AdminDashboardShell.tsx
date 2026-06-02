@@ -38,20 +38,29 @@ export default function AdminDashboardShell({
       ),
     },
     {
-      name: "Bulk AI Processor",
-      href: "/admin/processor",
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9.813 15.904L9 21L14.907 14.996M16.5 10.5V6.75a3 3 0 00-3-3h-3a3 3 0 00-3 3v7.5M21 10.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-15 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm11.25 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-    {
       name: "Brand & Watermarks",
       href: "/admin/settings",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M9.59 4.59A2 2 0 1111 8H2.414a2 2 0 01-.586-1.414V2.414A2 2 0 013.243.586L9.59 4.59zM10.5 6a3.75 3.75 0 11-7.5 0A3.75 3.75 0 0110.5 6zm10.233 6.33A5.25 5.25 0 0010.5 10v6.75M12 18h8.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
+      name: "Dealer Leads",
+      href: "/admin/leads",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm14 10v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
+      name: "Customer Reviews",
+      href: "/admin/reviews",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.12 2.99 2.73 3.19l.71.09a1.5 1.5 0 011.08.62L10.5 21l3.73-4.34a1.5 1.5 0 011.08-.62h1.44c3.48 0 6.25-2.77 6.25-6.25S20.23 3.5 16.75 3.5H7.25c-3.48 0-6.25 2.77-6.25 6.25v1.01z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
     },

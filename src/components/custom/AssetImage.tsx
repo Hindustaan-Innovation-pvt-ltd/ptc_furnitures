@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Image, { type ImageProps } from "next/image";
-import { isCloudinaryUrl } from "@/lib/cloudinary-url";
 
 type AssetImageProps = Omit<ImageProps, "src" | "alt"> & {
   src: string;
@@ -26,9 +25,13 @@ export default function AssetImage({
 }: AssetImageProps) {
   const [resolvedSrc, setResolvedSrc] = useState(() => {
     const initialSrc = src || fallbackSrc;
-
-    return isCloudinaryUrl(initialSrc) ? fallbackSrc : initialSrc;
+    // Base64 data URIs and static local files do not need proxying
+    if (initialSrc.startsWith("data:") || initialSrc === fallbackSrc || (initialSrc.startsWith("/") && !initialSrc.startsWith("/api/images"))) {
+      return initialSrc;
+    }
+    return fallbackSrc;
   });
+
 
   useEffect(() => {
     const nextSrc = src || fallbackSrc;
@@ -44,7 +47,8 @@ export default function AssetImage({
     }
 
     async function resolveProtectedSource() {
-      if (!isCloudinaryUrl(nextSrc)) {
+      // Base64 data URIs and static local files do not need proxying
+      if (nextSrc.startsWith("data:") || (nextSrc.startsWith("/") && !nextSrc.startsWith("/api/images"))) {
         if (!aborted) setResolvedSrc(nextSrc);
         return;
       }
@@ -74,6 +78,7 @@ export default function AssetImage({
       aborted = true;
     };
   }, [fallbackSrc, removeBackground, src]);
+
 
   return (
     <span className={fill ? "absolute inset-0 block" : "relative inline-block"} style={fill ? style : undefined}>

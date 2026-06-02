@@ -43,6 +43,9 @@ export default function AdminProductsCatalog({
       formData.set("id", product.id);
       formData.set("brand", targetBrand);
       formData.set("existingImages", JSON.stringify(product.images));
+      if (product.originalImages) {
+        formData.set("existingOriginalImages", JSON.stringify(product.originalImages));
+      }
       if (product.name) formData.set("name", product.name);
       if (product.price) formData.set("price", product.price);
       if (product.material) formData.set("material", product.material);

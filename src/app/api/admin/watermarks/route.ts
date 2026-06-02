@@ -1,12 +1,12 @@
 import "server-only";
 import { NextResponse } from "next/server";
 import { readBrandWatermarks, setBrandWatermark, BrandWatermark } from "@/lib/brand-watermarks";
-import { uploadProductImage } from "@/lib/cloudinary";
+import { connectToDatabase } from "@/lib/mongodb";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const map = await readBrandWatermarks();
+  const map = readBrandWatermarks();
   return NextResponse.json({ watermarks: map });
 }
 
@@ -29,7 +29,9 @@ export async function POST(request: Request) {
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const uploadedUrl = await uploadProductImage(buffer);
+      const base64 = buffer.toString("base64");
+      const mimeType = file.type || "image/png";
+      const uploadedUrl = `data:${mimeType};base64,${base64}`;
 
       const size = String(form.get("size") ?? "medium");
       const opacity = Number(form.get("opacity") ?? 80);

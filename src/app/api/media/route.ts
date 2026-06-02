@@ -3,8 +3,10 @@ import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
-import { getBrandLogo } from "@/lib/brand-logos";
+import { removeWhiteBackground, compositeBrandWatermark } from "@/lib/image-processor";
 import { readProducts } from "@/lib/products";
+import { connectToDatabase } from "@/lib/mongodb";
+import { StoredFile } from "@/lib/db-models";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,6 +25,15 @@ async function resolveSourceById(id: string): Promise<ResolvedImage | null> {
   const products = await readProducts();
 
   for (const product of products) {
+    // Check original images first since they hold pristine unwatermarked URLs
+    if (product.originalImages) {
+      for (const image of product.originalImages) {
+        if (hashSource(image) === id) {
+          return { source: image, brand: product.brand };
+        }
+      }
+    }
+    // Fallback to currently watermarked base64 images
     for (const image of product.images) {
       if (hashSource(image) === id) {
         return { source: image, brand: product.brand };
@@ -53,6 +64,35 @@ async function fetchImageBuffer(url: string): Promise<Buffer | null> {
 }
 
 async function loadSourceBuffer(source: string): Promise<Buffer | null> {
+  // Directly decode Base64 data URIs
+  if (source.startsWith("data:")) {
+    try {
+      const base64Data = source.split(",")[1];
+      if (base64Data) {
+        return Buffer.from(base64Data, "base64");
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  // Directly fetch from MongoDB if it's a local /api/images URL
+  if (source.startsWith("/api/images")) {
+    try {
+      const urlObj = new URL(source, "http://localhost");
+      const fileId = urlObj.searchParams.get("id");
+      if (fileId) {
+        await connectToDatabase();
+        const storedFile = await StoredFile.findById(fileId);
+        if (storedFile) {
+          return Buffer.from(storedFile.data);
+        }
+      }
+    } catch {
+      return null;
+    }
+  }
+
   if (source.startsWith("http://") || source.startsWith("https://")) {
     return fetchImageBuffer(source);
   }
@@ -68,139 +108,54 @@ async function loadSourceBuffer(source: string): Promise<Buffer | null> {
   return null;
 }
 
-function buildBackgroundRemovedCloudinaryUrl(source: string): string | null {
-  try {
-    const url = new URL(source);
-    const segments = url.pathname.split("/").filter(Boolean);
-    const uploadIndex = segments.indexOf("upload");
 
-    if (uploadIndex < 0) {
-      return null;
-    }
-
-    const transformedSegments = [
-      ...segments.slice(0, uploadIndex + 1),
-      "e_background_removal,f_png",
-      ...segments.slice(uploadIndex + 1).map((segment, index, list) => {
-        if (index !== list.length - 1) {
-          return segment;
-        }
-
-        return segment.replace(/\.[^.]+$/, ".png");
-      }),
-    ];
-
-    url.pathname = `/${transformedSegments.join("/")}`;
-    return url.toString();
-  } catch {
-    return null;
-  }
-}
-
-async function compositeBrandWatermark(imageBuffer: Buffer, brand: string): Promise<Buffer> {
-  const logo = getBrandLogo(brand);
-
-  if (!logo) {
-    return imageBuffer;
-  }
-
-  const logoPath = path.join(process.cwd(), "public", logo.src.replace(/^\//, ""));
-
-  try {
-    const [sourceMeta, logoBuffer] = await Promise.all([
-      sharp(imageBuffer).metadata(),
-      fs.readFile(logoPath),
-    ]);
-
-    const sourceWidth = sourceMeta.width ?? 0;
-    const sourceHeight = sourceMeta.height ?? 0;
-    const watermarkWidth = sourceWidth > 0 ? Math.round(sourceWidth * 0.5) : undefined;
-    const watermarkHeight = sourceHeight > 0 ? Math.round(sourceHeight * 0.5) : undefined;
-
-    const overlay = await sharp(logoBuffer)
-      .resize({
-        width: watermarkWidth,
-        height: watermarkHeight,
-        fit: "contain",
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .png()
-      .toBuffer();
-
-    return sharp(imageBuffer)
-      .composite([
-        {
-          input: overlay,
-          gravity: "centre",
-        },
-      ])
-      .png()
-      .toBuffer();
-  } catch {
-    return imageBuffer;
-  }
-}
 
 export async function GET(request: Request) {
-  const requestUrl = new URL(request.url);
-  const legacySource = requestUrl.searchParams.get("src");
-  const mediaId = requestUrl.searchParams.get("id");
-  const removeBackground = requestUrl.searchParams.get("removeBackground") !== "0";
+  try {
+    const requestUrl = new URL(request.url);
+    const legacySource = requestUrl.searchParams.get("src");
+    const mediaId = requestUrl.searchParams.get("id");
+    const removeBackground = requestUrl.searchParams.get("removeBackground") !== "0";
 
-  const resolved = legacySource ? { source: legacySource, brand: "" } : mediaId ? await resolveSourceById(mediaId) : null;
+    const resolved = legacySource ? { source: legacySource, brand: "" } : mediaId ? await resolveSourceById(mediaId) : null;
 
-  if (!resolved) {
-    return NextResponse.json({ error: "Missing image source." }, { status: 400 });
-  }
-
-  const { source, brand } = resolved;
-
-  const cloudinaryUrls = removeBackground
-    ? [buildBackgroundRemovedCloudinaryUrl(source)]
-    : [source];
-
-  const upstreamBuffer = await (async () => {
-    for (const candidateUrl of cloudinaryUrls) {
-      if (!candidateUrl) {
-        continue;
-      }
-
-      const buffer = await fetchImageBuffer(candidateUrl);
-
-      if (buffer) {
-        return buffer;
-      }
+    if (!resolved) {
+      return NextResponse.json({ error: "Missing image source." }, { status: 400 });
     }
 
-    if (!isCloudinarySource(source)) {
-      return loadSourceBuffer(source);
+    const { source, brand } = resolved;
+
+    // Load original image buffer
+    let upstreamBuffer = await loadSourceBuffer(source);
+
+    if (!upstreamBuffer) {
+      return NextResponse.json(
+        { error: "Unable to load image." },
+        { status: 502 },
+      );
     }
 
-    return null;
-  })();
+    // Locally remove white background using sharp if removeBackground is true
+    if (removeBackground) {
+      upstreamBuffer = await removeWhiteBackground(upstreamBuffer);
+    }
 
-  if (!upstreamBuffer) {
-    return NextResponse.json(
-      { error: "Unable to load image." },
-      { status: 502 },
-    );
+    // Composite the brand watermark locally using sharp (placed from the top!)
+    const finalBuffer = await compositeBrandWatermark(upstreamBuffer, brand);
+
+    const headers = new Headers();
+    headers.set("content-type", "image/png");
+    // Set no-store so the user sees changes immediately during interactive verification
+    headers.set("cache-control", "private, no-store, max-age=0");
+    headers.set("content-disposition", "inline");
+    headers.set("x-robots-tag", "noindex, nofollow, noimageindex");
+    headers.set("cross-origin-resource-policy", "same-site");
+
+    return new NextResponse(new Uint8Array(finalBuffer), {
+      status: 200,
+      headers,
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Failed to process image." }, { status: 500 });
   }
-
-  const finalBuffer = await compositeBrandWatermark(upstreamBuffer, brand);
-
-  const headers = new Headers();
-  headers.set("content-type", "image/png");
-  headers.set("cache-control", "private, no-store, max-age=0");
-  headers.set("content-disposition", "inline");
-  headers.set("x-robots-tag", "noindex, nofollow, noimageindex");
-  headers.set("cross-origin-resource-policy", "same-site");
-
-  return new NextResponse(new Uint8Array(finalBuffer), {
-    status: 200,
-    headers,
-  });
-}
-
-function isCloudinarySource(source: string): boolean {
-  return source.startsWith("http://") || source.startsWith("https://");
 }

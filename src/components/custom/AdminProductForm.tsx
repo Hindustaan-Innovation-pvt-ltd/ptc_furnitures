@@ -129,6 +129,9 @@ export default function AdminProductForm({
       formData.set("id", product.id);
       if (imageFiles.length === 0) {
         formData.set("existingImages", JSON.stringify(product.images));
+        if (product.originalImages) {
+          formData.set("existingOriginalImages", JSON.stringify(product.originalImages));
+        }
       }
     }
 
