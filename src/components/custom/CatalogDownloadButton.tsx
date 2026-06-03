@@ -11,6 +11,7 @@ type CatalogDownloadButtonProps = {
     children?: React.ReactNode;
     /** If true, triggers window.print() instead of file download */
     isPrint?: boolean;
+    title?: string;
 };
 
 export default function CatalogDownloadButton({
@@ -19,6 +20,7 @@ export default function CatalogDownloadButton({
     className = "",
     children,
     isPrint = false,
+    title,
 }: CatalogDownloadButtonProps) {
     const [modalOpen, setModalOpen] = React.useState(false);
 
@@ -61,6 +63,7 @@ export default function CatalogDownloadButton({
                 type="button"
                 onClick={() => setModalOpen(true)}
                 className={className}
+                title={title}
             >
                 {children ?? label}
             </button>
