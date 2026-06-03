@@ -97,7 +97,7 @@ export async function compositeBrandWatermark(imageBuffer: Buffer, brand: string
     const watermarks = readBrandWatermarks();
     const normalizedBrand = brand.trim();
     const brandWatermark = watermarks[normalizedBrand];
-    const opacityPct = brandWatermark?.opacity ?? 30;
+    const opacityPct = brandWatermark?.opacity ?? 40;
     const opacityFactor = Math.max(0, Math.min(100, opacityPct)) / 100;
 
     // Use .trim() to strip transparent margins around the logo to make sizes optically identical

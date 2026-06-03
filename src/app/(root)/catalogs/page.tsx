@@ -5,6 +5,7 @@ import { readCatalogs } from "@/lib/catalogs";
 import { readProducts, readBrands } from "@/lib/products";
 import Image from "next/image";
 import Link from "next/link";
+import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -199,16 +200,15 @@ export default async function PublicCatalogsPage({ searchParams }: PublicCatalog
 
                       <div className="mt-6 pt-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-4">
                         {isPdf ? (
-                          <a
-                            href={catalog.pdfUrl}
-                            download
+                          <CatalogDownloadButton
+                            href={catalog.pdfUrl!}
                             className="w-full text-center px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-800 dark:hover:border-white/30 text-xs font-bold text-slate-700 dark:text-slate-300 bg-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center justify-center gap-1.5"
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
                             </svg>
                             Download PDF
-                          </a>
+                          </CatalogDownloadButton>
                         ) : (
                           <Link
                             href={`/catalogs/${catalog.id}`}

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const collections = ["PTC GOLD", "REX", "ALTECH", "ARIPLAST", "HALLMARK", "PANKAJ"];
-const company = ["About PTC", "Brochures & Catalogs", "Authorized Dealers", "Contact Us", "Careers", "Sustainability"];
+const company = ["About PTC", "Brochures & Catalogs", "Authorized Dealers", "Contact Us", "Payment Details", "Careers", "Sustainability"];
 const legal = ["Privacy Policy", "Terms of Use", "Cookie Settings", "Accessibility"];
 
 export default function Footer() {
@@ -106,6 +106,7 @@ function FooterColumn({ title, links }: FooterColumnProps) {
         if (link === "About PTC" || link === "Our Story") return "/about";
         if (link === "Authorized Dealers") return "/dealers";
         if (link === "Contact Us") return "/contact";
+        if (link === "Payment Details") return "/payment";
         if (link === "PTC GOLD") return "/collections?q=PTC%20GOLD";
         if (link === "REX") return "/collections?q=REX";
         if (link === "ALTECH") return "/collections?q=ALTECH";

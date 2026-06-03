@@ -242,3 +242,75 @@ const BgRemovedCacheSchema = new Schema<IBgRemovedCache>({
 export const BgRemovedCacheModel =
   mongoose.models.BgRemovedCache ||
   mongoose.model<IBgRemovedCache>("BgRemovedCache", BgRemovedCacheSchema);
+
+// ==========================================
+// 10. Download Lead Schema
+// ==========================================
+export interface IDownloadLead extends Document {
+  name: string;
+  mobile: string;
+  action: string; // e.g. "image_download", "catalog_download", "catalog_print"
+  productId?: string;
+  productName?: string;
+  catalogUrl?: string;
+  createdAt: Date;
+}
+
+const DownloadLeadSchema = new Schema<IDownloadLead>({
+  name: { type: String, required: true },
+  mobile: { type: String, required: true },
+  action: { type: String, required: true, default: "image_download" },
+  productId: { type: String },
+  productName: { type: String },
+  catalogUrl: { type: String },
+  createdAt: { type: Date, default: Date.now },
+});
+
+export const DownloadLeadModel =
+  mongoose.models.DownloadLead ||
+  mongoose.model<IDownloadLead>("DownloadLead", DownloadLeadSchema);
+
+// ==========================================
+// 11. Banking Details Schema (multi-account)
+// ==========================================
+export interface IBankingDetails extends Document {
+  label: string;         // e.g. "Primary Account", "UPI Only"
+  isActive: boolean;     // toggle visibility on public page
+  // Bank Transfer
+  accountHolderName: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  accountType: string;   // "Current" | "Savings" | "OD" | "NRI"
+  branchName?: string;
+  // UPI
+  upiId?: string;
+  upiName?: string;
+  // QR image (base64 data URI)
+  qrImage?: string;
+  // Extra notes
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const BankingDetailsSchema = new Schema<IBankingDetails>({
+  label: { type: String, default: "Bank Account" },
+  isActive: { type: Boolean, default: true },
+  accountHolderName: { type: String, default: "" },
+  bankName: { type: String, default: "" },
+  accountNumber: { type: String, default: "" },
+  ifscCode: { type: String, default: "" },
+  accountType: { type: String, default: "Current" },
+  branchName: { type: String },
+  upiId: { type: String },
+  upiName: { type: String },
+  qrImage: { type: String },
+  notes: { type: String },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
+export const BankingDetailsModel =
+  mongoose.models.BankingDetails ||
+  mongoose.model<IBankingDetails>("BankingDetails", BankingDetailsSchema);

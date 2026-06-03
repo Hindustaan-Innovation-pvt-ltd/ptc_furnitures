@@ -113,6 +113,7 @@ function NavigationContent() {
         { label: "Collections", href: "/collections" },
         { label: "Catalogs", href: "/catalogs" },
         { label: "Dealers", href: "/dealers" },
+        { label: "Payment", href: "/payment" },
         { label: "Contacts", href: "/contact" },
         { label: "About", href: "/about" },
     ];

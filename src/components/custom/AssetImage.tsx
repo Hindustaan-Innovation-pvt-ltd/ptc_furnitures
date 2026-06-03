@@ -90,6 +90,7 @@ export default function AssetImage({
         src={resolvedSrc}
         alt={alt}
         unoptimized
+        loading="eager"
         draggable={false}
         onContextMenu={(event) => event.preventDefault()}
         onError={(event) => {

@@ -6,6 +6,7 @@ import { readProducts } from "@/lib/products";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -126,16 +127,16 @@ export default async function CatalogDetailsPage({
                 <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mt-2">{catalog.title}</h1>
               </div>
 
-              <a
-                href={catalog.pdfUrl}
-                download
+              <CatalogDownloadButton
+                href={catalog.pdfUrl!}
+                isPrint={false}
                 className="px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white text-xs font-bold rounded-full shadow-xs transition flex items-center gap-2"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
                 </svg>
                 Download PDF Brochure
-              </a>
+              </CatalogDownloadButton>
             </div>
 
             {/* Embedded Iframe Reader */}
@@ -152,13 +153,13 @@ export default async function CatalogDetailsPage({
                   </svg>
                   <p className="text-base font-bold">Unable to preview PDF directly</p>
                   <p className="text-xs text-slate-400 mt-1 mb-6">Your browser does not support embedded PDF viewer.</p>
-                  <a
-                    href={catalog.pdfUrl}
-                    download
+                  <CatalogDownloadButton
+                    href={catalog.pdfUrl!}
+                    isPrint={false}
                     className="px-6 py-3 bg-slate-900 text-white rounded-full font-bold text-xs"
                   >
                     Download PDF File
-                  </a>
+                  </CatalogDownloadButton>
                 </div>
               </iframe>
             </div>
@@ -338,9 +339,9 @@ export default async function CatalogDetailsPage({
                 >
                   Consult Showroom Architect
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => window.print()}
+                <CatalogDownloadButton
+                  href="#"
+                  isPrint={true}
                   className="px-6 py-3 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-300 dark:border-white/10 text-xs font-bold rounded-full transition flex items-center gap-2"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -349,15 +350,15 @@ export default async function CatalogDetailsPage({
                     <rect x="6" y="14" width="12" height="8"/>
                   </svg>
                   Export Brochure PDF
-                </button>
+                </CatalogDownloadButton>
               </div>
             </div>
 
             {/* FLOATING ACTION UTILITY - NO PRINT */}
             <div className="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-white/80 dark:bg-[#111318]/80 backdrop-blur-md border border-slate-200/60 dark:border-white/5 p-2 rounded-full shadow-lg">
-              <button
-                type="button"
-                onClick={() => window.print()}
+              <CatalogDownloadButton
+                href="#"
+                isPrint={true}
                 className="h-10 px-4 bg-red-700 hover:bg-red-800 text-white text-xs font-bold rounded-full transition flex items-center gap-1.5 shadow-md"
                 title="Print or Save PDF"
               >
@@ -365,7 +366,7 @@ export default async function CatalogDetailsPage({
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2v-4M7 10l5 5 5-5M12 15V3"/>
                 </svg>
                 Print / Save PDF
-              </button>
+              </CatalogDownloadButton>
             </div>
 
           </div>
