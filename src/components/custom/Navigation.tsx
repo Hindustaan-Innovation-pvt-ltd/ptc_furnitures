@@ -7,11 +7,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { Search, Download, Loader2, Check, Menu, X } from "lucide-react";
 import { sendGAEvent } from "@next/third-parties/google";
+import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
 
 function NavigationContent() {
     const [open, setOpen] = React.useState(false);
     const [searchValue, setSearchValue] = React.useState("");
     const [downloadState, setDownloadState] = React.useState<"idle" | "loading" | "downloading" | "success" | "error">("idle");
+    const [leadModalOpen, setLeadModalOpen] = React.useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -63,7 +65,12 @@ function NavigationContent() {
         return pathname === path;
     }
 
-    async function handleDownloadCatalog() {
+    function handleOpenLeadModal() {
+        if (downloadState !== "idle") return;
+        setLeadModalOpen(true);
+    }
+
+    async function handleConfirmDownload(lead: { name: string; mobile: string }) {
         if (downloadState !== "idle") return;
         setDownloadState("loading");
         try {
@@ -80,6 +87,20 @@ function NavigationContent() {
                 downloadUrl = latestPdf.pdfUrl;
                 fileName = latestPdf.pdfUrl.split("/").pop() || "ptc-furniture-brochure.pdf";
             }
+
+            // Save lead to database
+            await fetch("/api/download-leads", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: lead.name,
+                    mobile: lead.mobile,
+                    action: "catalog_download",
+                    catalogUrl: downloadUrl,
+                }),
+            }).catch((err) => {
+                console.error("Failed to save download lead:", err);
+            });
 
             setDownloadState("downloading");
 
@@ -136,6 +157,13 @@ function NavigationContent() {
                     animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                 }
             `}</style>
+
+            <LeadCaptureModal
+                open={leadModalOpen}
+                onOpenChange={setLeadModalOpen}
+                actionLabel="Download Catalog"
+                onConfirm={handleConfirmDownload}
+            />
 
             <header className="sticky top-0 z-50 w-full border-b border-slate-200/50 bg-white/75 backdrop-blur-md dark:border-white/10 dark:bg-[#08090d]/80 transition-all duration-300 shadow-xs">
                 <nav className="relative mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
@@ -196,7 +224,7 @@ function NavigationContent() {
 
                             {/* Dedicated Download Catalog CTA */}
                             <Button
-                                onClick={handleDownloadCatalog}
+                                onClick={handleOpenLeadModal}
                                 disabled={downloadState === "downloading" || downloadState === "loading"}
                                 className={`relative flex items-center gap-2 rounded-full px-4.5 py-1.5 text-xs font-bold border transition-all duration-300 cursor-pointer overflow-hidden ${downloadState === "success"
                                     ? "bg-emerald-500 hover:bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-500/25"
@@ -305,7 +333,7 @@ function NavigationContent() {
                         {/* Mobile Full-width Download CTA */}
                         <div className="pt-2 border-t border-slate-100 dark:border-white/5">
                             <Button
-                                onClick={handleDownloadCatalog}
+                                onClick={handleOpenLeadModal}
                                 disabled={downloadState === "downloading" || downloadState === "loading"}
                                 className={`w-full relative flex items-center justify-center gap-2 rounded-full py-2.5 text-xs font-bold border transition-all duration-300 cursor-pointer overflow-hidden ${downloadState === "success"
                                     ? "bg-emerald-500 hover:bg-emerald-600 border-emerald-500 text-white shadow-md shadow-emerald-500/25"
