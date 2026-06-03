@@ -39,6 +39,7 @@ type Review = {
 
 type ProductCardWithHoverProps = {
     product: Product;
+    priority?: boolean;
 };
 
 function RatingStars({ rating, size = 11 }: { rating: number; size?: number }) {
@@ -76,7 +77,7 @@ async function getWatermarkedUrl(src: string, brand?: string): Promise<string> {
     return url.toString();
 }
 
-export default function ProductCardWithHover({ product }: ProductCardWithHoverProps) {
+export default function ProductCardWithHover({ product, priority = false }: ProductCardWithHoverProps) {
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [viewMode, setViewMode] = React.useState<"carousel" | "grid">("carousel");
     const [reviews, setReviews] = React.useState<Review[]>([]);
@@ -269,7 +270,7 @@ export default function ProductCardWithHover({ product }: ProductCardWithHoverPr
                                         <CarouselNext onClick={(e) => e.stopPropagation()} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 bg-white/90 hover:bg-white border border-slate-200 size-7 shadow-xs text-slate-800" />
                                     </Carousel>
                                 ) : (
-                                    <AssetImage brand={product.brand} src={product.images?.[0] ?? ""} alt={product.name ?? product.brand ?? ""} width={300} height={300} className="size-80 object-contain transition-transform duration-500 hover:scale-105" />
+                                    <AssetImage brand={product.brand} src={product.images?.[0] ?? ""} alt={product.name ?? product.brand ?? ""} width={300} height={300} priority={priority} className="size-80 object-contain transition-transform duration-500 hover:scale-105" />
                                 )}
                                 <div className="absolute top-2 right-2 bg-slate-900/80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-xs">
                                     <Eye size={12} className="animate-pulse" />

@@ -125,8 +125,8 @@ export default function Products({ initialProducts, initialBrands, initialSearch
                 {pagination.pageItems.length === 0 ? (
                     <p className="col-span-full text-center text-sm text-slate-500">No products yet.</p>
                 ) : (
-                    pagination.pageItems.map((product) => (
-                        <ProductCardWithHover key={product.id} product={product} />
+                    pagination.pageItems.map((product, index) => (
+                        <ProductCardWithHover key={product.id} product={product} priority={index === 0} />
                     ))
                 )}
             </div>

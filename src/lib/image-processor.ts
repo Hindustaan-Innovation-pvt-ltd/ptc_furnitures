@@ -208,18 +208,18 @@ export async function rewatermarkImage(source: string, brand: string): Promise<s
     const watermarked = await compositeBrandWatermark(bgRemoved, brand);
 
     if (isLocalUpload && originalFilename && originalFilename.includes("_original")) {
-      const filename = originalFilename.replace("_original", "");
+      const filename = originalFilename.replace("_original", "").replace(/\.[^.]+$/, ".webp");
       const filePath = path.join(uploadDir, filename);
-      await fs.writeFile(filePath, watermarked);
+      // Re-save as WebP for optimized file size
+      await sharp(watermarked).webp({ quality: 90, lossless: false }).toFile(filePath);
       return `/upload/${filename}`;
     } else {
       const uniqueId = crypto.randomUUID();
-      const extension = originalFilename ? (originalFilename.split(".").pop() || "png") : "png";
-      const filename = `${uniqueId}.${extension}`;
-      const origFilename = `${uniqueId}_original.${extension}`;
+      const filename = `${uniqueId}.webp`;
+      const origFilename = `${uniqueId}_original.webp`;
 
-      await fs.writeFile(path.join(uploadDir, filename), watermarked);
-      await fs.writeFile(path.join(uploadDir, origFilename), bgRemoved);
+      await sharp(watermarked).webp({ quality: 90, lossless: false }).toFile(path.join(uploadDir, filename));
+      await sharp(bgRemoved).webp({ quality: 92, lossless: false }).toFile(path.join(uploadDir, origFilename));
 
       return `/upload/${filename}`;
     }

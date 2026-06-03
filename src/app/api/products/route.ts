@@ -44,7 +44,6 @@ async function storeProductImage(file: File, brand: string): Promise<{ watermark
   const uploadDir = path.join(process.cwd(), "public", "upload");
   await fs.mkdir(uploadDir, { recursive: true });
 
-  const extension = file.name.split(".").pop() || "png";
   const uniqueId = crypto.randomUUID();
 
   try {
@@ -54,22 +53,25 @@ async function storeProductImage(file: File, brand: string): Promise<{ watermark
     // 2. Add brand watermark
     const watermarked = await compositeBrandWatermark(bgRemoved, brand);
 
-    const filename = `${uniqueId}.${extension}`;
-    const originalFilename = `${uniqueId}_original.${extension}`;
+    // Save as WebP for ~60% smaller file size vs PNG — loads much faster in browser
+    const filename = `${uniqueId}.webp`;
+    const originalFilename = `${uniqueId}_original.webp`;
 
     const filePath = path.join(uploadDir, filename);
     const originalFilePath = path.join(uploadDir, originalFilename);
 
-    await fs.writeFile(filePath, watermarked);
-    await fs.writeFile(originalFilePath, bgRemoved);
+    // Write WebP at quality 90 — visually lossless but half the PNG size
+    const { default: sharp } = await import("sharp");
+    await sharp(watermarked).webp({ quality: 90, lossless: false }).toFile(filePath);
+    await sharp(bgRemoved).webp({ quality: 92, lossless: false }).toFile(originalFilePath);
 
     return {
       watermarked: `/upload/${filename}`,
       unwatermarked: `/upload/${originalFilename}`,
     };
   } catch (err) {
-    // Fallback to raw if sharp processing fails
-    const filename = `${uniqueId}.${extension}`;
+    // Fallback: save raw file if sharp processing fails
+    const filename = `${uniqueId}.webp`;
     const filePath = path.join(uploadDir, filename);
 
     await fs.writeFile(filePath, fileBuffer);

@@ -1,10 +1,33 @@
 import "server-only";
 import { NextResponse } from "next/server";
 import { readBrandWatermarks, setBrandWatermark, BrandWatermark } from "@/lib/brand-watermarks";
-import { connectToDatabase } from "@/lib/mongodb";
+import { Product } from "@/lib/db-models";
+import { rewatermarkImage } from "@/lib/image-processor";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+
+async function syncBrandProducts(brand: string) {
+  const productsToUpdate = await Product.find({ brand });
+  console.log(`==> [Brand Watermark Update] Re-applying new watermark configuration for brand "${brand}" onto ${productsToUpdate.length} products...`);
+  
+  for (const prod of productsToUpdate) {
+    const originalImages = prod.originalImages && prod.originalImages.length > 0
+      ? prod.originalImages
+      : prod.images;
+
+    const newImages: string[] = [];
+    for (const img of originalImages) {
+      const rewatermarked = await rewatermarkImage(img, brand);
+      newImages.push(rewatermarked);
+    }
+
+    prod.images = newImages;
+    prod.originalImages = originalImages;
+    await prod.save();
+  }
+}
+
 
 export async function GET() {
 
@@ -69,6 +92,7 @@ export async function POST(request: Request) {
       };
 
       await setBrandWatermark(brand, wm);
+      await syncBrandProducts(brand);
 
       return NextResponse.json({ brand, watermark: wm });
     }
@@ -106,6 +130,7 @@ export async function POST(request: Request) {
     };
 
     await setBrandWatermark(brand, wm);
+    await syncBrandProducts(brand);
     return NextResponse.json({ brand, watermark: wm });
   } catch (err: any) {
     return NextResponse.json({ error: String(err?.message ?? err) }, { status: 500 });

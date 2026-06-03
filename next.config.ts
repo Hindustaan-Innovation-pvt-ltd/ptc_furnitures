@@ -13,10 +13,28 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    // Allow static /upload/ files to be served without width restrictions
+    unoptimized: false,
+    formats: ["image/webp"],
   },
   experimental: {
     instantNavigationDevToolsToggle: true,
   },
+  // Add long-lived cache headers for all uploaded media
+  async headers() {
+    return [
+      {
+        source: "/upload/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
+

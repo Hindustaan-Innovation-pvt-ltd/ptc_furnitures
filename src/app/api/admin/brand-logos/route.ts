@@ -5,6 +5,9 @@ import { getBrandLogo, setBrandLogo } from "@/lib/brand-logos";
 import { Product } from "@/lib/db-models";
 import { rewatermarkImage } from "@/lib/image-processor";
 import { connectToDatabase } from "@/lib/mongodb";
+import fs from "node:fs/promises";
+import path from "node:path";
+import crypto from "node:crypto";
 
 export async function POST(request: Request) {
   try {
@@ -23,10 +26,20 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Process the logo with sharp (convert to PNG, optimize)
-    const pngBuffer = await sharp(buffer).png().toBuffer();
-    const base64 = pngBuffer.toString("base64");
-    const logoSrc = `data:image/png;base64,${base64}`;
+    // Process the logo with sharp (convert to WebP for faster loading)
+    const webpBuffer = await sharp(buffer).webp({ quality: 90, lossless: false }).toBuffer();
+
+    // Save the logo file directly to public/upload/ directory
+    const uploadDir = path.join(process.cwd(), "public", "upload");
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    const uniqueId = crypto.randomUUID();
+    const filename = `logo_${uniqueId}.webp`;
+    const filePath = path.join(uploadDir, filename);
+
+    await fs.writeFile(filePath, webpBuffer);
+    const logoSrc = `/upload/${filename}`;
+
 
     const logo = getBrandLogo(brand) ?? {
       brand,
@@ -35,7 +48,7 @@ export async function POST(request: Request) {
       aliases: [brand.toLowerCase()],
     };
 
-    // Always update the src to the new Base64 URL
+    // Always update the src to the new file URL
     logo.src = logoSrc;
 
     // Persist in MongoDB database

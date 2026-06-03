@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PTC Furnitures - Visual Architecture & Project Guide</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Google Fonts: Outfit (UI) & JetBrains Mono (Code) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Mermaid.js for diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#18181b',
+        primaryColor: '#312e81',
+        primaryTextColor: '#f4f4f5',
+        lineColor: '#6366f1',
+        signalColor: '#f43f5e',
+        secondaryColor: '#27272a'
+      }
+    });
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Custom premium styling */
+    body {
+      background-color: #0b0f19;
+      color: #f3f4f6;
+    }
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(31, 41, 55, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .neon-border-indigo:hover {
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+    .neon-border-emerald:hover {
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+      border-color: rgba(16, 185, 129, 0.5);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.6);
+    }
+    .checkerboard {
+      background-image: linear-gradient(45deg, #1f2937 25%, transparent 25%), 
+                        linear-gradient(-45deg, #1f2937 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #1f2937 75%), 
+                        linear-gradient(-45deg, transparent 75%, #1f2937 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 0.15; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(1.1); }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden relative flex flex-col font-sans">
+
+  <!-- Background Decorative Glowing Blobs -->
+  <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-900/30 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-fuchsia-950/20 rounded-full blur-[140px] pointer-events-none animate-pulse-slow" style="animation-delay: 2s;"></div>
+  <div class="absolute top-[40%] left-[30%] w-[400px] h-[400px] bg-emerald-950/15 rounded-full blur-[100px] pointer-events-none animate-pulse-slow" style="animation-delay: 4s;"></div>
+
+  <!-- Header Section -->
+  <header class="glass-panel sticky top-0 z-40 border-b border-white/5 py-4 px-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+        <i class="fa-solid fa-couch text-white text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">PTC Furnitures</h1>
+        <p class="text-xs text-indigo-400 font-medium tracking-widest uppercase">System Design & Visual Doc</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-white/5 text-xs text-slate-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Next.js 16 + MongoDB
+      </div>
+      <a href="https://github.com" target="_blank" class="text-slate-400 hover:text-white transition-colors">
+        <i class="fa-brands fa-github text-xl"></i>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Body Wrapper -->
+  <div class="flex flex-1 relative overflow-hidden">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 glass-panel border-r border-white/5 p-4 flex flex-col gap-2 shrink-0 max-md:hidden">
+      <div class="text-xs font-semibold text-slate-500 px-3 uppercase tracking-wider mb-2">Navigation</div>
+      
+      <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition-all w-full text-left">
+        <i class="fa-solid fa-chart-line text-lg w-5"></i>
+        Dashboard Overview
+      </button>
+
+      <button onclick="switchTab('architecture')" id="btn-architecture" class="tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-all w-full text-left">
+        <i class="fa-solid fa-network-wired text-lg w-5"></i>
+        System Architecture
+      </button>
+
+      <button onclick="switchTab('image-pipeline')" id="btn-image-pipeline" class="tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-all w-full text-left">
+        <i class="fa-solid fa-wand-magic-sparkles text-lg w-5"></i>
+        Image Processing
+      </button>
+
+      <button onclick="switchTab('routing')" id="btn-routing" class="tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-all w-full text-left">
+        <i class="fa-solid fa-route text-lg w-5"></i>
+        Storefront PPR Routing
+      </button>
+
+      <button onclick="switchTab('database')" id="btn-database" class="tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-all w-full text-left">
+        <i class="fa-solid fa-database text-lg w-5"></i>
+        Database Models (11)
+      </button>
+
+      <button onclick="switchTab('codebase')" id="btn-codebase" class="tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-all w-full text-left">
+        <i class="fa-regular fa-folder-open text-lg w-5"></i>
+        Codebase File Map
+      </button>
+
+      <button onclick="switchTab('deployment')" id="btn-deployment" class="tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-all w-full text-left">
+        <i class="fa-solid fa-box text-lg w-5"></i>
+        Docker & Volumes
+      </button>
+
+      <div class="mt-auto p-4 rounded-xl glass-card flex flex-col gap-2">
+        <div class="text-xs font-semibold text-indigo-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-check"></i>
+          PPR Config Restored
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          Dynamic route errors fixed. Dynamic connection bounds successfully isolated under Suspense loaders.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+
+      <!-- ==================== TAB: OVERVIEW ==================== -->
+      <section id="tab-content-overview" class="tab-panel flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <h2 class="text-3xl font-bold tracking-tight text-white">System Dashboard</h2>
+          <p class="text-slate-400">An interactive breakdown of the PTC Furnitures Next.js 16 standalone web application architecture.</p>
+        </div>
+
+        <!-- Tech Stack Tiers Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Client Tier -->
+          <div class="glass-card rounded-2xl p-5 border-l-4 border-sky-500 hover:translate-y-[-2px] transition-transform">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-sky-400 tracking-wider uppercase">Tier 1: Client</span>
+              <i class="fa-solid fa-desktop text-sky-400 text-lg"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">Storefront & Admin</h3>
+            <p class="text-xs text-slate-400 mb-3">Instant rendering & client-side hydration for optimal SEO core web vitals.</p>
+            <div class="flex flex-wrap gap-1.5 text-[10px]">
+              <span class="px-2 py-0.5 rounded bg-sky-950/50 text-sky-300 border border-sky-800/30">React 19</span>
+              <span class="px-2 py-0.5 rounded bg-sky-950/50 text-sky-300 border border-sky-800/30">Tailwind CSS 4</span>
+              <span class="px-2 py-0.5 rounded bg-sky-950/50 text-sky-300 border border-sky-800/30">SWR</span>
+            </div>
+          </div>
+
+          <!-- Application Server Tier -->
+          <div class="glass-card rounded-2xl p-5 border-l-4 border-indigo-500 hover:translate-y-[-2px] transition-transform">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-indigo-400 tracking-wider uppercase">Tier 2: Backend</span>
+              <i class="fa-solid fa-server text-indigo-400 text-lg"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">Next.js Standalone</h3>
+            <p class="text-xs text-slate-400 mb-3">App Router, Route Handlers, background tasks, and Sharp image processing pipeline.</p>
+            <div class="flex flex-wrap gap-1.5 text-[10px]">
+              <span class="px-2 py-0.5 rounded bg-indigo-950/50 text-indigo-300 border border-indigo-800/30">Next 16 (PPR)</span>
+              <span class="px-2 py-0.5 rounded bg-indigo-950/50 text-indigo-300 border border-indigo-800/30">Node Standalone</span>
+              <span class="px-2 py-0.5 rounded bg-indigo-950/50 text-indigo-300 border border-indigo-800/30">Sharp</span>
+            </div>
+          </div>
+
+          <!-- Data Store Tier -->
+          <div class="glass-card rounded-2xl p-5 border-l-4 border-yellow-500 hover:translate-y-[-2px] transition-transform">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-yellow-400 tracking-wider uppercase">Tier 3: Database</span>
+              <i class="fa-solid fa-database text-yellow-400 text-lg"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">MongoDB Cloud</h3>
+            <p class="text-xs text-slate-400 mb-3">11 distinct collections mapped via Mongoose ODM for products, reviews, and sync rules.</p>
+            <div class="flex flex-wrap gap-1.5 text-[10px]">
+              <span class="px-2 py-0.5 rounded bg-yellow-950/50 text-yellow-300 border border-yellow-800/30">Mongoose</span>
+              <span class="px-2 py-0.5 rounded bg-yellow-950/50 text-yellow-300 border border-yellow-800/30">MongoDB 8.0</span>
+              <span class="px-2 py-0.5 rounded bg-yellow-950/50 text-yellow-300 border border-yellow-800/30">Connection Pool</span>
+            </div>
+          </div>
+
+          <!-- Media Files Storage -->
+          <div class="glass-card rounded-2xl p-5 border-l-4 border-fuchsia-500 hover:translate-y-[-2px] transition-transform">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-fuchsia-400 tracking-wider uppercase">Tier 4: File Volume</span>
+              <i class="fa-solid fa-images text-fuchsia-400 text-lg"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">Persistent Storage</h3>
+            <p class="text-xs text-slate-400 mb-3">Dynamic filesystem uploads mapped via Docker volumes for persistence.</p>
+            <div class="flex flex-wrap gap-1.5 text-[10px]">
+              <span class="px-2 py-0.5 rounded bg-fuchsia-950/50 text-fuchsia-300 border border-fuchsia-800/30">Docker Volumes</span>
+              <span class="px-2 py-0.5 rounded bg-fuchsia-950/50 text-fuchsia-300 border border-fuchsia-800/30">public/upload</span>
+              <span class="px-2 py-0.5 rounded bg-fuchsia-950/50 text-fuchsia-300 border border-fuchsia-800/30">Brand Logos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Architecture Highlights -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-2">
+          <!-- Main Flow Description -->
+          <div class="lg:col-span-2 glass-panel rounded-2xl p-6 flex flex-col gap-4">
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-circle-nodes text-indigo-500"></i> How PTC Furnitures Works
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
+              <div class="flex gap-3">
+                <div class="mt-1 flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 shrink-0"><i class="fa-solid fa-house-laptop"></i></div>
+                <div>
+                  <h4 class="font-bold text-slate-200">1. Instant Catalog Browsing</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">The storefront layouts (`/collections`, `/catalogs`) serve pre-compiled static layouts instantly, then stream in live MongoDB products list via async Suspense components.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <div class="mt-1 flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 shrink-0"><i class="fa-solid fa-upload"></i></div>
+                <div>
+                  <h4 class="font-bold text-slate-200">2. Smart Image Optimization</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Uploads pass through the Sharp engine: white backgrounds are keyed out with smooth feathering, and standard 800x800 transparent canvas watermarks are added in the center.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <div class="mt-1 flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 shrink-0"><i class="fa-solid fa-arrows-spin"></i></div>
+                <div>
+                  <h4 class="font-bold text-slate-200">3. Brand Watermark Synchronization</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">When an admin changes a brand's logo or opacity in the dashboard settings, the app runs a background process re-processing all products under that brand using saved original images.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <div class="mt-1 flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 shrink-0"><i class="fa-solid fa-headset"></i></div>
+                <div>
+                  <h4 class="font-bold text-slate-200">4. Leads & Client Connect</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Interactions like catalog downloading or dealer registration trigger automated Twilio SMS alerts & automated WhatsApp business notifications to backend admins.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Flow Visual Button -->
+            <button onclick="switchTab('image-pipeline')" class="mt-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25">
+              Launch Interactive Image Pipeline Simulator <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+
+          <!-- Sidebar Quick Metrics -->
+          <div class="glass-panel rounded-2xl p-6 flex flex-col gap-4">
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-indigo-500"></i> Next.js 16 Fixes (Coolify)
+            </h3>
+            
+            <div class="flex flex-col gap-3">
+              <div class="p-3.5 rounded-xl bg-emerald-950/20 border border-emerald-500/20 flex gap-3">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-lg mt-0.5"></i>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider">No connection() in API</h4>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Removed `connection()` from all GET route handlers. Thrown dynamic exceptions was causing API crashes.</p>
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-emerald-950/20 border border-emerald-500/20 flex gap-3">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-lg mt-0.5"></i>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Isolated Suspense Shells</h4>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Wrapped all storefront databases queries into nested React Server components. Static layouts load instantly while database streams load.</p>
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-emerald-950/20 border border-emerald-500/20 flex gap-3">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-lg mt-0.5"></i>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Safe Brand Fallbacks</h4>
+                  <p class="text-[11px] text-slate-400 mt-0.5">MongoDB records missing the `brand` property now resolve with a default `""` string fallback, avoiding `.trim()` on undefined errors on admin dashboards.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: ARCHITECTURE ==================== -->
+      <section id="tab-content-architecture" class="tab-panel hidden flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <h2 class="text-3xl font-bold tracking-tight text-white">System Architecture Map</h2>
+          <p class="text-slate-400">Visualization of files, databases, local file volumes, and networks.</p>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-6 flex flex-col gap-4 relative overflow-hidden">
+          <div class="absolute top-2 right-4 text-xs font-mono text-indigo-400 uppercase tracking-widest"><i class="fa-solid fa-sitemap"></i> Graph Engine</div>
+          
+          <!-- Mermaid Container -->
+          <div class="bg-zinc-950/60 rounded-xl border border-white/5 p-4 overflow-x-auto flex justify-center">
+            <div class="mermaid min-w-[700px] w-full text-center">
+              graph TD
+                %% Styling
+                classDef client fill:#0369a1,stroke:#0284c7,stroke-width:2px,color:#f0f9ff;
+                classDef server fill:#4c1d95,stroke:#6366f1,stroke-width:2px,color:#f5f3ff;
+                classDef database fill:#713f12,stroke:#ca8a04,stroke-width:2px,color:#fefcbf;
+                classDef storage fill:#5b21b6,stroke:#9333ea,stroke-width:2px,color:#fae8ff;
+
+                %% Nodes
+                subgraph Client ["Client Browser"]
+                    Storefront["Storefront UI<br/>(Static Shell + Streamed Content)"]:::client
+                    AdminUI["Admin Dashboard UI<br/>(Client Components / SWR)"]:::client
+                end
+
+                subgraph NextServer ["Next.js Standalone Node Server"]
+                    Pages["Page Components<br/>(Server Components)"]:::server
+                    API["Route Handlers<br/>(API Endpoints)"]:::server
+                    SharpPipeline["Sharp Image Engine<br/>(FE Background Removal + Watermark)"]:::server
+                end
+
+                subgraph Storage ["Local Filesystem"]
+                    UploadDir["public/upload/<br/>- Watermarked Images (.png)<br/>- Pristine Originals (_original.png)<br/>- Brochure PDFs (.pdf)"]:::storage
+                end
+
+                subgraph Database ["MongoDB Database"]
+                    MongooseConn["Mongoose Connection Manager"]:::database
+                    Collections["Collections:<br/>- Products<br/>- Brands<br/>- Catalogs<br/>- Reviews<br/>- Leads / Banking"]:::database
+                end
+
+                %% Relations
+                Storefront <--> |Client Navigation / Prefetch| Pages
+                AdminUI <--> |REST API Fetch Requests| API
+                Pages --> |Direct Database Queries| MongooseConn
+                API --> |Direct Database Queries| MongooseConn
+                MongooseConn <--> |JSON Document Storage| Collections
+                API --> |Process Image Files| SharpPipeline
+                SharpPipeline --> |Write Files| UploadDir
+                UploadDir --> |Serve Static Media| Storefront
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-300">
+          <div class="glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-2">
+            <h4 class="font-bold text-white text-base"><i class="fa-solid fa-server text-indigo-400 mr-2"></i> Standalone Server Operation</h4>
+            <p class="text-slate-400">
+              When compiled, Next.js outputs a production-ready node server containing all routing layers. Next.js App Router renders pages on the server as Server Components and serves them as dynamic client hydration paths.
+            </p>
+            <p class="text-slate-400">
+              Direct MongoDB queries are initiated directly from Server Components via the mongoose connector library (`src/lib/mongodb.ts`), omitting extra API network layers for fast database-to-HTML rendering.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-2">
+            <h4 class="font-bold text-white text-base"><i class="fa-solid fa-photo-film text-indigo-400 mr-2"></i> Dynamic Assets Processing</h4>
+            <p class="text-slate-400">
+              The standalone server performs real-time media transformations via sharp module dependencies. White backgrounds on furniture photos are stripped out locally, and brand watermark overlays are composite-merged.
+            </p>
+            <p class="text-slate-400">
+              Pristine images are kept as references in `/public/upload/*_original.png` so that watermarks can be rebuilt on-the-fly dynamically when global brand logo preferences are modified.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: IMAGE-PIPELINE ==================== -->
+      <section id="tab-content-image-pipeline" class="tab-panel hidden flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <h2 class="text-3xl font-bold tracking-tight text-white">Dynamic Image Upload & Watermark Sync Pipeline</h2>
+          <p class="text-slate-400">Interactive simulation showing background keying, watermark composite, storage, and DB sync.</p>
+        </div>
+
+        <!-- Interactive Simulator Card -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Control Panel -->
+          <div class="lg:col-span-4 glass-panel rounded-2xl p-6 flex flex-col gap-4">
+            <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-sliders text-indigo-500 mr-2"></i> Pipeline Controls</h3>
+            
+            <div class="flex flex-col gap-1 text-sm">
+              <label class="text-xs text-slate-400 font-medium">1. Select Target Brand</label>
+              <select id="sim-brand" class="w-full bg-zinc-950 border border-white/10 rounded-xl px-3 py-2.5 text-slate-200 outline-none focus:border-indigo-500 transition-colors">
+                <option value="PTC">PTC (Default)</option>
+                <option value="Hindustaan">Hindustaan Innovations</option>
+                <option value="Royal">Royal Woods</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1 text-sm">
+              <label class="text-xs text-slate-400 font-medium flex justify-between">
+                <span>2. Watermark Opacity</span>
+                <span id="sim-opacity-val" class="text-indigo-400 font-mono">40%</span>
+              </label>
+              <input type="range" id="sim-opacity" min="10" max="100" value="40" oninput="updateSimOpacity(this.value)" class="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+            </div>
+
+            <!-- Stepper Indicators -->
+            <div class="flex flex-col gap-2.5 mt-2">
+              <div class="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-1">Pipeline Steps</div>
+              
+              <div id="sim-step-1" class="sim-step-indicator flex items-center gap-3 p-2.5 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-slate-200 text-xs font-semibold transition-all">
+                <div class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]">1</div>
+                Upload raw photo (white background)
+              </div>
+
+              <div id="sim-step-2" class="sim-step-indicator flex items-center gap-3 p-2.5 rounded-xl border border-white/5 text-slate-400 text-xs transition-all">
+                <div class="w-5 h-5 rounded-full bg-zinc-800 text-slate-400 flex items-center justify-center font-bold text-[10px]">2</div>
+                Sharp strips white background
+              </div>
+
+              <div id="sim-step-3" class="sim-step-indicator flex items-center gap-3 p-2.5 rounded-xl border border-white/5 text-slate-400 text-xs transition-all">
+                <div class="w-5 h-5 rounded-full bg-zinc-800 text-slate-400 flex items-center justify-center font-bold text-[10px]">3</div>
+                Composite 200px Brand Watermark
+              </div>
+
+              <div id="sim-step-4" class="sim-step-indicator flex items-center gap-3 p-2.5 rounded-xl border border-white/5 text-slate-400 text-xs transition-all">
+                <div class="w-5 h-5 rounded-full bg-zinc-800 text-slate-400 flex items-center justify-center font-bold text-[10px]">4</div>
+                Save _original and watermarked images
+              </div>
+
+              <div id="sim-step-5" class="sim-step-indicator flex items-center gap-3 p-2.5 rounded-xl border border-white/5 text-slate-400 text-xs transition-all">
+                <div class="w-5 h-5 rounded-full bg-zinc-800 text-slate-400 flex items-center justify-center font-bold text-[10px]">5</div>
+                Update MongoDB collection document
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="grid grid-cols-2 gap-3 mt-2">
+              <button onclick="resetSim()" class="py-2.5 px-3 rounded-xl border border-white/10 hover:bg-white/5 text-xs text-slate-300 font-semibold transition-all">
+                Reset Flow
+              </button>
+              <button id="sim-next-btn" onclick="nextSimStep()" class="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/20">
+                Next Step <i class="fa-solid fa-play text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Canvas Simulator View -->
+          <div class="lg:col-span-8 glass-panel rounded-2xl p-6 flex flex-col gap-4 relative">
+            <div class="absolute top-2 right-4 text-xs font-mono text-indigo-400 uppercase tracking-widest"><i class="fa-solid fa-display"></i> Interactive Canvas</div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              
+              <!-- Canvas Display Panel -->
+              <div class="relative w-full aspect-square rounded-2xl border border-white/10 overflow-hidden flex items-center justify-center p-8 bg-zinc-950 checkerboard transition-all" id="canvas-bg">
+                
+                <!-- Raw Background (white overlay) that fades out in step 2 -->
+                <div class="absolute inset-0 bg-white transition-opacity duration-700" id="canvas-white-bg"></div>
+                
+                <!-- Image Holder -->
+                <div class="relative z-10 w-full h-full flex items-center justify-center">
+                  <!-- Product Image (Chair) -->
+                  <i class="fa-solid fa-chair text-zinc-800 text-9xl md:text-[13rem] z-10 transition-all duration-700 filter drop-shadow-md" id="canvas-chair"></i>
+                  
+                  <!-- Watermark Overlays (placed at center) -->
+                  <div class="absolute inset-0 flex items-center justify-center z-20 transition-all duration-500 opacity-0 scale-50" id="canvas-watermark">
+                    <div class="w-32 h-32 rounded-full border border-indigo-400/20 bg-indigo-950/80 flex flex-col items-center justify-center shadow-lg p-2 text-indigo-400 relative">
+                      <i class="fa-solid fa-couch text-4xl mb-1"></i>
+                      <span id="canvas-watermark-text" class="text-[10px] font-bold tracking-widest uppercase">PTC</span>
+                      <span class="text-[8px] text-indigo-500 font-mono tracking-tighter">WATERMARK</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Technical Log Info -->
+              <div class="flex flex-col gap-4 h-full justify-between">
+                <div class="flex flex-col gap-2">
+                  <h4 class="font-bold text-white text-base" id="log-title">Step 1: Upload Raw Photo</h4>
+                  <p class="text-xs text-slate-400 leading-relaxed" id="log-desc">
+                    The administrator uploads a raw furniture product photo (typically with a studio white backround) through the admin panel dashboard.
+                  </p>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">File & Database Output</span>
+                  <div class="bg-zinc-950 rounded-xl border border-white/5 p-4 font-mono text-[11px] text-slate-300 leading-relaxed overflow-x-auto whitespace-pre h-44 flex flex-col justify-between" id="log-console">
+// Idle
+Waiting to start pipeline execution...
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sequence Flowchart -->
+            <div class="bg-zinc-950/40 rounded-xl border border-white/5 p-4 mt-2">
+              <h4 class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <i class="fa-solid fa-diagram-project text-indigo-400"></i> Backend Process Sequence Map
+              </h4>
+              
+              <div class="mermaid w-full text-center">
+                sequenceDiagram
+                  actor Admin as Admin Dashboard
+                  participant API as API Handler (/api/products)
+                  participant Sharp as Sharp Image Engine
+                  participant Disk as Filesystem (public/upload)
+                  participant DB as MongoDB (Product Collection)
+
+                  Admin->>API: Upload raw image + brand info
+                  API->>Sharp: removeWhiteBackground() raw buffer
+                  Sharp-->>API: transparent png buffer
+                  API->>Sharp: compositeBrandWatermark() at center
+                  Sharp-->>API: watermarked png buffer
+                  API->>Disk: write uniqueId_original.png (transparent reference)
+                  API->>Disk: write uniqueId.png (watermarked product)
+                  API->>DB: save Product document with file pointers
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: ROUTING ==================== -->
+      <section id="tab-content-routing" class="tab-panel hidden flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <h2 class="text-3xl font-bold tracking-tight text-white">Next.js 16 Storefront Routing & Hydration Flow</h2>
+          <p class="text-slate-400">Understanding Partial Prerendering (PPR) dynamic connection bounds and asynchronous React server component streaming.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- PPR Description -->
+          <div class="glass-panel rounded-2xl p-6 flex flex-col gap-4">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-bolt text-amber-400"></i> Partial Prerendering (PPR) Concept
+            </h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Next.js 16 leverages **Partial Prerendering (PPR)** to bundle static shells during build compilation. In this app, layout parts like headers, navigation links, and footers are compiled as static files.
+            </p>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              When a user navigates to `/collections` or `/catalogs`, Next.js responds with the static HTML shell in 0ms (prefetched on hover), providing an instant loading visual.
+            </p>
+
+            <div class="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 flex gap-3 text-xs text-slate-300 leading-relaxed">
+              <i class="fa-solid fa-lightbulb text-indigo-400 text-base mt-0.5"></i>
+              <div>
+                <strong class="text-slate-200">The 500 Route Crash Resolution:</strong><br/>
+                Next.js requires dynamic server functions (like `connection()`) to be wrapped inside a `<Suspense>` boundary. When `connection()` was called in the page root, Next.js crashed as it couldn't prerender the page shell. Moving `await connection()` inside the async loader component fixed this behavior.
+              </div>
+            </div>
+          </div>
+
+          <!-- Page Hydration Diagram -->
+          <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2 mb-4">
+              <i class="fa-solid fa-list-ol text-indigo-400"></i> Page Hydration Lifecycle
+            </h3>
+            
+            <div class="relative pl-6 border-l border-indigo-500/20 flex flex-col gap-6 text-sm text-slate-300">
+              <div class="relative">
+                <div class="absolute left-[-29px] top-0 w-4 h-4 rounded-full bg-emerald-500 border border-emerald-950"></div>
+                <h4 class="font-bold text-slate-200 text-xs uppercase tracking-wider">Step 1: Prefetch on Hover</h4>
+                <p class="text-xs text-slate-400 mt-1">Client hovers over storefront page links. The static layout shell JSON/HTML is retrieved before click.</p>
+              </div>
+
+              <div class="relative">
+                <div class="absolute left-[-29px] top-0 w-4 h-4 rounded-full bg-indigo-500 border border-indigo-950"></div>
+                <h4 class="font-bold text-slate-200 text-xs uppercase tracking-wider">Step 2: Instant Render (0ms)</h4>
+                <p class="text-xs text-slate-400 mt-1">On click, the header, sidebar, logo, and skeleton fallbacks load immediately.</p>
+              </div>
+
+              <div class="relative">
+                <div class="absolute left-[-29px] top-0 w-4 h-4 rounded-full bg-amber-500 border border-amber-950"></div>
+                <h4 class="font-bold text-slate-200 text-xs uppercase tracking-wider">Step 3: Dynamic DB Streaming</h4>
+                <p class="text-xs text-slate-400 mt-1">The server fires the mongodb database query under the `<Suspense>` boundary, streaming the rows to the client browser in real-time as they resolve.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Directory rendering map -->
+        <div class="glass-panel rounded-2xl p-6">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2 mb-4">
+            <i class="fa-solid fa-route text-indigo-400"></i> Public vs Admin Routing Architecture
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 rounded-xl bg-zinc-950 border border-white/5 flex flex-col gap-2">
+              <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-widest"><i class="fa-solid fa-globe mr-1.5"></i> Public Storefront (PPR Enabled)</h4>
+              <ul class="text-xs text-slate-400 flex flex-col gap-2">
+                <li class="flex justify-between items-center py-1 border-b border-white/5">
+                  <span class="font-mono text-slate-200">/</span>
+                  <span class="px-2 py-0.5 rounded bg-emerald-950/30 text-emerald-400 text-[10px] font-bold border border-emerald-800/30">Static Shell + Dynamic Products</span>
+                </li>
+                <li class="flex justify-between items-center py-1 border-b border-white/5">
+                  <span class="font-mono text-slate-200">/collections</span>
+                  <span class="px-2 py-0.5 rounded bg-emerald-950/30 text-emerald-400 text-[10px] font-bold border border-emerald-800/30">Static Shell + Dynamic Grids</span>
+                </li>
+                <li class="flex justify-between items-center py-1 border-b border-white/5">
+                  <span class="font-mono text-slate-200">/catalogs</span>
+                  <span class="px-2 py-0.5 rounded bg-emerald-950/30 text-emerald-400 text-[10px] font-bold border border-emerald-800/30">Static Shell + Dynamic Catalogs</span>
+                </li>
+                <li class="flex justify-between items-center py-1 border-b border-white/5">
+                  <span class="font-mono text-slate-200">/payment</span>
+                  <span class="px-2 py-0.5 rounded bg-emerald-950/30 text-emerald-400 text-[10px] font-bold border border-emerald-800/30">Static Shell + Dynamic Accounts</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="p-4 rounded-xl bg-zinc-950 border border-white/5 flex flex-col gap-2">
+              <h4 class="text-sm font-bold text-indigo-400 uppercase tracking-widest"><i class="fa-solid fa-lock mr-1.5"></i> Admin Dashboard (Fully Dynamic)</h4>
+              <ul class="text-xs text-slate-400 flex flex-col gap-2">
+                <li class="flex justify-between items-center py-1 border-b border-white/5">
+                  <span class="font-mono text-slate-200">/admin</span>
+                  <span class="px-2 py-0.5 rounded bg-indigo-950/30 text-indigo-400 text-[10px] font-bold border border-indigo-800/30">Dynamic Overview Stats</span>
+                </li>
+                <li class="flex justify-between items-center py-1 border-b border-white/5">
+                  <span class="font-mono text-slate-200">/admin/products</span>
+                  <span class="px-2 py-0.5 rounded bg-indigo-950/30 text-indigo-400 text-[10px] font-bold border border-indigo-800/30">Dynamic SWR Table</span>
+                </li>
+                <li class="flex justify-between items-center py-1 border-b border-white/5">
+                  <span class="font-mono text-slate-200">/admin/settings</span>
+                  <span class="px-2 py-0.5 rounded bg-indigo-950/30 text-indigo-400 text-[10px] font-bold border border-indigo-800/30">Watermarks Config Editor</span>
+                </li>
+                <li class="flex justify-between items-center py-1 border-b border-white/5">
+                  <span class="font-mono text-slate-200">/admin/banking</span>
+                  <span class="px-2 py-0.5 rounded bg-indigo-950/30 text-indigo-400 text-[10px] font-bold border border-indigo-800/30">Interactive Bank Setup</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: DATABASE ==================== -->
+      <section id="tab-content-database" class="tab-panel hidden flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-3xl font-bold tracking-tight text-white">Database Collections Inspector</h2>
+              <p class="text-slate-400">Click on any collection schema to inspect fields, database types, and relations.</p>
+            </div>
+            <div class="relative w-72">
+              <input type="text" id="schema-search" oninput="filterSchemas(this.value)" placeholder="Search database schemas..." class="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500 transition-colors">
+              <i class="fa-solid fa-magnifying-glass absolute right-4 top-3 text-slate-500 text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4" id="schemas-container">
+          
+          <!-- Schema: Product -->
+          <div class="schema-card glass-panel rounded-2xl overflow-hidden border border-white/5" data-name="Product Collection">
+            <button onclick="toggleSchema('schema-product')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-all">
+              <div class="flex items-center gap-4">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-sm">P</div>
+                <div>
+                  <h3 class="font-bold text-white text-base">Product Schema</h3>
+                  <p class="text-xs text-slate-400">Stores furniture catalog information (pricing, materials, watermarked/original image path references)</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-down text-slate-500 text-sm transition-transform duration-300" id="arrow-schema-product"></i>
+            </button>
+            <div id="schema-product" class="hidden p-6 border-t border-white/5 bg-zinc-950/40 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">JSON Field Mapping</h4>
+                <div class="bg-zinc-950 rounded-xl border border-white/5 p-4 font-mono text-xs text-slate-300 leading-relaxed overflow-x-auto">
+{
+  "id": "String (unique UUID)",
+  "brand": "String (reference to Brand Logo)",
+  "name": "String (Product title)",
+  "price": "String (formatted, e.g. '₹28,500')",
+  "material": "String",
+  "craftedBy": "String",
+  "tag": "String",
+  "images": "Array of Strings [/upload/id.png]",
+  "originalImages": "Array of Strings [/upload/id_original.png]",
+  "createdAt": "String (ISO date)",
+  "customFields": [
+    { "label": "String", "value": "String" }
+  ]
+}
+                </div>
+              </div>
+              <div class="flex flex-col gap-4">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Code Reference</h4>
+                  <p class="text-xs text-slate-400 font-mono">src/lib/db-models.ts &rarr; export const Product</p>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                  Products are queried directly from Server Components for storefront collections, or fetched via `/api/products` for admin edits. Background transparency processing writes dynamic files to filesystem, updating `images` array with watermarked versions and `originalImages` array with original uploads.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schema: Brand Logo -->
+          <div class="schema-card glass-panel rounded-2xl overflow-hidden border border-white/5" data-name="Brand Logo Collection">
+            <button onclick="toggleSchema('schema-brand-logo')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-all">
+              <div class="flex items-center gap-4">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-sm">BL</div>
+                <div>
+                  <h3 class="font-bold text-white text-base">BrandLogo Schema</h3>
+                  <p class="text-xs text-slate-400">Stores logos of various manufacturers (local uploads / URLs) and brand aliases</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-down text-slate-500 text-sm transition-transform duration-300" id="arrow-schema-brand-logo"></i>
+            </button>
+            <div id="schema-brand-logo" class="hidden p-6 border-t border-white/5 bg-zinc-950/40 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">JSON Field Mapping</h4>
+                <div class="bg-zinc-950 rounded-xl border border-white/5 p-4 font-mono text-xs text-slate-300 leading-relaxed overflow-x-auto">
+{
+  "brand": "String (unique name)",
+  "src": "String (Local upload URL path e.g. /upload/logo_id.png or static URL)",
+  "alt": "String",
+  "aliases": "Array of Strings"
+}
+                </div>
+              </div>
+              <div class="flex flex-col gap-4">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Code Reference</h4>
+                  <p class="text-xs text-slate-400 font-mono">src/lib/db-models.ts &rarr; export const BrandLogoModel</p>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                  Used by the watermarking engine to locate the watermark logo image. Aliases are matched against the product's brand field during ingestion.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schema: Brand Watermark -->
+          <div class="schema-card glass-panel rounded-2xl overflow-hidden border border-white/5" data-name="Brand Watermark Settings">
+            <button onclick="toggleSchema('schema-watermark')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-all">
+              <div class="flex items-center gap-4">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-sm">W</div>
+                <div>
+                  <h3 class="font-bold text-white text-base">BrandWatermark Schema</h3>
+                  <p class="text-xs text-slate-400">Controls size, opacity and placement of watermarks per brand</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-down text-slate-500 text-sm transition-transform duration-300" id="arrow-schema-watermark"></i>
+            </button>
+            <div id="schema-watermark" class="hidden p-6 border-t border-white/5 bg-zinc-950/40 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">JSON Field Mapping</h4>
+                <div class="bg-zinc-950 rounded-xl border border-white/5 p-4 font-mono text-xs text-slate-300 leading-relaxed overflow-x-auto">
+{
+  "brand": "String (unique)",
+  "url": "String",
+  "size": "String ('small' | 'medium' | 'large')",
+  "opacity": "Number (0 to 100)",
+  "position": "String (e.g. 'center')"
+}
+                </div>
+              </div>
+              <div class="flex flex-col gap-4">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Code Reference</h4>
+                  <p class="text-xs text-slate-400 font-mono">src/lib/db-models.ts &rarr; export const BrandWatermarkModel</p>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                  Controls how Sharp applies composite layers. Changing this triggers watermarking rebuilds for all related products in the background.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schema: Catalog -->
+          <div class="schema-card glass-panel rounded-2xl overflow-hidden border border-white/5" data-name="Catalog Collection">
+            <button onclick="toggleSchema('schema-catalog')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-all">
+              <div class="flex items-center gap-4">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-sm">C</div>
+                <div>
+                  <h3 class="font-bold text-white text-base">Catalog Schema</h3>
+                  <p class="text-xs text-slate-400">Stores PDF brochure structures and custom layout configuration tags</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-down text-slate-500 text-sm transition-transform duration-300" id="arrow-schema-catalog"></i>
+            </button>
+            <div id="schema-catalog" class="hidden p-6 border-t border-white/5 bg-zinc-950/40 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">JSON Field Mapping</h4>
+                <div class="bg-zinc-950 rounded-xl border border-white/5 p-4 font-mono text-xs text-slate-300 leading-relaxed overflow-x-auto">
+{
+  "id": "String (unique)",
+  "title": "String",
+  "description": "String (optional)",
+  "type": "String ('pdf' | 'custom')",
+  "pdfUrl": "String (e.g. '/upload/filename.pdf')",
+  "productIds": "Array of Strings",
+  "createdAt": "String",
+  "theme": "String ('minimal' | 'gold' | 'dark')",
+  "brand": "String (optional)"
+}
+                </div>
+              </div>
+              <div class="flex flex-col gap-4">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Code Reference</h4>
+                  <p class="text-xs text-slate-400 font-mono">src/lib/db-models.ts &rarr; export const CatalogModel</p>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                  Used by the catalogs bookshelf pages (/catalogs and /catalogs/[id]). Custom theme rules dictate styling layout rendering for specific brands.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schema: Stored File -->
+          <div class="schema-card glass-panel rounded-2xl overflow-hidden border border-white/5" data-name="StoredFile Binary Collection">
+            <button onclick="toggleSchema('schema-stored-file')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-all">
+              <div class="flex items-center gap-4">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-sm">SF</div>
+                <div>
+                  <h3 class="font-bold text-white text-base">StoredFile Schema</h3>
+                  <p class="text-xs text-slate-400">Stores binary image assets (like watermark assets/logos) directly in the MongoDB cluster</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-down text-slate-500 text-sm transition-transform duration-300" id="arrow-schema-stored-file"></i>
+            </button>
+            <div id="schema-stored-file" class="hidden p-6 border-t border-white/5 bg-zinc-950/40 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">JSON Field Mapping</h4>
+                <div class="bg-zinc-950 rounded-xl border border-white/5 p-4 font-mono text-xs text-slate-300 leading-relaxed overflow-x-auto">
+{
+  "filename": "String",
+  "contentType": "String (e.g. 'image/png')",
+  "data": "Buffer (Binary)",
+  "createdAt": "Date"
+}
+                </div>
+              </div>
+              <div class="flex flex-col gap-4">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Code Reference</h4>
+                  <p class="text-xs text-slate-400 font-mono">src/lib/db-models.ts &rarr; export const StoredFile</p>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                  Ensures brand settings images are retained directly in the database. Read and written dynamically via `/api/images` endpoint handler.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Other schemas summary list -->
+          <div class="p-5 rounded-2xl glass-card border border-white/5 text-xs text-slate-400 flex flex-wrap gap-2.5">
+            <span class="font-semibold text-slate-300">Other Mongoose Collections:</span>
+            <span class="px-2.5 py-1 rounded bg-zinc-900 border border-white/5"><strong class="text-slate-200">DealerLead</strong> (Dealer requests, approvals and SMS logging)</span>
+            <span class="px-2.5 py-1 rounded bg-zinc-900 border border-white/5"><strong class="text-slate-200">ProductReview</strong> (1-5 star reviews, approval flow)</span>
+            <span class="px-2.5 py-1 rounded bg-zinc-900 border border-white/5"><strong class="text-slate-200">BgRemovedCache</strong> (Caches original vs background stripped path URL pairs)</span>
+            <span class="px-2.5 py-1 rounded bg-zinc-900 border border-white/5"><strong class="text-slate-200">DownloadLead</strong> (Captures PDF print/downloads metadata)</span>
+            <span class="px-2.5 py-1 rounded bg-zinc-900 border border-white/5"><strong class="text-slate-200">BankingDetails</strong> (Active corporate UPI IDs/QR image Base64/IFSC details)</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================== TAB: CODEBASE ==================== -->
+      <section id="tab-content-codebase" class="tab-panel hidden flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-3xl font-bold tracking-tight text-white">Codebase Directory File Map</h2>
+              <p class="text-slate-400">Map of key folders, routing structures, controllers, database layers, and templates.</p>
+            </div>
+            <div class="relative w-72">
+              <input type="text" id="file-search" oninput="filterFiles(this.value)" placeholder="Search codebase files..." class="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500 transition-colors">
+              <i class="fa-solid fa-magnifying-glass absolute right-4 top-3 text-slate-500 text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="files-container">
+          
+          <!-- File: src/lib/image-processor.ts -->
+          <div class="file-card glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-3" data-name="src/lib/image-processor.ts sharp background watermark rewatermarkImage bgRemoved">
+            <div class="flex justify-between items-start">
+              <span class="px-2 py-0.5 rounded bg-indigo-950/40 text-indigo-400 text-[10px] font-bold border border-indigo-800/30 uppercase tracking-widest">Library</span>
+              <span class="text-xs text-slate-500 font-mono">8.0 KB</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-bold text-white text-sm font-mono">src/lib/image-processor.ts</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Core image operations. Key features: `removeWhiteBackground` (loops raw pixel buffer, keys out light colors using dynamic alpha bounds), `compositeBrandWatermark` (places trimmed 200px watermark at calculated center).
+              </p>
+            </div>
+            <div class="text-[10px] text-slate-500 border-t border-white/5 pt-2 mt-auto">
+              <strong>Depends on:</strong> sharp, brand-logos, mongodb, StoredFile
+            </div>
+          </div>
+
+          <!-- File: src/lib/db-models.ts -->
+          <div class="file-card glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-3" data-name="src/lib/db-models.ts schema mongoose schemas collections models">
+            <div class="flex justify-between items-start">
+              <span class="px-2 py-0.5 rounded bg-indigo-950/40 text-indigo-400 text-[10px] font-bold border border-indigo-800/30 uppercase tracking-widest">Database</span>
+              <span class="text-xs text-slate-500 font-mono">9.6 KB</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-bold text-white text-sm font-mono">src/lib/db-models.ts</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Defines all 11 Mongoose database schemas, compilation hooks, and interface declarations. Consolidates catalog models in a single module.
+              </p>
+            </div>
+            <div class="text-[10px] text-slate-500 border-t border-white/5 pt-2 mt-auto">
+              <strong>Depends on:</strong> mongoose
+            </div>
+          </div>
+
+          <!-- File: src/lib/products.ts -->
+          <div class="file-card glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-3" data-name="src/lib/products.ts query products readProducts addProduct">
+            <div class="flex justify-between items-start">
+              <span class="px-2 py-0.5 rounded bg-indigo-950/40 text-indigo-400 text-[10px] font-bold border border-indigo-800/30 uppercase tracking-widest">Library</span>
+              <span class="text-xs text-slate-500 font-mono">7.8 KB</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-bold text-white text-sm font-mono">src/lib/products.ts</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Manages MongoDB Product queries. Contains safe fallbacks for missing brand strings, resolving dashboard crashes. `connection()` calls removed to avoid dynamic-rendering build errors.
+              </p>
+            </div>
+            <div class="text-[10px] text-slate-500 border-t border-white/5 pt-2 mt-auto">
+              <strong>Depends on:</strong> db-models, mongodb
+            </div>
+          </div>
+
+          <!-- File: src/app/(root)/collections/page.tsx -->
+          <div class="file-card glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-3" data-name="src/app/(root)/collections/page.tsx collections loader suspense connection">
+            <div class="flex justify-between items-start">
+              <span class="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-400 text-[10px] font-bold border border-emerald-800/30 uppercase tracking-widest">Page</span>
+              <span class="text-xs text-slate-500 font-mono">3.2 KB</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-bold text-white text-sm font-mono">src/app/(root)/collections/page.tsx</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Storefront product collections catalog grid. Employs Next.js 16 Suspense-nested dynamic loader. `connection()` is resolved under layout boundary.
+              </p>
+            </div>
+            <div class="text-[10px] text-slate-500 border-t border-white/5 pt-2 mt-auto">
+              <strong>Depends on:</strong> CollectionsLoader, Suspense, connection
+            </div>
+          </div>
+
+          <!-- File: src/app/api/images/route.ts -->
+          <div class="file-card glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-3" data-name="src/app/api/images/route.ts endpoint route handlers storedfile">
+            <div class="flex justify-between items-start">
+              <span class="px-2 py-0.5 rounded bg-purple-950/40 text-purple-400 text-[10px] font-bold border border-purple-800/30 uppercase tracking-widest">API Route</span>
+              <span class="text-xs text-slate-500 font-mono">2.1 KB</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-bold text-white text-sm font-mono">src/app/api/images/route.ts</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Serves database-stored media files via GET handlers. Resolved 500 error by removing `connection()` (since connection headers are not available in endpoint routing).
+              </p>
+            </div>
+            <div class="text-[10px] text-slate-500 border-t border-white/5 pt-2 mt-auto">
+              <strong>Depends on:</strong> StoredFile, mongodb
+            </div>
+          </div>
+
+          <!-- File: docker-compose.yml -->
+          <div class="file-card glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-3" data-name="docker-compose.yml compose docker mongodb standalone web volume">
+            <div class="flex justify-between items-start">
+              <span class="px-2 py-0.5 rounded bg-yellow-950/40 text-yellow-400 text-[10px] font-bold border border-yellow-800/30 uppercase tracking-widest">Config</span>
+              <span class="text-xs text-slate-500 font-mono">1.0 KB</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-bold text-white text-sm font-mono">docker-compose.yml</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Orchestrates local services: MongoDB container (with mapped volume and mongosh healthchecks) and standalone NextJS web service dependencies.
+              </p>
+            </div>
+            <div class="text-[10px] text-slate-500 border-t border-white/5 pt-2 mt-auto">
+              <strong>Depends on:</strong> Dockerfile, MongoDB Container
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================== TAB: DEPLOYMENT ==================== -->
+      <section id="tab-content-deployment" class="tab-panel hidden flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <h2 class="text-3xl font-bold tracking-tight text-white">Docker Standalone & Volume Persistence Guide</h2>
+          <p class="text-slate-400">Configure file volumes correctly to prevent losing product images and catalogs when upgrading containers.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Persistence Danger Warning -->
+          <div class="lg:col-span-1 flex flex-col gap-4">
+            <div class="glass-panel rounded-2xl p-6 border-l-4 border-red-500 bg-red-950/10">
+              <h3 class="text-lg font-bold text-white flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-triangle-exclamation text-red-500"></i> File Data Risk
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                By default, files uploaded in the dashboard (like catalog PDFs and product images) are saved inside the container filesystem path:
+              </p>
+              <div class="bg-zinc-950 border border-white/5 rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-red-400 my-2">
+                /app/public/upload/
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                If the container is updated, rebuilt, or restarted on Coolify, <strong>all files stored in this path are lost</strong> because container disks are ephemeral.
+              </p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-5 border border-white/5 text-xs text-slate-400 leading-relaxed">
+              <strong class="text-white block mb-1">Persistent Volumes Solution:</strong>
+              We map a host directory or named Docker volume to `/app/public/upload` inside the web container. This keeps files safely stored on the host host machine permanently.
+            </div>
+          </div>
+
+          <!-- Docker Compose Mapping Configuration -->
+          <div class="lg:col-span-2 glass-panel rounded-2xl p-6 flex flex-col gap-4">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-code text-indigo-500"></i> Recommended docker-compose.yml Configuration
+            </h3>
+            <p class="text-xs text-slate-300">
+              Mount the volumes properly under the `web` service configuration blocks as shown below:
+            </p>
+
+            <div class="bg-zinc-950 rounded-xl border border-white/5 p-4 font-mono text-[11px] text-slate-300 leading-relaxed overflow-x-auto">
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:8.0.5
+    container_name: furnitures-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: furnitures-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/ptc_furnitures
+    env_file:
+      - .env
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    <span class="text-emerald-400"># Mapping local uploads folder to host volumes for file persistence</span>
+    <span class="text-emerald-400">volumes:</span>
+      <span class="text-emerald-400">- media_uploads:/app/public/upload</span>
+
+<span class="text-emerald-400">volumes:</span>
+  mongodb_data:
+  <span class="text-emerald-400">media_uploads:</span> <span class="text-slate-500"># Created in host backend disk</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="glass-panel border-t border-white/5 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    &copy; 2026 PTC Furnitures. Interactive documentation system designed by Hindustaan Innovations Pvt Ltd.
+  </footer>
+
+  <!-- Script logic for page navigation, search, and image processing simulation -->
+  <script>
+    // Tab switching logic
+    function switchTab(tabId) {
+      // Hide all panels
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.add('hidden');
+      });
+      // Show requested panel
+      document.getElementById('tab-content-' + tabId).classList.remove('hidden');
+
+      // Reset button styles
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-all w-full text-left";
+      });
+      // Set active button style
+      document.getElementById('btn-' + tabId).className = "tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition-all w-full text-left";
+    }
+
+    // Schema Accordion Toggler
+    function toggleSchema(schemaId) {
+      const panel = document.getElementById(schemaId);
+      const arrow = document.getElementById('arrow-' + schemaId);
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        panel.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // Database schema filtering
+    function filterSchemas(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('.schema-card').forEach(card => {
+        const text = card.getAttribute('data-name').toLowerCase();
+        if (text.includes(q)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    // Codebase file list filtering
+    function filterFiles(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('.file-card').forEach(card => {
+        const text = card.getAttribute('data-name').toLowerCase();
+        if (text.includes(q)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    // Interactive Image Process Simulator State
+    let simStep = 1;
+    const simStepsData = {
+      1: {
+        title: "Step 1: Upload Raw Photo",
+        desc: "The administrator uploads a raw furniture product photo (typically with a studio white background) through the admin panel dashboard.",
+        console: `// Client Action: HTTP POST Form-Data\nPOST /api/products\nPayload: {\n  name: "Royal Velvet Chair",\n  brand: "Hindustaan",\n  imageFile: [Binary file buffer]\n}\n\n// Backend Connection initialized.\nConnecting to MongoDB client connection pool...\nSuccess.`
+      },
+      2: {
+        title: "Step 2: Sharp Background Removal",
+        desc: "The server initiates the background removal utility. Sharp parses the raw pixel buffer, keys out light colors (RGB > 215) with smooth alpha feathering bounds, converting white borders to transparent png alpha pixels.",
+        console: `// Calling src/lib/image-processor.ts\nremoveWhiteBackground(imageBuffer)\n\nProcessing width: 1200px, height: 1200px\nScanning pixels...\nTransparent keys calculated: 45,210 pixels altered.\nAlpha feather boundaries composited.\nOutput: background_removed transparent png buffer.`
+      },
+      3: {
+        title: "Step 3: Brand Watermark Overlay",
+        desc: "The server retrieves the Brand watermark configurations from MongoDB settings. It resizes the background-stripped canvas to a uniform 800x800 size, trims the logo, scales it to 200px, matches the configured opacity factor, and composites it directly in the center.",
+        console: `// Calling compositeBrandWatermark(transparentBuffer, "Hindustaan")\nBrand watermark opacity configured: 40%\nWatermark overlay target size: 200px\nApplying scale parameters...\nRendering composite centering coords: left 300px, top 300px\nWatermark composited successfully.`
+      },
+      4: {
+        title: "Step 4: Save Uploaded Files",
+        desc: "The server writes two distinct files to the public filesystem path: a unique uuid watermarked image (served on public storefront) and a unique uuid pristine transparent original image (stored as reference for future brand watermarking updates).",
+        console: `// Disk Storage Engine initialized\nFilesystem write path: /public/upload/\n\nWriting pristine base file:\n[WRITE] /public/upload/9d5a8_original.png (542 KB)\n\nWriting watermarked storefront file:\n[WRITE] /public/upload/9d5a8.png (310 KB)\n\nFiles saved successfully.`
+      },
+      5: {
+        title: "Step 5: Update MongoDB Database",
+        desc: "The final step updates the MongoDB collection document. The database record holds relative link arrays pointing to the newly generated file paths.",
+        console: `// MongoDB Ingestion: Product Collection\nProductModel.create({\n  id: "9d5a8-2041-477d-b1cc",\n  name: "Royal Velvet Chair",\n  brand: "Hindustaan",\n  images: ["/upload/9d5a8.png"],\n  originalImages: ["/upload/9d5a8_original.png"],\n  createdAt: "2026-06-03T13:28:00Z"\n})\n\nHTTP Response 201 Created.\nPipeline completed. Upload transaction successful.`
+      }
+    };
+
+    function updateSimOpacity(val) {
+      document.getElementById('sim-opacity-val').innerText = val + '%';
+      if (simStep >= 3) {
+        document.getElementById('canvas-watermark').style.opacity = (val / 100);
+      }
+    }
+
+    function resetSim() {
+      simStep = 1;
+      updateSimView();
+    }
+
+    function nextSimStep() {
+      simStep++;
+      if (simStep > 5) simStep = 1;
+      updateSimView();
+    }
+
+    function updateSimView() {
+      const stepData = simStepsData[simStep];
+      const selectedBrand = document.getElementById('sim-brand').value;
+      const opacity = document.getElementById('sim-opacity').value;
+
+      // Update text details
+      document.getElementById('log-title').innerText = stepData.title;
+      document.getElementById('log-desc').innerText = stepData.desc;
+      
+      // Dynamic log replace (inserting brand name)
+      let consoleLog = stepData.console.replace(/Hindustaan/g, selectedBrand);
+      consoleLog = consoleLog.replace(/40%/g, opacity + '%');
+      document.getElementById('log-console').innerText = consoleLog;
+
+      // Update indicator steps classes
+      document.querySelectorAll('.sim-step-indicator').forEach((el, index) => {
+        const stepNum = index + 1;
+        if (stepNum === simStep) {
+          el.className = "sim-step-indicator flex items-center gap-3 p-2.5 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-slate-200 text-xs font-semibold transition-all";
+          el.querySelector('div').className = "w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]";
+        } else {
+          el.className = "sim-step-indicator flex items-center gap-3 p-2.5 rounded-xl border border-white/5 text-slate-400 text-xs transition-all";
+          el.querySelector('div').className = "w-5 h-5 rounded-full bg-zinc-800 text-slate-400 flex items-center justify-center font-bold text-[10px]";
+        }
+      });
+
+      // Canvas animations based on step
+      const whiteBg = document.getElementById('canvas-white-bg');
+      const chair = document.getElementById('canvas-chair');
+      const watermark = document.getElementById('canvas-watermark');
+      const watermarkText = document.getElementById('canvas-watermark-text');
+
+      watermarkText.innerText = selectedBrand.toUpperCase();
+
+      if (simStep === 1) {
+        whiteBg.style.opacity = '1';
+        chair.className = "fa-solid fa-chair text-zinc-800 text-9xl md:text-[13rem] z-10 transition-all duration-700 filter drop-shadow-md";
+        watermark.className = "absolute inset-0 flex items-center justify-center z-20 transition-all duration-500 opacity-0 scale-50";
+      } else if (simStep === 2) {
+        whiteBg.style.opacity = '0';
+        chair.className = "fa-solid fa-chair text-indigo-400 text-9xl md:text-[13rem] z-10 transition-all duration-700 filter drop-shadow-md";
+        watermark.className = "absolute inset-0 flex items-center justify-center z-20 transition-all duration-500 opacity-0 scale-50";
+      } else if (simStep >= 3) {
+        whiteBg.style.opacity = '0';
+        chair.className = "fa-solid fa-chair text-indigo-400 text-9xl md:text-[13rem] z-10 transition-all duration-700 filter drop-shadow-md";
+        
+        watermark.className = "absolute inset-0 flex items-center justify-center z-20 transition-all duration-500 opacity-100 scale-100";
+        watermark.style.opacity = (opacity / 100);
+      }
+    }
+  </script>
+
+</body>
+</html>
