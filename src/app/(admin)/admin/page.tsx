@@ -10,8 +10,8 @@ export default async function AdminPage() {
   // Compute analytics metrics
   const totalProducts = products.length;
   const activeBrands = brands.length;
-  const brandedProducts = products.filter((p) => p.brand.trim() !== "").length;
-  const unassignedProducts = products.filter((p) => p.brand.trim() === "").length;
+  const brandedProducts = products.filter((p) => (p.brand || "").trim() !== "").length;
+  const unassignedProducts = products.filter((p) => (p.brand || "").trim() === "").length;
   const totalImages = products.reduce((acc, p) => acc + p.images.length, 0);
 
   return (

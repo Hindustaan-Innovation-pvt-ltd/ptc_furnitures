@@ -44,7 +44,7 @@ export default function AdminProductsManager({
   const thisBrandProducts = useMemo(() => {
     if (!scopedBrand) return cachedProducts;
     return cachedProducts.filter(
-      (product) => product.brand.trim().toLowerCase() === scopedBrand,
+      (product) => (product.brand || "").trim().toLowerCase() === scopedBrand,
     );
   }, [cachedProducts, scopedBrand]);
 
@@ -52,7 +52,7 @@ export default function AdminProductsManager({
   const otherProducts = useMemo(() => {
     if (!scopedBrand) return [];
     return cachedProducts.filter(
-      (product) => product.brand.trim().toLowerCase() !== scopedBrand,
+      (product) => (product.brand || "").trim().toLowerCase() !== scopedBrand,
     );
   }, [cachedProducts, scopedBrand]);
 

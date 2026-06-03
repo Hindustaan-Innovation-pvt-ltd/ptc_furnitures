@@ -6,11 +6,12 @@ import { readBrands, readProducts } from "@/lib/products";
 
 
 
-function normalizeBrand(value: string): string {
+function normalizeBrand(value: string | undefined | null): string {
+  const safeVal = value || "";
   try {
-    return decodeURIComponent(value).trim().replace(/\s+/g, " ").toLowerCase();
+    return decodeURIComponent(safeVal).trim().replace(/\s+/g, " ").toLowerCase();
   } catch {
-    return value.trim().replace(/\s+/g, " ").toLowerCase();
+    return safeVal.trim().replace(/\s+/g, " ").toLowerCase();
   }
 }
 

@@ -108,7 +108,7 @@ export async function readProducts(): Promise<Product[]> {
     const docs = await ProductModel.find().sort({ createdAt: -1 }).lean();
     return docs.map((doc: any) => ({
       id: doc.id,
-      brand: doc.brand,
+      brand: doc.brand || "",
       images: doc.images || [],
       originalImages: doc.originalImages || [],
       createdAt: doc.createdAt,
@@ -185,7 +185,7 @@ export async function addProduct(product: ProductInput): Promise<Product> {
 
   return {
     id: doc.id,
-    brand: doc.brand,
+    brand: doc.brand || "",
     images: doc.images,
     originalImages: doc.originalImages,
     createdAt: doc.createdAt,
@@ -245,7 +245,7 @@ export async function updateProduct(
 
   return {
     id: updatedDoc.id,
-    brand: updatedDoc.brand,
+    brand: updatedDoc.brand || "",
     images: updatedDoc.images,
     originalImages: updatedDoc.originalImages,
     createdAt: updatedDoc.createdAt,
@@ -273,7 +273,7 @@ export async function deleteProduct(productId: string): Promise<Product | null> 
 
   return {
     id: doc.id,
-    brand: doc.brand,
+    brand: doc.brand || "",
     images: doc.images || [],
     createdAt: doc.createdAt,
     name: doc.name || undefined,

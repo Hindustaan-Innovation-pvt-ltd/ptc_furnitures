@@ -103,8 +103,8 @@ export default function AdminProductsCatalog({
       // 3. Assignment Status Filter
       const statusMatch =
         assignmentFilter === "ALL" ||
-        (assignmentFilter === "ASSIGNED" && product.brand.trim() !== "") ||
-        (assignmentFilter === "UNASSIGNED" && product.brand.trim() === "");
+        (assignmentFilter === "ASSIGNED" && (product.brand || "").trim() !== "") ||
+        (assignmentFilter === "UNASSIGNED" && (product.brand || "").trim() === "");
 
       return queryMatch && brandFilterMatch && statusMatch;
     });
