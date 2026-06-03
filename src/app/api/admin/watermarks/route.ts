@@ -1,5 +1,5 @@
 import "server-only";
-import { NextResponse, connection } from "next/server";
+import { NextResponse } from "next/server";
 import { readBrandWatermarks, setBrandWatermark, BrandWatermark } from "@/lib/brand-watermarks";
 import { connectToDatabase } from "@/lib/mongodb";
 import fs from "node:fs/promises";
@@ -7,7 +7,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 
 export async function GET() {
-  await connection();
+
   const map = readBrandWatermarks();
   return NextResponse.json({ watermarks: map });
 }

@@ -41,29 +41,7 @@ export default function Products({ initialProducts, initialBrands, initialSearch
 
     const router = useRouter()
 
-    React.useEffect(() => {
-        let mounted = true;
-        Promise.all([
-            fetch('/api/products').then((response) => response.json()),
-            fetch('/api/brands').then((response) => response.json()),
-        ])
-            .then(([productsData, brandsData]) => {
-                if (!mounted) return;
 
-                if (Array.isArray(productsData?.products)) {
-                    setProducts(productsData.products as Product[])
-                }
-
-                if (Array.isArray(brandsData?.brands)) {
-                    setBrands(brandsData.brands as string[])
-                }
-            })
-            .catch(() => { });
-
-        return () => {
-            mounted = false;
-        };
-    }, []);
 
     const visibleProducts = React.useMemo(
         () => filterAndSortProducts(products, filters),

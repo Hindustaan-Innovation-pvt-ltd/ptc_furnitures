@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
 import { Suspense } from "react";
+import { connection } from "next/server";
 
 export const unstable_instant = { prefetch: "static", unstable_disableValidation: true };
 
@@ -15,10 +16,6 @@ type PublicCatalogsPageProps = {
 };
 
 export default async function PublicCatalogsPage({ searchParams }: PublicCatalogsPageProps) {
-  const catalogsPromise = readCatalogs();
-  const productsPromise = readProducts();
-  const brandsPromise = readBrands();
-
   return (
     <section className="min-h-screen bg-[#fcfcfd] dark:bg-[#08090d] text-slate-900 dark:text-slate-100 flex flex-col justify-between transition-colors duration-300">
       <div>
@@ -40,9 +37,6 @@ export default async function PublicCatalogsPage({ searchParams }: PublicCatalog
 
           <Suspense fallback={<div className="text-center py-20 text-slate-500">Loading catalogs...</div>}>
             <PublicCatalogsLoader
-              catalogsPromise={catalogsPromise}
-              productsPromise={productsPromise}
-              brandsPromise={brandsPromise}
               searchParams={searchParams}
             />
           </Suspense>
@@ -55,16 +49,14 @@ export default async function PublicCatalogsPage({ searchParams }: PublicCatalog
 }
 
 async function PublicCatalogsLoader({
-  catalogsPromise,
-  productsPromise,
-  brandsPromise,
   searchParams,
 }: {
-  catalogsPromise: Promise<any[]>;
-  productsPromise: Promise<any[]>;
-  brandsPromise: Promise<string[]>;
   searchParams: Promise<{ brand?: string }>;
 }) {
+  await connection();
+  const catalogsPromise = readCatalogs();
+  const productsPromise = readProducts();
+  const brandsPromise = readBrands();
   const [resolvedParams, catalogs, products, brands] = await Promise.all([
     searchParams,
     catalogsPromise,

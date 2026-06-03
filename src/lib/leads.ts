@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { connectToDatabase } from "./mongodb";
 import { DealerLeadModel } from "./db-models";
-import { connection } from "next/server";
 
 export type DealerLead = {
   id: string;
@@ -24,7 +23,6 @@ export type DealerLeadInput = {
 };
 
 export async function readLeads(): Promise<DealerLead[]> {
-  await connection();
   try {
     await connectToDatabase();
     const docs = await DealerLeadModel.find().sort({ createdAt: -1 }).lean();

@@ -4,17 +4,16 @@ import ProductsCollections from '@/components/custom/products/collections'
 import StayInTouch from '@/components/custom/StayInTouch'
 import { readBrands, readProducts } from '@/lib/products'
 import { Suspense } from 'react'
+import { connection } from 'next/server'
 
 export const unstable_instant = { prefetch: 'static', unstable_disableValidation: true }
+
 
 export default async function page({
     searchParams,
 }: {
     searchParams?: Promise<{ q?: string | string[] }>
 }) {
-    const productsPromise = readProducts()
-    const brandsPromise = readBrands()
-
     return (
         <section>
             <Navigation />
@@ -24,8 +23,6 @@ export default async function page({
             </div>
             <Suspense fallback={<div className="text-center py-20 text-slate-500">Loading collection...</div>}>
                 <CollectionsLoader
-                    productsPromise={productsPromise}
-                    brandsPromise={brandsPromise}
                     searchParams={searchParams}
                 />
             </Suspense>
@@ -36,14 +33,13 @@ export default async function page({
 }
 
 async function CollectionsLoader({
-    productsPromise,
-    brandsPromise,
     searchParams,
 }: {
-    productsPromise: Promise<any[]>
-    brandsPromise: Promise<string[]>
     searchParams?: Promise<{ q?: string | string[] }>
 }) {
+    await connection()
+    const productsPromise = readProducts()
+    const brandsPromise = readBrands()
     const [initialProducts, initialBrands, params] = await Promise.all([
         productsPromise,
         brandsPromise,

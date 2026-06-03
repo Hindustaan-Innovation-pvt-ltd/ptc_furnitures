@@ -1,4 +1,4 @@
-import { NextResponse, connection } from "next/server";
+import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -103,7 +103,7 @@ async function loadSourceBuffer(source: string): Promise<Buffer | null> {
 
 
 export async function GET(request: Request) {
-  await connection();
+
   try {
     const requestUrl = new URL(request.url);
     const legacySource = requestUrl.searchParams.get("src");

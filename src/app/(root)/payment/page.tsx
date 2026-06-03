@@ -58,8 +58,6 @@ async function getActiveEntries(): Promise<BankEntry[]> {
 }
 
 export default async function PaymentPage() {
-  const entriesPromise = getActiveEntries();
-
   return (
     <section className="min-h-screen bg-[#fcfcfd] dark:bg-[#08090d] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <div className="flex-1">
@@ -81,7 +79,7 @@ export default async function PaymentPage() {
           </div>
 
           <Suspense fallback={<div className="text-center py-20 text-slate-500">Loading payment details...</div>}>
-            <PaymentEntriesLoader entriesPromise={entriesPromise} />
+            <PaymentEntriesLoader />
           </Suspense>
         </div>
       </div>
@@ -110,8 +108,8 @@ export default async function PaymentPage() {
   );
 }
 
-async function PaymentEntriesLoader({ entriesPromise }: { entriesPromise: Promise<BankEntry[]> }) {
-  const entries = await entriesPromise;
+async function PaymentEntriesLoader() {
+  const entries = await getActiveEntries();
 
   if (entries.length === 0) {
     return (

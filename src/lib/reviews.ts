@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { connectToDatabase } from "./mongodb";
 import { ProductReviewModel } from "./db-models";
-import { connection } from "next/server";
 
 export type ProductReview = {
   id: string;
@@ -21,7 +20,6 @@ export type ProductReviewInput = {
 };
 
 export async function readReviews(): Promise<ProductReview[]> {
-  await connection();
   try {
     await connectToDatabase();
     const docs = await ProductReviewModel.find().sort({ date: -1 }).lean();

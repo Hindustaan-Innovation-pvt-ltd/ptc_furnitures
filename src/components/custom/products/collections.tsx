@@ -3,14 +3,6 @@
 import { Button } from '@/components/ui/button'
 import React from 'react'
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import {
     Pagination,
     PaginationContent,
     PaginationEllipsis,
@@ -19,7 +11,6 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
-import AssetImage from '@/components/custom/AssetImage'
 import type { Product } from '@/lib/products'
 import ProductCardWithHover from '@/components/custom/ProductCardWithHover'
 import {
@@ -64,31 +55,7 @@ export default function ProductsCollections({ initialProducts, initialBrands, in
     })
     const [currentPage, setCurrentPage] = React.useState(1)
 
-    React.useEffect(() => {
-        let mounted = true;
-        Promise.all([
-            fetch('/api/products').then((response) => response.json()),
-            fetch('/api/brands').then((response) => response.json()),
-        ])
-            .then(([productsData, brandsData]) => {
-                if (!mounted) {
-                    return;
-                }
 
-                if (Array.isArray(productsData?.products)) {
-                    setProducts(productsData.products as Product[]);
-                }
-
-                if (Array.isArray(brandsData?.brands)) {
-                    setBrands(brandsData.brands as string[]);
-                }
-            })
-            .catch(() => { });
-
-        return () => {
-            mounted = false;
-        };
-    }, []);
 
     const filterOptions = React.useMemo(() => getProductFilterOptions(products), [products])
     const visibleProducts = React.useMemo(

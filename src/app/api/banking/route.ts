@@ -1,4 +1,4 @@
-import { NextResponse, connection } from "next/server";
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { BankingDetailsModel } from "@/lib/db-models";
 
@@ -6,7 +6,7 @@ import { BankingDetailsModel } from "@/lib/db-models";
 
 /** GET — return all banking entries (sorted by createdAt asc) */
 export async function GET() {
-  await connection();
+
   try {
     await connectToDatabase();
 

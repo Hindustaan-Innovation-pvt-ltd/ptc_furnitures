@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { connectToDatabase } from "./mongodb";
 import { CatalogModel, StoredFile } from "./db-models";
-import { connection } from "next/server";
 
 export type Catalog = {
   id: string;
@@ -26,7 +25,6 @@ export type CatalogInput = {
 };
 
 export async function readCatalogs(): Promise<Catalog[]> {
-  await connection();
   try {
     await connectToDatabase();
     const docs = await CatalogModel.find().sort({ createdAt: -1 }).lean();

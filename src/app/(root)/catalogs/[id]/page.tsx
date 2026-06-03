@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
 import { Suspense } from "react";
+import { connection } from "next/server";
 
 export const unstable_instant = { prefetch: "static", unstable_disableValidation: true };
 
@@ -16,15 +17,10 @@ export default async function CatalogDetailsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const catalogsPromise = readCatalogs();
-  const productsPromise = readProducts();
-
   return (
     <Suspense fallback={<CatalogDetailsPlaceholder />}>
       <CatalogDetailsLoader
         params={params}
-        catalogsPromise={catalogsPromise}
-        productsPromise={productsPromise}
       />
     </Suspense>
   );
@@ -49,13 +45,12 @@ function CatalogDetailsPlaceholder() {
 
 async function CatalogDetailsLoader({
   params,
-  catalogsPromise,
-  productsPromise,
 }: {
   params: Promise<{ id: string }>;
-  catalogsPromise: Promise<any[]>;
-  productsPromise: Promise<any[]>;
 }) {
+  await connection();
+  const catalogsPromise = readCatalogs();
+  const productsPromise = readProducts();
   const [{ id }, catalogs, products] = await Promise.all([
     params,
     catalogsPromise,

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { connectToDatabase } from "./mongodb";
 import { Product as ProductModel, BrandModel, StoredFile } from "./db-models";
-import { connection } from "next/server";
+
 
 export type Product = {
   id: string;
@@ -103,7 +103,6 @@ export function isBrandInput(value: unknown): value is { name: string } {
 }
 
 export async function readProducts(): Promise<Product[]> {
-  await connection();
   try {
     await connectToDatabase();
     const docs = await ProductModel.find().sort({ createdAt: -1 }).lean();
@@ -127,7 +126,6 @@ export async function readProducts(): Promise<Product[]> {
 }
 
 export async function readBrands(): Promise<Brand[]> {
-  await connection();
   try {
     await connectToDatabase();
     const docs = await BrandModel.find().lean();
