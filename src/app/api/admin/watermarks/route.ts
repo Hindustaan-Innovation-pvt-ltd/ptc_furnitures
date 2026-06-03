@@ -1,11 +1,13 @@
 import "server-only";
-import { NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import { readBrandWatermarks, setBrandWatermark, BrandWatermark } from "@/lib/brand-watermarks";
 import { connectToDatabase } from "@/lib/mongodb";
-
-export const runtime = "nodejs";
+import fs from "node:fs/promises";
+import path from "node:path";
+import crypto from "node:crypto";
 
 export async function GET() {
+  await connection();
   const map = readBrandWatermarks();
   return NextResponse.json({ watermarks: map });
 }
@@ -29,9 +31,17 @@ export async function POST(request: Request) {
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const base64 = buffer.toString("base64");
-      const mimeType = file.type || "image/png";
-      const uploadedUrl = `data:${mimeType};base64,${base64}`;
+      
+      const uploadDir = path.join(process.cwd(), "public", "upload");
+      await fs.mkdir(uploadDir, { recursive: true });
+
+      const extension = file.name.split(".").pop() || "png";
+      const uniqueId = crypto.randomUUID();
+      const filename = `watermark_${uniqueId}.${extension}`;
+      const filePath = path.join(uploadDir, filename);
+
+      await fs.writeFile(filePath, buffer);
+      const uploadedUrl = `/upload/${filename}`;
 
       const size = String(form.get("size") ?? "medium");
       const opacity = Number(form.get("opacity") ?? 20);

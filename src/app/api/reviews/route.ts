@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { readReviews, addReview, updateReviewStatus, deleteReview } from "@/lib/reviews";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {

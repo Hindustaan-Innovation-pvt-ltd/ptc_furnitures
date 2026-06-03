@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { connectToDatabase } from "./mongodb";
 import { ProductReviewModel } from "./db-models";
+import { connection } from "next/server";
 
 export type ProductReview = {
   id: string;
@@ -20,17 +21,23 @@ export type ProductReviewInput = {
 };
 
 export async function readReviews(): Promise<ProductReview[]> {
-  await connectToDatabase();
-  const docs = await ProductReviewModel.find().sort({ date: -1 }).lean();
-  return docs.map((doc: any) => ({
-    id: doc.id,
-    productId: doc.productId,
-    productName: doc.productName,
-    rating: doc.rating,
-    text: doc.text,
-    date: doc.date,
-    status: doc.status || "approved",
-  }));
+  await connection();
+  try {
+    await connectToDatabase();
+    const docs = await ProductReviewModel.find().sort({ date: -1 }).lean();
+    return docs.map((doc: any) => ({
+      id: doc.id,
+      productId: doc.productId,
+      productName: doc.productName,
+      rating: doc.rating,
+      text: doc.text,
+      date: doc.date,
+      status: doc.status || "approved",
+    }));
+  } catch (error) {
+    console.error("Failed to read reviews from database:", error);
+    return [];
+  }
 }
 
 export async function writeReviews(reviews: ProductReview[]): Promise<void> {

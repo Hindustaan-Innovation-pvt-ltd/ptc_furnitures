@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -8,9 +8,7 @@ import { readProducts } from "@/lib/products";
 import { connectToDatabase } from "@/lib/mongodb";
 import { StoredFile } from "@/lib/db-models";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
 
 type ResolvedImage = {
   source: string;
@@ -64,21 +62,18 @@ async function fetchImageBuffer(url: string): Promise<Buffer | null> {
 }
 
 async function loadSourceBuffer(source: string): Promise<Buffer | null> {
-  // Directly decode Base64 data URIs
-  if (source.startsWith("data:")) {
-    try {
+  try {
+    // Directly decode Base64 data URIs
+    if (source.startsWith("data:")) {
       const base64Data = source.split(",")[1];
       if (base64Data) {
         return Buffer.from(base64Data, "base64");
       }
-    } catch {
       return null;
     }
-  }
 
-  // Directly fetch from MongoDB if it's a local /api/images URL
-  if (source.startsWith("/api/images")) {
-    try {
+    // Directly fetch from MongoDB if it's a local /api/images URL
+    if (source.startsWith("/api/images")) {
       const urlObj = new URL(source, "http://localhost");
       const fileId = urlObj.searchParams.get("id");
       if (fileId) {
@@ -88,21 +83,18 @@ async function loadSourceBuffer(source: string): Promise<Buffer | null> {
           return Buffer.from(storedFile.data);
         }
       }
-    } catch {
       return null;
     }
-  }
 
-  if (source.startsWith("http://") || source.startsWith("https://")) {
-    return fetchImageBuffer(source);
-  }
-
-  if (source.startsWith("/")) {
-    try {
-      return fs.readFile(path.join(process.cwd(), "public", source.replace(/^\//, "")));
-    } catch {
-      return null;
+    if (source.startsWith("http://") || source.startsWith("https://")) {
+      return await fetchImageBuffer(source);
     }
+
+    if (source.startsWith("/")) {
+      return await fs.readFile(path.join(process.cwd(), "public", source.replace(/^\//, "")));
+    }
+  } catch (error) {
+    console.error("Failed to load source buffer:", error);
   }
 
   return null;
@@ -111,6 +103,7 @@ async function loadSourceBuffer(source: string): Promise<Buffer | null> {
 
 
 export async function GET(request: Request) {
+  await connection();
   try {
     const requestUrl = new URL(request.url);
     const legacySource = requestUrl.searchParams.get("src");

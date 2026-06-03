@@ -2,10 +2,9 @@ import { NextResponse } from "next/server";
 import { addCatalog, readCatalogs } from "@/lib/catalogs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { StoredFile } from "@/lib/db-models";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+import fs from "node:fs/promises";
+import path from "node:path";
+import crypto from "node:crypto";
 
 export async function GET() {
   try {
@@ -41,15 +40,17 @@ export async function POST(request: Request) {
 
       const arrayBuffer = await pdfFile.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-
-      await connectToDatabase();
-      const storedFile = await StoredFile.create({
-        filename: pdfFile.name,
-        contentType: pdfFile.type || "application/pdf",
-        data: buffer,
-      });
-
-      const pdfUrl = `/api/images?id=${storedFile._id}`;
+ 
+      const uploadDir = path.join(process.cwd(), "public", "upload");
+      await fs.mkdir(uploadDir, { recursive: true });
+ 
+      const extension = pdfFile.name.split(".").pop() || "pdf";
+      const uniqueId = crypto.randomUUID();
+      const filename = `catalog_${uniqueId}.${extension}`;
+      const filePath = path.join(uploadDir, filename);
+ 
+      await fs.writeFile(filePath, buffer);
+      const pdfUrl = `/upload/${filename}`;
 
       const savedCatalog = await addCatalog({
         title,

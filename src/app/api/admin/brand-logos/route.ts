@@ -6,8 +6,6 @@ import { Product } from "@/lib/db-models";
 import { rewatermarkImage } from "@/lib/image-processor";
 import { connectToDatabase } from "@/lib/mongodb";
 
-export const runtime = "nodejs";
-
 export async function POST(request: Request) {
   try {
     const form = await request.formData();

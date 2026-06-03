@@ -2,9 +2,7 @@ import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import AdminProductsCatalog from "@/components/custom/AdminProductsCatalog";
 import { readBrands, readProducts } from "@/lib/products";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
 
 export default async function AdminProductsPage() {
   const [products, brands] = await Promise.all([readProducts(), readBrands()]);

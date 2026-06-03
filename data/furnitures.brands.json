@@ -1,0 +1,49 @@
+[{
+  "_id": {
+    "$oid": "6a1e7b085aae4745ed52cae8"
+  },
+  "name": "PTC",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1e7b085aae4745ed52cae9"
+  },
+  "name": "PTC GOLD",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1e7b085aae4745ed52caea"
+  },
+  "name": "REX",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1e7b085aae4745ed52caeb"
+  },
+  "name": "ALTECH",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1e7b085aae4745ed52caec"
+  },
+  "name": "ARTPLAST",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1e7b085aae4745ed52caed"
+  },
+  "name": "HALLMARK",
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1e7b085aae4745ed52caee"
+  },
+  "name": "PANKAJ",
+  "__v": 0
+}]

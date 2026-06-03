@@ -1,9 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { DownloadLeadModel } from "@/lib/db-models";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -39,6 +36,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
+  await connection();
   try {
     await connectToDatabase();
     const leads = await DownloadLeadModel.find().sort({ createdAt: -1 }).lean();

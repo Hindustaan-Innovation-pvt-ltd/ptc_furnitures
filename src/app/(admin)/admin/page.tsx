@@ -2,9 +2,7 @@ import AdminBrandGrid from "@/components/custom/AdminBrandGrid";
 import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import { readBrands, readProducts } from "@/lib/products";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
 
 export default async function AdminPage() {
   const [products, brands] = await Promise.all([readProducts(), readBrands()]);

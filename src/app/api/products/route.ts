@@ -9,10 +9,11 @@ import {
 import { connectToDatabase } from "@/lib/mongodb";
 import { Product } from "@/lib/db-models";
 import { removeWhiteBackground, compositeBrandWatermark, rewatermarkImage } from "@/lib/image-processor";
+import fs from "node:fs/promises";
+import path from "node:path";
+import crypto from "node:crypto";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
 
 function getStringField(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -40,27 +41,42 @@ function getOptionalStringField(
 
 async function storeProductImage(file: File, brand: string): Promise<{ watermarked: string; unwatermarked: string }> {
   const fileBuffer = Buffer.from(await file.arrayBuffer());
+  const uploadDir = path.join(process.cwd(), "public", "upload");
+  await fs.mkdir(uploadDir, { recursive: true });
+
+  const extension = file.name.split(".").pop() || "png";
+  const uniqueId = crypto.randomUUID();
 
   try {
     // 1. Process background removal (feathered)
     const bgRemoved = await removeWhiteBackground(fileBuffer);
-    
+
     // 2. Add brand watermark
     const watermarked = await compositeBrandWatermark(bgRemoved, brand);
 
-    const contentType = file.type || "image/png";
+    const filename = `${uniqueId}.${extension}`;
+    const originalFilename = `${uniqueId}_original.${extension}`;
+
+    const filePath = path.join(uploadDir, filename);
+    const originalFilePath = path.join(uploadDir, originalFilename);
+
+    await fs.writeFile(filePath, watermarked);
+    await fs.writeFile(originalFilePath, bgRemoved);
+
     return {
-      watermarked: `data:${contentType};base64,${watermarked.toString("base64")}`,
-      unwatermarked: `data:${contentType};base64,${bgRemoved.toString("base64")}`,
+      watermarked: `/upload/${filename}`,
+      unwatermarked: `/upload/${originalFilename}`,
     };
   } catch (err) {
-    // Fallback to raw base64 if sharp processing fails
-    const base64 = fileBuffer.toString("base64");
-    const contentType = file.type || "image/png";
-    const dataUri = `data:${contentType};base64,${base64}`;
+    // Fallback to raw if sharp processing fails
+    const filename = `${uniqueId}.${extension}`;
+    const filePath = path.join(uploadDir, filename);
+
+    await fs.writeFile(filePath, fileBuffer);
+
     return {
-      watermarked: dataUri,
-      unwatermarked: dataUri,
+      watermarked: `/upload/${filename}`,
+      unwatermarked: `/upload/${filename}`,
     };
   }
 }
@@ -98,7 +114,7 @@ async function parseProductRequest(
         (value): value is File => value instanceof File && value.size > 0,
       );
     const brand = getStringField(formData, "brand");
-    
+
     let uploadedImages: Array<{ watermarked: string; unwatermarked: string }> = [];
     if (imageEntries.length > 0) {
       uploadedImages = await Promise.all(

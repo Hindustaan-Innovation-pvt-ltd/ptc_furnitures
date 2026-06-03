@@ -7,18 +7,60 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
+import { Suspense } from "react";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const unstable_instant = { prefetch: "static", unstable_disableValidation: true };
 
 export default async function CatalogDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const [catalogs, products] = await Promise.all([readCatalogs(), readProducts()]);
+  const catalogsPromise = readCatalogs();
+  const productsPromise = readProducts();
+
+  return (
+    <Suspense fallback={<CatalogDetailsPlaceholder />}>
+      <CatalogDetailsLoader
+        params={params}
+        catalogsPromise={catalogsPromise}
+        productsPromise={productsPromise}
+      />
+    </Suspense>
+  );
+}
+
+function CatalogDetailsPlaceholder() {
+  return (
+    <div className="min-h-screen bg-[#fcfcfd] dark:bg-[#08090d] text-slate-900 dark:text-slate-100 flex flex-col justify-between transition-colors duration-300">
+      <div>
+        <Navigation />
+        <div className="text-center py-40 text-slate-500">
+          Loading brochure...
+        </div>
+      </div>
+      <div>
+        <StayInTouch />
+        <Footer />
+      </div>
+    </div>
+  );
+}
+
+async function CatalogDetailsLoader({
+  params,
+  catalogsPromise,
+  productsPromise,
+}: {
+  params: Promise<{ id: string }>;
+  catalogsPromise: Promise<any[]>;
+  productsPromise: Promise<any[]>;
+}) {
+  const [{ id }, catalogs, products] = await Promise.all([
+    params,
+    catalogsPromise,
+    productsPromise,
+  ]);
 
   const catalog = catalogs.find((c) => c.id === id);
   if (!catalog) {
@@ -27,46 +69,21 @@ export default async function CatalogDetailsPage({
 
   // Resolve products in the selected order
   const resolvedProducts = (catalog.productIds || [])
-    .map((productId) => products.find((p) => p.id === productId))
-    .filter((p): p is typeof products[0] => p !== undefined);
+    .map((productId: string) => products.find((p) => p.id === productId))
+    .filter((p: any): p is typeof products[0] => p !== undefined);
 
   const isPdf = catalog.type === "pdf";
 
-  // Themes CSS Configurations
-  const themeStyles = {
-    minimal: {
-      bodyBg: "bg-white dark:bg-[#0c0d11]",
-      cardBg: "bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5",
-      accentText: "text-red-700 dark:text-red-400",
-      accentBorder: "border-slate-200 dark:border-white/10",
-      fontClass: "font-sans",
-      titleFont: "font-extrabold tracking-tight",
-      coverBg: "bg-slate-50 dark:bg-[#111318]",
-    },
-    gold: {
-      bodyBg: "bg-[#fdfbf7] dark:bg-[#0c0a08]",
-      cardBg: "bg-white dark:bg-stone-900/50 border border-[#d4af37]/20 dark:border-[#d4af37]/10",
-      accentText: "text-[#c5a059] dark:text-[#e5c185]",
-      accentBorder: "border-[#d4af37]/30 dark:border-[#d4af37]/15",
-      fontClass: "font-serif",
-      titleFont: "font-serif font-bold italic tracking-wide",
-      coverBg: "bg-[#f5f1e6] dark:bg-[#1c1611]",
-    },
-    dark: {
-      bodyBg: "bg-[#07080a] text-slate-100",
-      cardBg: "bg-[#111318] border border-white/5",
-      accentText: "text-red-500 dark:text-red-400",
-      accentBorder: "border-white/5",
-      fontClass: "font-sans",
-      titleFont: "font-black tracking-tighter uppercase",
-      coverBg: "bg-[#111318]",
-    },
-  }[catalog.theme || "minimal"];
+  // Themes CSS Configuration flags
+  const theme = catalog.theme || "minimal";
+  const isGold = theme === "gold";
+  const isDark = theme === "dark";
 
   return (
-    <section className={`min-h-screen ${themeStyles.bodyBg} text-slate-900 dark:text-slate-100 flex flex-col justify-between transition-colors duration-300`}>
+    <section className={`min-h-screen ${isGold ? "bg-[#fdfbf7] dark:bg-[#0c0a08]" : isDark ? "bg-[#07080a] text-slate-100" : "bg-white dark:bg-[#0c0d11]"} text-slate-900 dark:text-slate-100 flex flex-col justify-between transition-colors duration-300`}>
       {/* Dynamic CSS for Print layouts and Cover styling */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @media print {
           body {
             background-color: white !important;
@@ -120,7 +137,7 @@ export default async function CatalogDetailsPage({
               <div>
                 <Link href="/catalogs" className="text-xs font-bold text-slate-400 hover:text-red-500 flex items-center gap-1">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                    <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
                   </svg>
                   Back to Bookshelf
                 </Link>
@@ -133,7 +150,7 @@ export default async function CatalogDetailsPage({
                 className="px-5 py-2.5 bg-red-700 hover:bg-red-800 text-white text-xs font-bold rounded-full shadow-xs transition flex items-center gap-2"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                 </svg>
                 Download PDF Brochure
               </CatalogDownloadButton>
@@ -149,7 +166,7 @@ export default async function CatalogDetailsPage({
               >
                 <div className="flex flex-col items-center justify-center h-full p-12 text-center">
                   <svg width="48" height="48" className="text-slate-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
                   </svg>
                   <p className="text-base font-bold">Unable to preview PDF directly</p>
                   <p className="text-xs text-slate-400 mt-1 mb-6">Your browser does not support embedded PDF viewer.</p>
@@ -167,27 +184,27 @@ export default async function CatalogDetailsPage({
         ) : (
           /* DIGITAL MAGAZINE LAYOUT */
           <div className="print-container max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8 flex-1">
-            
+
             {/* Back link - no-print */}
             <div className="no-print mb-8">
               <Link href="/catalogs" className="text-xs font-bold text-slate-400 hover:text-red-500 flex items-center gap-1 w-fit">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                  <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
                 </svg>
                 Back to Bookshelf
               </Link>
             </div>
 
             {/* EDITORIAL COVER PAGE */}
-            <div className={`rounded-3xl ${themeStyles.coverBg} border border-slate-200/60 dark:border-white/5 p-8 sm:p-16 text-center shadow-xs flex flex-col justify-center min-h-[50vh] relative overflow-hidden mb-12`}>
+            <div className={`rounded-3xl ${isGold ? "bg-[#f5f1e6] dark:bg-[#1c1611]" : isDark ? "bg-[#111318]" : "bg-slate-50 dark:bg-[#111318]"} border border-slate-200/60 dark:border-white/5 p-8 sm:p-16 text-center shadow-xs flex flex-col justify-center min-h-[50vh] relative overflow-hidden mb-12`}>
               {/* Top Accent line */}
               <div className={`w-24 h-0.5 mx-auto mb-8 bg-red-600 dark:bg-red-500`} />
 
-              <span className={`text-xs font-bold uppercase tracking-[0.4em] ${themeStyles.accentText}`}>
+              <span className={`text-xs font-bold uppercase tracking-[0.4em] ${isGold ? "text-[#c5a059] dark:text-[#e5c185]" : isDark ? "text-red-500 dark:text-red-400" : "text-red-700 dark:text-red-400"}`}>
                 Exclusive Portfolio Brochure
               </span>
 
-              <h1 className={`text-4xl sm:text-6xl ${themeStyles.titleFont} ${themeStyles.fontClass} mt-4 text-slate-900 dark:text-slate-100`}>
+              <h1 className={`text-4xl sm:text-6xl ${isGold ? "font-serif font-bold italic tracking-wide font-serif" : isDark ? "font-black tracking-tighter uppercase font-sans" : "font-extrabold tracking-tight font-sans"} mt-4 text-slate-900 dark:text-slate-100`}>
                 {catalog.title}
               </h1>
 
@@ -204,7 +221,7 @@ export default async function CatalogDetailsPage({
 
             {/* EDITORIAL INTRODUCTION */}
             <div className="max-w-2xl mx-auto text-center mb-20 px-4">
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${themeStyles.accentText}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${isGold ? "text-[#c5a059] dark:text-[#e5c185]" : isDark ? "text-red-500 dark:text-red-400" : "text-red-700 dark:text-red-400"}`}>
                 Inspirational Prelude
               </span>
               <h2 className="text-2xl font-bold mt-2 tracking-tight text-slate-900 dark:text-slate-100">
@@ -218,7 +235,7 @@ export default async function CatalogDetailsPage({
 
             {/* PRODUCT COLLECTION LOOP */}
             <div className="space-y-16">
-              {resolvedProducts.map((product, index) => {
+              {resolvedProducts.map((product: any, index: number) => {
                 // Determine layout alternate (image left, info right / vice versa)
                 const isEven = index % 2 === 0;
 
@@ -228,12 +245,11 @@ export default async function CatalogDetailsPage({
                     {index > 0 && <div className="page-break" />}
 
                     <div
-                      className={`catalog-product-card rounded-3xl ${themeStyles.cardBg} p-6 sm:p-10 shadow-xs grid gap-8 md:grid-cols-2 items-center`}
+                      className={`catalog-product-card rounded-3xl ${isGold ? "bg-white dark:bg-stone-900/50 border border-[#d4af37]/20 dark:border-[#d4af37]/10" : isDark ? "bg-[#111318] border border-white/5" : "bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5"} p-6 sm:p-10 shadow-xs grid gap-8 md:grid-cols-2 items-center`}
                     >
                       {/* Product Image */}
-                      <div className={`relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-white/5 border border-slate-200/40 dark:border-white/5 flex items-center justify-center ${
-                        !isEven ? "md:order-last" : ""
-                      }`}>
+                      <div className={`relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-white/5 border border-slate-200/40 dark:border-white/5 flex items-center justify-center ${!isEven ? "md:order-last" : ""
+                        }`}>
                         {product.images[0] ? (
                           <Image
                             src={product.images[0]}
@@ -258,7 +274,7 @@ export default async function CatalogDetailsPage({
                       {/* Product details */}
                       <div className="flex flex-col justify-between h-full">
                         <div>
-                          <span className={`text-[10px] font-bold uppercase tracking-widest ${themeStyles.accentText}`}>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest ${isGold ? "text-[#c5a059] dark:text-[#e5c185]" : isDark ? "text-red-500 dark:text-red-400" : "text-red-700 dark:text-red-400"}`}>
                             {product.brand}
                           </span>
 
@@ -290,7 +306,7 @@ export default async function CatalogDetailsPage({
                             {/* Custom Fields */}
                             {(product.customFields || []).length > 0 && (
                               <div className="grid gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                                {product.customFields?.map((field) => (
+                                {product.customFields?.map((field: any) => (
                                   <p key={field.label} className="flex justify-between sm:justify-start sm:gap-4">
                                     <span className="font-semibold text-slate-700 dark:text-slate-300 capitalize">{field.label}:</span>
                                     <span>{field.value}</span>
@@ -309,7 +325,7 @@ export default async function CatalogDetailsPage({
                           >
                             Inquire About This Piece
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                              <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
                             </svg>
                           </Link>
                         </div>
@@ -324,8 +340,8 @@ export default async function CatalogDetailsPage({
             <div className="page-break" />
 
             {/* CURATED CALL TO ACTION */}
-            <div className={`mt-20 rounded-3xl ${themeStyles.cardBg} p-8 sm:p-12 text-center shadow-xs border border-dashed`}>
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${themeStyles.accentText}`}>
+            <div className={`mt-20 rounded-3xl ${isGold ? "bg-white dark:bg-stone-900/50 border border-[#d4af37]/20 dark:border-[#d4af37]/10" : isDark ? "bg-[#111318] border border-white/5" : "bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5"} p-8 sm:p-12 text-center shadow-xs border border-dashed`}>
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${isGold ? "text-[#c5a059] dark:text-[#e5c185]" : isDark ? "text-red-500 dark:text-red-400" : "text-red-700 dark:text-red-400"}`}>
                 Portfolio Inquiry
               </span>
               <h3 className="text-2xl font-bold mt-2 text-slate-900 dark:text-slate-100">Interested in Curated Suites?</h3>
@@ -345,9 +361,9 @@ export default async function CatalogDetailsPage({
                   className="px-6 py-3 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-300 dark:border-white/10 text-xs font-bold rounded-full transition flex items-center gap-2"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="6 9 6 2 18 2 18 9"/>
-                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                    <rect x="6" y="14" width="12" height="8"/>
+                    <polyline points="6 9 6 2 18 2 18 9" />
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                    <rect x="6" y="14" width="12" height="8" />
                   </svg>
                   Export Brochure PDF
                 </CatalogDownloadButton>
@@ -363,7 +379,7 @@ export default async function CatalogDetailsPage({
                 title="Print or Save PDF"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2v-4M7 10l5 5 5-5M12 15V3"/>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2v-4M7 10l5 5 5-5M12 15V3" />
                 </svg>
                 Print / Save PDF
               </CatalogDownloadButton>

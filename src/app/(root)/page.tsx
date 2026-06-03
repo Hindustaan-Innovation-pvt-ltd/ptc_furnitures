@@ -7,19 +7,17 @@ import { Button } from "@/components/ui/button";
 import { readBrands, readProducts } from "@/lib/products";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
+
+export const unstable_instant = { prefetch: "static", unstable_disableValidation: true };
 
 export default async function Home({
   searchParams,
 }: {
   searchParams?: Promise<{ q?: string | string[] }>
 }) {
-  const [initialProducts, initialBrands] = await Promise.all([
-    readProducts(),
-    readBrands(),
-  ]);
-  const params = searchParams ? await searchParams : undefined;
-  const q = params?.q;
-  const initialSearchTerm = Array.isArray(q) ? q[0] ?? "" : q ?? "";
+  const productsPromise = readProducts();
+  const brandsPromise = readBrands();
 
   return (
     <div className="min-h-screen bg-[#f8f8f8] text-slate-900 dark:bg-[#08090d] dark:text-slate-100 transition-colors duration-300">
@@ -46,7 +44,13 @@ export default async function Home({
         </main>
       </section>
       <hr className="border-slate-200 dark:border-white/10" />
-      <Products initialProducts={initialProducts} initialBrands={initialBrands} initialSearchTerm={initialSearchTerm} />
+      <Suspense fallback={<div className="text-center py-20 text-slate-500">Loading products...</div>}>
+        <HomeProductsLoader
+          productsPromise={productsPromise}
+          brandsPromise={brandsPromise}
+          searchParams={searchParams}
+        />
+      </Suspense>
       <hr className="border-slate-200 dark:border-white/10" />
       <Reviews />
       <StayInTouch />
@@ -54,3 +58,30 @@ export default async function Home({
     </div >
   );
 }
+
+async function HomeProductsLoader({
+  productsPromise,
+  brandsPromise,
+  searchParams,
+}: {
+  productsPromise: Promise<any[]>;
+  brandsPromise: Promise<string[]>;
+  searchParams?: Promise<{ q?: string | string[] }>;
+}) {
+  const [initialProducts, initialBrands, params] = await Promise.all([
+    productsPromise,
+    brandsPromise,
+    searchParams || Promise.resolve(undefined),
+  ]);
+  const q = params?.q;
+  const initialSearchTerm = Array.isArray(q) ? q[0] ?? "" : q ?? "";
+
+  return (
+    <Products
+      initialProducts={initialProducts}
+      initialBrands={initialBrands}
+      initialSearchTerm={initialSearchTerm}
+    />
+  );
+}
+

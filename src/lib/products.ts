@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { connectToDatabase } from "./mongodb";
 import { Product as ProductModel, BrandModel, StoredFile } from "./db-models";
+import { connection } from "next/server";
 
 export type Product = {
   id: string;
@@ -102,30 +103,42 @@ export function isBrandInput(value: unknown): value is { name: string } {
 }
 
 export async function readProducts(): Promise<Product[]> {
-  await connectToDatabase();
-  const docs = await ProductModel.find().sort({ createdAt: -1 }).lean();
-  return docs.map((doc: any) => ({
-    id: doc.id,
-    brand: doc.brand,
-    images: doc.images || [],
-    originalImages: doc.originalImages || [],
-    createdAt: doc.createdAt,
-    name: doc.name || undefined,
-    price: doc.price || undefined,
-    material: doc.material || undefined,
-    craftedBy: doc.craftedBy || undefined,
-    tag: doc.tag || undefined,
-    customFields: doc.customFields || [],
-  }));
+  await connection();
+  try {
+    await connectToDatabase();
+    const docs = await ProductModel.find().sort({ createdAt: -1 }).lean();
+    return docs.map((doc: any) => ({
+      id: doc.id,
+      brand: doc.brand,
+      images: doc.images || [],
+      originalImages: doc.originalImages || [],
+      createdAt: doc.createdAt,
+      name: doc.name || undefined,
+      price: doc.price || undefined,
+      material: doc.material || undefined,
+      craftedBy: doc.craftedBy || undefined,
+      tag: doc.tag || undefined,
+      customFields: doc.customFields || [],
+    }));
+  } catch (error) {
+    console.error("Failed to read products from database:", error);
+    return [];
+  }
 }
 
 export async function readBrands(): Promise<Brand[]> {
-  await connectToDatabase();
-  const docs = await BrandModel.find().lean();
-  if (docs.length === 0) {
+  await connection();
+  try {
+    await connectToDatabase();
+    const docs = await BrandModel.find().lean();
+    if (docs.length === 0) {
+      return seedBrands;
+    }
+    return docs.map((doc: any) => doc.name);
+  } catch (error) {
+    console.error("Failed to read brands from database:", error);
     return seedBrands;
   }
-  return docs.map((doc: any) => doc.name);
 }
 
 export async function addBrand(name: string): Promise<Brand> {

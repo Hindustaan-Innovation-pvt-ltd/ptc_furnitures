@@ -5,6 +5,7 @@ import { getBrandLogo } from "./brand-logos";
 import { readBrandWatermarks } from "./brand-watermarks";
 import { connectToDatabase } from "./mongodb";
 import { StoredFile } from "./db-models";
+import crypto from "node:crypto";
 
 export async function removeWhiteBackground(imageBuffer: Buffer): Promise<Buffer> {
   try {
@@ -148,18 +149,51 @@ export async function compositeBrandWatermark(imageBuffer: Buffer, brand: string
 export async function rewatermarkImage(source: string, brand: string): Promise<string> {
   try {
     let imageBuffer: Buffer | null = null;
-    let contentType = "image/png";
+    let isLocalUpload = false;
+    let originalFilename = "";
+
+    const uploadDir = path.join(process.cwd(), "public", "upload");
+    await fs.mkdir(uploadDir, { recursive: true });
 
     if (source.startsWith("data:")) {
       const parts = source.split(",");
-      contentType = parts[0].match(/:(.*?);/)?.[1] || "image/png";
       imageBuffer = Buffer.from(parts[1], "base64");
+    } else if (source.startsWith("/")) {
+      try {
+        const filePath = path.join(process.cwd(), "public", source.replace(/^\//, ""));
+        imageBuffer = await fs.readFile(filePath);
+        isLocalUpload = true;
+        originalFilename = path.basename(filePath);
+      } catch (err: any) {
+        console.error("Failed to read local file for re-watermarking:", err.message);
+      }
     } else {
       // It is a remote URL or base64 data URI from MongoDB — fetch it
       const res = await fetch(source);
       if (res.ok) {
-        contentType = res.headers.get("content-type") || "image/png";
         imageBuffer = Buffer.from(await res.arrayBuffer());
+      }
+    }
+
+    if (isLocalUpload && originalFilename) {
+      const ext = originalFilename.split(".").pop() || "png";
+      const lastDotIndex = originalFilename.lastIndexOf(".");
+      const baseName = lastDotIndex !== -1 ? originalFilename.substring(0, lastDotIndex) : originalFilename;
+      
+      let checkOrigFilename = "";
+      if (baseName.endsWith("_original")) {
+        checkOrigFilename = originalFilename;
+      } else {
+        checkOrigFilename = `${baseName}_original.${ext}`;
+      }
+
+      const origFilePath = path.join(uploadDir, checkOrigFilename);
+      try {
+        const origBuffer = await fs.readFile(origFilePath);
+        imageBuffer = origBuffer;
+        originalFilename = checkOrigFilename;
+      } catch {
+        // use existing buffer
       }
     }
 
@@ -173,9 +207,22 @@ export async function rewatermarkImage(source: string, brand: string): Promise<s
     // 2. Add brand watermark
     const watermarked = await compositeBrandWatermark(bgRemoved, brand);
 
-    const base64 = watermarked.toString("base64");
-    // Always output PNG since sharp pipeline converts to PNG
-    return `data:image/png;base64,${base64}`;
+    if (isLocalUpload && originalFilename && originalFilename.includes("_original")) {
+      const filename = originalFilename.replace("_original", "");
+      const filePath = path.join(uploadDir, filename);
+      await fs.writeFile(filePath, watermarked);
+      return `/upload/${filename}`;
+    } else {
+      const uniqueId = crypto.randomUUID();
+      const extension = originalFilename ? (originalFilename.split(".").pop() || "png") : "png";
+      const filename = `${uniqueId}.${extension}`;
+      const origFilename = `${uniqueId}_original.${extension}`;
+
+      await fs.writeFile(path.join(uploadDir, filename), watermarked);
+      await fs.writeFile(path.join(uploadDir, origFilename), bgRemoved);
+
+      return `/upload/${filename}`;
+    }
   } catch (err: any) {
     console.error("Failed to rewatermark image:", err.message);
     return source;

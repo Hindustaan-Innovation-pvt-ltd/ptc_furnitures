@@ -3,9 +3,6 @@ import { readLeads, addLead, updateLead, updateLeadStatus, deleteLead } from "@/
 import { sendDealerWhatsAppMessage } from "@/lib/whatsapp";
 import { sendLeadSmsNotification } from "@/lib/sms";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 export async function GET() {
   try {
     const leads = await readLeads();

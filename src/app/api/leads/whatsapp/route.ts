@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import { readLeads } from "@/lib/leads";
 import { sendDealerWhatsAppMessage } from "@/lib/whatsapp";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();

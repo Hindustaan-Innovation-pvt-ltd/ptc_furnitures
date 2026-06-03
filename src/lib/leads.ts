@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { connectToDatabase } from "./mongodb";
 import { DealerLeadModel } from "./db-models";
+import { connection } from "next/server";
 
 export type DealerLead = {
   id: string;
@@ -23,20 +24,26 @@ export type DealerLeadInput = {
 };
 
 export async function readLeads(): Promise<DealerLead[]> {
-  await connectToDatabase();
-  const docs = await DealerLeadModel.find().sort({ createdAt: -1 }).lean();
-  return docs.map((doc: any) => ({
-    id: doc.id,
-    name: doc.name,
-    phone: doc.phone,
-    city: doc.city,
-    email: doc.email || undefined,
-    createdAt: doc.createdAt,
-    status: doc.status || "new",
-    whatsappStatus: doc.whatsappStatus || undefined,
-    whatsappSentAt: doc.whatsappSentAt || undefined,
-    whatsappMessage: doc.whatsappMessage || undefined,
-  }));
+  await connection();
+  try {
+    await connectToDatabase();
+    const docs = await DealerLeadModel.find().sort({ createdAt: -1 }).lean();
+    return docs.map((doc: any) => ({
+      id: doc.id,
+      name: doc.name,
+      phone: doc.phone,
+      city: doc.city,
+      email: doc.email || undefined,
+      createdAt: doc.createdAt,
+      status: doc.status || "new",
+      whatsappStatus: doc.whatsappStatus || undefined,
+      whatsappSentAt: doc.whatsappSentAt || undefined,
+      whatsappMessage: doc.whatsappMessage || undefined,
+    }));
+  } catch (error) {
+    console.error("Failed to read leads from database:", error);
+    return [];
+  }
 }
 
 export async function writeLeads(leads: DealerLead[]): Promise<void> {

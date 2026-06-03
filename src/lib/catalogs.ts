@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { connectToDatabase } from "./mongodb";
 import { CatalogModel, StoredFile } from "./db-models";
+import { connection } from "next/server";
 
 export type Catalog = {
   id: string;
@@ -25,19 +26,25 @@ export type CatalogInput = {
 };
 
 export async function readCatalogs(): Promise<Catalog[]> {
-  await connectToDatabase();
-  const docs = await CatalogModel.find().sort({ createdAt: -1 }).lean();
-  return docs.map((doc: any) => ({
-    id: doc.id,
-    title: doc.title,
-    description: doc.description || undefined,
-    type: doc.type,
-    pdfUrl: doc.pdfUrl || undefined,
-    productIds: doc.productIds || [],
-    createdAt: doc.createdAt,
-    theme: doc.theme || "minimal",
-    brand: doc.brand || undefined,
-  }));
+  await connection();
+  try {
+    await connectToDatabase();
+    const docs = await CatalogModel.find().sort({ createdAt: -1 }).lean();
+    return docs.map((doc: any) => ({
+      id: doc.id,
+      title: doc.title,
+      description: doc.description || undefined,
+      type: doc.type,
+      pdfUrl: doc.pdfUrl || undefined,
+      productIds: doc.productIds || [],
+      createdAt: doc.createdAt,
+      theme: doc.theme || "minimal",
+      brand: doc.brand || undefined,
+    }));
+  } catch (error) {
+    console.error("Failed to read catalogs from database:", error);
+    return [];
+  }
 }
 
 export async function writeCatalogs(catalogs: Catalog[]): Promise<void> {

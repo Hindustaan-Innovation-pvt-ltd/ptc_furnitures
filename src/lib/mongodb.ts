@@ -18,6 +18,9 @@ export async function connectToDatabase() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then(async (mongooseInstance) => {
@@ -83,6 +86,9 @@ export async function connectToDatabase() {
         console.error("==> MongoDB Cache Warmup failed:", err);
       }
       return mongooseInstance;
+    }).catch((err) => {
+      cached.promise = null;
+      throw err;
     });
   }
 

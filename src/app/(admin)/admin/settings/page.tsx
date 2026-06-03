@@ -3,9 +3,7 @@ import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import { readBrands } from "@/lib/products";
 import { getBrandLogos } from "@/lib/brand-logos";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
 
 export default async function AdminSettingsPage() {
   const [brands, brandLogos] = await Promise.all([readBrands(), getBrandLogos()]);

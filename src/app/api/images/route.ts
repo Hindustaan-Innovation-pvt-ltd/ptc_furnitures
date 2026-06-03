@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { StoredFile } from "@/lib/db-models";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
 
 export async function GET(request: Request) {
+  await connection();
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
