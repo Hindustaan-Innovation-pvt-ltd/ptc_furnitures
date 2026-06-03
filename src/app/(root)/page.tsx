@@ -41,7 +41,7 @@ export default async function Home({
                 </Link>
               </Button>
             </div>
-            <Image src="/banner.png" alt="PTC Furniture Banner" width={1200} height={600} className="mt-8 w-full drop-shadow-2xl sm:-mt-4 lg:-mt-12" style={{ height: "auto" }} priority />
+            <Image src="/banner.png" alt="PTC Furniture Banner" width={1200} height={600} priority className="mt-8 w-full drop-shadow-2xl sm:-mt-4 lg:-mt-12" style={{ height: "auto" }} />
           </div>
         </main>
       </section>
