@@ -115,9 +115,11 @@ function EntryForm({
           />
         </div>
         <div className="flex items-end pb-0.5">
-          <label className="flex items-center gap-3 cursor-pointer select-none">
+          <div
+            onClick={() => set("isActive", !form.isActive)}
+            className="flex items-center gap-3 cursor-pointer select-none"
+          >
             <div
-              onClick={() => set("isActive", !form.isActive)}
               className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${form.isActive ? "bg-emerald-500" : "bg-slate-300 dark:bg-white/20"}`}
             >
               <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${form.isActive ? "translate-x-5" : "translate-x-0"}`} />
@@ -125,7 +127,7 @@ function EntryForm({
             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
               {form.isActive ? "Active — visible to customers" : "Inactive — hidden from payment page"}
             </span>
-          </label>
+          </div>
         </div>
       </div>
 

@@ -10,6 +10,13 @@ export const revalidate = 0;
 export async function GET() {
   try {
     await connectToDatabase();
+
+    // Auto-migrate: set default isActive to true for documents that don't have it
+    await BankingDetailsModel.updateMany(
+      { isActive: { $exists: false } },
+      { $set: { isActive: true } }
+    );
+
     const entries = await BankingDetailsModel.find().sort({ createdAt: 1 }).lean();
     return NextResponse.json({ success: true, entries });
   } catch (error: any) {

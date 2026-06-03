@@ -33,13 +33,24 @@ type BankEntry = {
 
 async function getActiveEntries(): Promise<BankEntry[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://127.0.0.1:3000";
-    const data = await fetch(`${baseUrl}/api/banking`, { cache: "no-store" });
-    const response = await data.json();
-    const allEntries: BankEntry[] = response?.entries ?? [];
-    return allEntries.filter((e) => e.isActive !== false);
+    await connectToDatabase();
+
+    // Auto-migrate: set default isActive to true for documents that don't have it
+    await BankingDetailsModel.updateMany(
+      { isActive: { $exists: false } },
+      { $set: { isActive: true } }
+    );
+
+    const entries = await BankingDetailsModel.find({ isActive: { $ne: false } })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    return entries.map((e: any) => ({
+      ...e,
+      _id: e._id.toString(),
+    })) as unknown as BankEntry[];
   } catch (error) {
-    console.error("Error fetching banking details:", error);
+    console.error("Error fetching banking details directly:", error);
     return [];
   }
 }
