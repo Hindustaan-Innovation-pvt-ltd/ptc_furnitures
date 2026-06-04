@@ -6,9 +6,15 @@ import AdminProductForm from "@/components/custom/AdminProductForm";
 import AssetImage from "@/components/custom/AssetImage";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Product } from "@/lib/products";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { fetchProducts, PRODUCTS_CACHE_KEY } from "@/lib/product-cache";
+import type { Product } from "@/lib/products";
 
 type AdminProductsManagerProps = {
   products: Product[];
@@ -26,8 +32,12 @@ export default function AdminProductsManager({
   showAddTile,
 }: AdminProductsManagerProps) {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
-  const [draggingProductId, setDraggingProductId] = useState<string | null>(null);
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(
+    null,
+  );
+  const [draggingProductId, setDraggingProductId] = useState<string | null>(
+    null,
+  );
 
   const scopedBrand = initialBrand?.trim().toLowerCase() ?? null;
   const { data: cachedProducts = products, mutate } = useSWR(
@@ -64,7 +74,10 @@ export default function AdminProductsManager({
       formData.set("existingImages", JSON.stringify(product.images));
       // Always pass originalImages so the server can re-watermark from pristine images
       if (product.originalImages && product.originalImages.length > 0) {
-        formData.set("existingOriginalImages", JSON.stringify(product.originalImages));
+        formData.set(
+          "existingOriginalImages",
+          JSON.stringify(product.originalImages),
+        );
       }
       if (product.name) formData.set("name", product.name);
       if (product.price) formData.set("price", product.price);
@@ -150,10 +163,11 @@ export default function AdminProductsManager({
       <section
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => handleDrop(e, "slider")}
-        className={`relative overflow-hidden rounded-3xl border p-6 bg-linear-to-br from-white to-slate-50 shadow-md dark:from-[#111318] dark:to-[#0b0c10] transition-all duration-300 ${draggingProductId
+        className={`relative overflow-hidden rounded-3xl border p-6 bg-linear-to-br from-white to-slate-50 shadow-md dark:from-[#111318] dark:to-[#0b0c10] transition-all duration-300 ${
+          draggingProductId
             ? "border-red-400/70 ring-2 ring-red-500/20 dark:border-red-800/80"
             : "border-slate-200/80 dark:border-white/5"
-          }`}
+        }`}
       >
         <div className="flex flex-col gap-2 border-b border-slate-200/60 pb-4 dark:border-white/10">
           <div className="flex items-center gap-3">
@@ -171,11 +185,28 @@ export default function AdminProductsManager({
         <div className="mt-6 flex gap-5 overflow-x-auto pb-4 pt-1 snap-x scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-white/20">
           {otherProducts.length === 0 ? (
             <div className="flex h-52 w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 text-center p-6">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-slate-400 mb-2" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20.25 7.5L12 12L3.75 7.5M20.25 7.5V16.5L12 21L3.75 16.5V7.5M20.25 7.5L12 3L3.75 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-slate-400 mb-2"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20.25 7.5L12 12L3.75 7.5M20.25 7.5V16.5L12 21L3.75 16.5V7.5M20.25 7.5L12 3L3.75 7.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
-              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Catalog is empty</p>
-              <p className="text-xs text-slate-400 mt-1">No external or unassigned products remain</p>
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                Catalog is empty
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                No external or unassigned products remain
+              </p>
             </div>
           ) : (
             otherProducts.map((product) => (
@@ -202,7 +233,7 @@ export default function AdminProductsManager({
         initialBrand={initialBrand}
         brands={brands}
         brandLocked={brandLocked}
-        onSaved={(savedProduct) => {
+        onSaved={(_savedProduct) => {
           setEditingProduct(null);
           void mutate();
         }}
@@ -213,10 +244,11 @@ export default function AdminProductsManager({
       <section
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => handleDrop(e, "grid")}
-        className={`rounded-3xl border p-6 bg-linear-to-br from-white to-slate-50 shadow-md dark:from-[#111318] dark:to-[#0b0c10] transition-all duration-300 ${draggingProductId
+        className={`rounded-3xl border p-6 bg-linear-to-br from-white to-slate-50 shadow-md dark:from-[#111318] dark:to-[#0b0c10] transition-all duration-300 ${
+          draggingProductId
             ? "border-emerald-400 ring-2 ring-emerald-500/20 dark:border-emerald-800/80 bg-emerald-50/5"
             : "border-slate-200/80 dark:border-white/5"
-          }`}
+        }`}
       >
         <div className="flex flex-col gap-2 border-b border-slate-200/60 pb-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -230,7 +262,11 @@ export default function AdminProductsManager({
               </span>
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Active product uploads published under the <strong className="text-emerald-600 dark:text-emerald-400">{initialBrand}</strong> brand catalog.
+              Active product uploads published under the{" "}
+              <strong className="text-emerald-600 dark:text-emerald-400">
+                {initialBrand}
+              </strong>{" "}
+              brand catalog.
             </p>
           </div>
         </div>
@@ -249,18 +285,37 @@ export default function AdminProductsManager({
                 Upload images
               </span>
               <span className="mt-2 max-w-48 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Open the files explorer to upload a new batch of product image assets.
+                Open the files explorer to upload a new batch of product image
+                assets.
               </span>
             </button>
           ) : null}
 
           {thisBrandProducts.length === 0 && !showAddTile ? (
             <div className="flex flex-col items-center justify-center col-span-full rounded-2xl border border-dashed border-slate-200 dark:border-white/10 px-4 py-12 text-center text-slate-400 bg-slate-50/50 dark:bg-white/5">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-slate-400 mb-3" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-slate-400 mb-3"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
-              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Workspace is empty</p>
-              <p className="text-xs text-slate-400 mt-1">No uploads found. drag external items here or use uploader form above</p>
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                Workspace is empty
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                No uploads found. drag external items here or use uploader form
+                above
+              </p>
             </div>
           ) : null}
 
@@ -321,7 +376,8 @@ function ProductCard({
               {product.name || "Unnamed Product"}
             </h3>
             <p className="text-[10px] text-slate-400 mt-0.5">
-              {product.images.length} image{product.images.length === 1 ? "" : "s"} stored
+              {product.images.length} image
+              {product.images.length === 1 ? "" : "s"} stored
             </p>
           </div>
           <div className="flex gap-1 shrink-0">
@@ -381,7 +437,10 @@ function ProductCard({
         </div>
 
         {/* Metadata Details Tag Badges */}
-        {product.price || product.material || product.tag || (product.customFields && product.customFields.length > 0) ? (
+        {product.price ||
+        product.material ||
+        product.tag ||
+        (product.customFields && product.customFields.length > 0) ? (
           <div className="flex flex-wrap gap-1.5 min-h-5.5">
             {product.price ? (
               <span className="rounded-full bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-white/5 dark:border-white/5 dark:text-slate-300">
@@ -416,7 +475,9 @@ function ProductCard({
           </Label>
           <Select
             value={product.brand || "UNASSIGNED"}
-            onValueChange={(val) => onBrandChange(product, val === "UNASSIGNED" ? "" : val)}
+            onValueChange={(val) =>
+              onBrandChange(product, val === "UNASSIGNED" ? "" : val)
+            }
           >
             <SelectTrigger className="w-full h-8 rounded-lg text-xs bg-slate-50/50 hover:bg-slate-100/50 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 focus:ring-1 focus:ring-red-500/45 dark:focus:ring-red-400/40 select-none">
               <SelectValue placeholder="No Brand (Unassigned)" />

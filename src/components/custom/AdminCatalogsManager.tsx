@@ -1,11 +1,18 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Catalog } from "@/lib/catalogs";
 import type { Product } from "@/lib/products";
 
@@ -48,8 +55,10 @@ export default function AdminCatalogsManager({
     const matchesBrand = brandFilter === "" || product.brand === brandFilter;
     const matchesSearch =
       searchTerm === "" ||
-      (product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-      (product.material?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false) ||
+      (product.material?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false) ||
       (product.tag?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     return matchesBrand && matchesSearch;
   });
@@ -130,7 +139,9 @@ export default function AdminCatalogsManager({
         setSuccessMsg(`PDF Catalog "${title}" uploaded successfully!`);
       } else {
         if (selectedProductIds.length === 0) {
-          setErrorMsg("Please select at least one product for your custom digital catalog.");
+          setErrorMsg(
+            "Please select at least one product for your custom digital catalog.",
+          );
           return;
         }
 
@@ -182,7 +193,9 @@ export default function AdminCatalogsManager({
 
   // Delete Handler
   const handleDelete = async (id: string, catalogTitle: string) => {
-    if (!confirm(`Are you sure you want to delete the catalog "${catalogTitle}"?`)) {
+    if (
+      !confirm(`Are you sure you want to delete the catalog "${catalogTitle}"?`)
+    ) {
       return;
     }
 
@@ -251,15 +264,34 @@ export default function AdminCatalogsManager({
           {catalogs.length === 0 ? (
             <div className="text-center py-16 rounded-3xl border-2 border-dashed border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] p-8">
               <div className="h-12 w-12 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">No Catalog Brochures Found</h3>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">
+                No Catalog Brochures Found
+              </h3>
               <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">
-                Upload physical catalogs or design custom product brochures using your live product database items.
+                Upload physical catalogs or design custom product brochures
+                using your live product database items.
               </p>
-              <Button type="button" onClick={() => setActiveTab("create")} className="mt-5 rounded-full px-5">
+              <Button
+                type="button"
+                onClick={() => setActiveTab("create")}
+                className="mt-5 rounded-full px-5"
+              >
                 Build First Brochure
               </Button>
             </div>
@@ -267,7 +299,9 @@ export default function AdminCatalogsManager({
             <div>
               {/* Brand filter pill bar */}
               <div className="flex items-center gap-2 flex-wrap mb-6 bg-slate-50 dark:bg-[#0c0d11]/30 p-2.5 rounded-2xl border border-slate-200/50 dark:border-white/5">
-                <span className="text-xs font-bold text-slate-500 px-2 select-none">Filter by Brand:</span>
+                <span className="text-xs font-bold text-slate-500 px-2 select-none">
+                  Filter by Brand:
+                </span>
                 <button
                   type="button"
                   onClick={() => setListBrandFilter("")}
@@ -313,7 +347,9 @@ export default function AdminCatalogsManager({
                 return c.brand === listBrandFilter;
               }).length === 0 ? (
                 <div className="text-center py-12 text-slate-400">
-                  <p className="text-sm font-semibold">No catalogs found under this brand filter.</p>
+                  <p className="text-sm font-semibold">
+                    No catalogs found under this brand filter.
+                  </p>
                 </div>
               ) : (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -332,11 +368,13 @@ export default function AdminCatalogsManager({
                           {/* Badge type */}
                           <div className="flex items-center justify-between gap-2 mb-4">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                                catalog.type === "pdf"
-                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
-                                  : "bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400"
-                              }`}>
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                                  catalog.type === "pdf"
+                                    ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
+                                    : "bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400"
+                                }`}
+                              >
                                 {catalog.type === "pdf" ? "PDF" : "Digital"}
                               </span>
                               {catalog.brand && (
@@ -346,15 +384,20 @@ export default function AdminCatalogsManager({
                               )}
                             </div>
                             <span className="text-[9px] text-slate-400">
-                              {new Date(catalog.createdAt).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
+                              {new Date(catalog.createdAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                },
+                              )}
                             </span>
                           </div>
 
-                          <h4 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 line-clamp-1">{catalog.title}</h4>
+                          <h4 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 line-clamp-1">
+                            {catalog.title}
+                          </h4>
                           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 line-clamp-2 min-h-[2rem]">
                             {catalog.description || "No description provided."}
                           </p>
@@ -362,11 +405,17 @@ export default function AdminCatalogsManager({
                           {/* Metadata specs */}
                           <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 flex gap-4 text-xs text-slate-500">
                             <div>
-                              Theme: <span className="font-bold capitalize">{catalog.theme || "minimal"}</span>
+                              Theme:{" "}
+                              <span className="font-bold capitalize">
+                                {catalog.theme || "minimal"}
+                              </span>
                             </div>
                             {catalog.type === "custom" && (
                               <div>
-                                Products: <span className="font-bold text-slate-900 dark:text-slate-200">{(catalog.productIds || []).length}</span>
+                                Products:{" "}
+                                <span className="font-bold text-slate-900 dark:text-slate-200">
+                                  {(catalog.productIds || []).length}
+                                </span>
                               </div>
                             )}
                           </div>
@@ -374,22 +423,44 @@ export default function AdminCatalogsManager({
 
                         <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 dark:border-white/5 pt-4">
                           <a
-                            href={catalog.type === "pdf" ? catalog.pdfUrl : `/catalogs/${catalog.id}`}
+                            href={
+                              catalog.type === "pdf"
+                                ? catalog.pdfUrl
+                                : `/catalogs/${catalog.id}`
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
                           >
                             {catalog.type === "pdf" ? (
                               <>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                                 </svg>
                                 Download PDF
                               </>
                             ) : (
                               <>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
                                 </svg>
                                 Open Portfolios
                               </>
@@ -398,7 +469,9 @@ export default function AdminCatalogsManager({
 
                           <button
                             type="button"
-                            onClick={() => handleDelete(catalog.id, catalog.title)}
+                            onClick={() =>
+                              handleDelete(catalog.id, catalog.title)
+                            }
                             className="text-xs font-bold text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition"
                           >
                             Delete
@@ -415,15 +488,24 @@ export default function AdminCatalogsManager({
 
       {/* CREATE BROCHURE TAB */}
       {activeTab === "create" && (
-        <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] p-6 shadow-sm grid gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] p-6 shadow-sm grid gap-6"
+        >
           <div className="border-b border-slate-100 dark:border-white/5 pb-4">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Brochure Designer Studio</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Configure layout, details, and selections of catalogs.</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+              Brochure Designer Studio
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Configure layout, details, and selections of catalogs.
+            </p>
           </div>
 
           <div className="grid gap-5 md:grid-cols-3">
             <div className="grid gap-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Catalog Title *</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Catalog Title *
+              </label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -432,21 +514,34 @@ export default function AdminCatalogsManager({
               />
             </div>
             <div className="grid gap-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Associated Brand (Optional)</label>
-              <Select value={selectedBrand || "generic"} onValueChange={(value) => setSelectedBrand(value === "generic" ? "" : value)}>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Associated Brand (Optional)
+              </label>
+              <Select
+                value={selectedBrand || "generic"}
+                onValueChange={(value) =>
+                  setSelectedBrand(value === "generic" ? "" : value)
+                }
+              >
                 <SelectTrigger className="w-full text-xs font-medium border-slate-200/60 dark:border-white/10 bg-slate-50/50 dark:bg-[#08090d]">
                   <SelectValue placeholder="Generic (General Catalog)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="generic">Generic (General Catalog)</SelectItem>
+                  <SelectItem value="generic">
+                    Generic (General Catalog)
+                  </SelectItem>
                   {brands.map((b) => (
-                    <SelectItem key={b} value={b}>{b}</SelectItem>
+                    <SelectItem key={b} value={b}>
+                      {b}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Short Description</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Short Description
+              </label>
               <Input
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -458,7 +553,9 @@ export default function AdminCatalogsManager({
           <div className="grid gap-5 md:grid-cols-2">
             {/* Catalog Type */}
             <div className="grid gap-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Brochure Creation Mode</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Brochure Creation Mode
+              </label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -487,7 +584,9 @@ export default function AdminCatalogsManager({
 
             {/* Catalog Theme */}
             <div className="grid gap-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Design Style Theme</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Design Style Theme
+              </label>
               <div className="flex gap-2">
                 {(["minimal", "gold", "dark"] as const).map((style) => (
                   <button
@@ -500,7 +599,11 @@ export default function AdminCatalogsManager({
                         : "border-slate-200 bg-transparent text-slate-500 dark:border-white/5 dark:text-slate-400"
                     }`}
                   >
-                    {style === "gold" ? "Editorial Gold" : style === "dark" ? "Obsidian Dark" : "Minimalist Light"}
+                    {style === "gold"
+                      ? "Editorial Gold"
+                      : style === "dark"
+                        ? "Obsidian Dark"
+                        : "Minimalist Light"}
                   </button>
                 ))}
               </div>
@@ -511,15 +614,29 @@ export default function AdminCatalogsManager({
           {type === "pdf" ? (
             /* PDF UPLOADER BOX */
             <div className="grid gap-2 border border-slate-200/60 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-white/5 p-5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Brochure File (PDF Only) *</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Brochure File (PDF Only) *
+              </label>
               <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl p-8 bg-white dark:bg-[#111318] text-center">
-                <svg width="32" height="32" className="text-slate-400 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                <svg
+                  width="32"
+                  height="32"
+                  className="text-slate-400 mb-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                 </svg>
                 {pdfFile ? (
                   <div>
-                    <p className="text-sm font-bold text-red-600 dark:text-red-400">{pdfFile.name}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{(pdfFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                    <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                      {pdfFile.name}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {(pdfFile.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
                     <button
                       type="button"
                       onClick={() => setPdfFile(null)}
@@ -543,7 +660,9 @@ export default function AdminCatalogsManager({
                     >
                       Select PDF File
                     </label>
-                    <p className="text-[10px] text-slate-400 mt-2">Maximum file upload size 20MB</p>
+                    <p className="text-[10px] text-slate-400 mt-2">
+                      Maximum file upload size 20MB
+                    </p>
                   </div>
                 )}
               </div>
@@ -552,10 +671,15 @@ export default function AdminCatalogsManager({
             /* DIGITAL CATALOG SELECTION HUB */
             <div className="grid gap-6 border border-slate-200/60 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-white/5 p-4 xl:p-6">
               <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Live Product Curation Stage</h4>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                  Live Product Curation Stage
+                </h4>
                 <p className="text-xs text-slate-400 mt-0.5">
                   Select and curate products. You have selected{" "}
-                  <span className="font-bold text-red-600 dark:text-red-400">{selectedProductIds.length}</span> items.
+                  <span className="font-bold text-red-600 dark:text-red-400">
+                    {selectedProductIds.length}
+                  </span>{" "}
+                  items.
                 </p>
               </div>
 
@@ -563,7 +687,12 @@ export default function AdminCatalogsManager({
                 {/* Left Side: Product database search */}
                 <div className="grid gap-3 bg-white dark:bg-[#111318] border border-slate-200/60 dark:border-white/10 rounded-2xl p-4">
                   <div className="grid gap-2 sm:grid-cols-[1.3fr_1.7fr] items-center">
-                    <Select value={brandFilter || "all"} onValueChange={(value) => setBrandFilter(value === "all" ? "" : value)}>
+                    <Select
+                      value={brandFilter || "all"}
+                      onValueChange={(value) =>
+                        setBrandFilter(value === "all" ? "" : value)
+                      }
+                    >
                       <SelectTrigger className="w-full h-10 text-xs font-semibold text-slate-600 dark:text-slate-300 border-slate-200/60 dark:border-white/10 bg-slate-50 dark:bg-white/5 rounded-xl">
                         <SelectValue placeholder="All Brands" />
                       </SelectTrigger>
@@ -588,7 +717,9 @@ export default function AdminCatalogsManager({
                   {/* List Container */}
                   <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/5 pr-1">
                     {filteredProducts.length === 0 ? (
-                      <p className="text-xs text-slate-400 text-center py-10">No matching products.</p>
+                      <p className="text-xs text-slate-400 text-center py-10">
+                        No matching products.
+                      </p>
                     ) : (
                       filteredProducts.map((p) => {
                         const isSelected = selectedProductIds.includes(p.id);
@@ -599,7 +730,9 @@ export default function AdminCatalogsManager({
                             className="flex items-center gap-3.5 py-2.5 px-2 hover:bg-slate-50 dark:hover:bg-white/5 transition rounded-xl cursor-pointer select-none"
                           >
                             <div className="relative flex items-center justify-center h-4 w-4 rounded-md border border-slate-300 dark:border-white/20">
-                              {isSelected && <span className="absolute h-2.5 w-2.5 rounded-sm bg-red-600 dark:bg-red-400" />}
+                              {isSelected && (
+                                <span className="absolute h-2.5 w-2.5 rounded-sm bg-red-600 dark:bg-red-400" />
+                              )}
                             </div>
 
                             {p.images[0] && (
@@ -630,7 +763,9 @@ export default function AdminCatalogsManager({
                 {/* Right Side: Curated Sort Section */}
                 <div className="grid gap-3 bg-white dark:bg-[#111318] border border-slate-200/60 dark:border-white/10 rounded-2xl p-4">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/5">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Brochure Showcase Sequence</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Brochure Showcase Sequence
+                    </span>
                     <button
                       type="button"
                       onClick={() => setSelectedProductIds([])}
@@ -643,15 +778,22 @@ export default function AdminCatalogsManager({
                   <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/5 pr-1">
                     {selectedProductIds.length === 0 ? (
                       <div className="py-16 text-center">
-                        <p className="text-xs text-slate-400">No products selected yet.</p>
-                        <p className="text-[10px] text-slate-400/80 mt-1">Select items in the database panel.</p>
+                        <p className="text-xs text-slate-400">
+                          No products selected yet.
+                        </p>
+                        <p className="text-[10px] text-slate-400/80 mt-1">
+                          Select items in the database panel.
+                        </p>
                       </div>
                     ) : (
                       selectedProductIds.map((id, index) => {
                         const product = products.find((p) => p.id === id);
                         if (!product) return null;
                         return (
-                          <div key={id} className="flex items-center gap-3.5 py-2.5 px-2 select-none group">
+                          <div
+                            key={id}
+                            className="flex items-center gap-3.5 py-2.5 px-2 select-none group"
+                          >
                             {product.images[0] && (
                               <Image
                                 src={product.images[0]}
@@ -666,7 +808,9 @@ export default function AdminCatalogsManager({
                               <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                                 {product.name || "Unnamed Item"}
                               </p>
-                              <p className="text-[10px] text-slate-400">{product.brand}</p>
+                              <p className="text-[10px] text-slate-400">
+                                {product.brand}
+                              </p>
                             </div>
 
                             {/* Curation Controls */}
@@ -678,19 +822,39 @@ export default function AdminCatalogsManager({
                                 className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-800 disabled:opacity-30 disabled:pointer-events-none"
                                 title="Move Up"
                               >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="m18 15-6-6-6 6"/>
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="m18 15-6-6-6 6" />
                                 </svg>
                               </button>
                               <button
                                 type="button"
-                                disabled={index === selectedProductIds.length - 1}
+                                disabled={
+                                  index === selectedProductIds.length - 1
+                                }
                                 onClick={() => handleMoveDown(index)}
                                 className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-800 disabled:opacity-30 disabled:pointer-events-none"
                                 title="Move Down"
                               >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="m6 9 6 6 6-6"/>
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="m6 9 6 6 6-6" />
                                 </svg>
                               </button>
                               <button
@@ -699,8 +863,17 @@ export default function AdminCatalogsManager({
                                 className="p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-red-500"
                                 title="Remove"
                               >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M18 6 6 18M6 6l12 12"/>
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M18 6 6 18M6 6l12 12" />
                                 </svg>
                               </button>
                             </div>

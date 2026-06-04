@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     if (!id) {
       return NextResponse.json(
         { success: false, error: "Lead ID is required." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     if (!lead) {
       return NextResponse.json(
         { success: false, error: "Dealer lead not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -34,14 +34,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, lead: updatedLead });
     } else {
       return NextResponse.json(
-        { success: false, error: res.error || "Failed to send WhatsApp message." },
-        { status: 500 }
+        {
+          success: false,
+          error: res.error || "Failed to send WhatsApp message.",
+        },
+        { status: 500 },
       );
     }
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error?.message || "Failed to process request." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

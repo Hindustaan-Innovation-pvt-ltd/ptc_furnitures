@@ -1,16 +1,17 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
 import Image from "next/image";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Product, ProductCustomField } from "@/lib/products";
 
 type EditableCustomField = ProductCustomField & {
@@ -34,16 +35,18 @@ type AdminProductFormProps = {
 function getInitialState(product?: Product | null, initialBrand?: string) {
   return product
     ? {
-      brand: product.brand,
-      name: product.name ?? "",
-    }
+        brand: product.brand,
+        name: product.name ?? "",
+      }
     : {
-      brand: initialBrand ?? "PTC GOLD",
-      name: "",
-    };
+        brand: initialBrand ?? "PTC GOLD",
+        name: "",
+      };
 }
 
-function getInitialCustomFields(product?: Product | null): EditableCustomField[] {
+function getInitialCustomFields(
+  product?: Product | null,
+): EditableCustomField[] {
   return (product?.customFields ?? []).map((field) => ({
     id: `${field.label}-${field.value}`,
     label: field.label,
@@ -130,7 +133,10 @@ export default function AdminProductForm({
       if (imageFiles.length === 0) {
         formData.set("existingImages", JSON.stringify(product.images));
         if (product.originalImages) {
-          formData.set("existingOriginalImages", JSON.stringify(product.originalImages));
+          formData.set(
+            "existingOriginalImages",
+            JSON.stringify(product.originalImages),
+          );
         }
       }
     }
@@ -144,7 +150,10 @@ export default function AdminProductForm({
       body: formData,
     });
 
-    const payload = (await response.json()) as { error?: string; product?: Product };
+    const payload = (await response.json()) as {
+      error?: string;
+      product?: Product;
+    };
 
     if (!response.ok) {
       setErrorMessage(payload.error ?? "Unable to save product.");
@@ -236,7 +245,8 @@ export default function AdminProductForm({
                 Core details
               </p>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Start with the name and brand. Add extra details only when needed.
+                Start with the name and brand. Add extra details only when
+                needed.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -271,7 +281,9 @@ export default function AdminProductForm({
                       <SelectValue placeholder="No Brand (Unassigned)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="UNASSIGNED">No Brand (Unassigned)</SelectItem>
+                      <SelectItem value="UNASSIGNED">
+                        No Brand (Unassigned)
+                      </SelectItem>
                       {brands.map((b) => (
                         <SelectItem key={b} value={b}>
                           {b}
@@ -291,10 +303,16 @@ export default function AdminProductForm({
                   Custom fields
                 </p>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Add any extra attributes you need without changing the form later.
+                  Add any extra attributes you need without changing the form
+                  later.
                 </p>
               </div>
-              <Button type="button" variant="outline" className="rounded-full" onClick={addCustomField}>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                onClick={addCustomField}
+              >
                 Add field
               </Button>
             </div>
@@ -302,25 +320,40 @@ export default function AdminProductForm({
             <div className="grid gap-3">
               {customFields.length > 0 ? (
                 customFields.map((field, index) => (
-                  <div key={field.id} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#0f1116] sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                  <div
+                    key={field.id}
+                    className="grid gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#0f1116] sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+                  >
                     <div className="grid gap-2">
-                      <Label htmlFor={`custom-field-label-${field.id}`}>Field {index + 1} label</Label>
+                      <Label htmlFor={`custom-field-label-${field.id}`}>
+                        Field {index + 1} label
+                      </Label>
                       <Input
                         id={`custom-field-label-${field.id}`}
                         value={field.label}
                         onChange={(event) =>
-                          updateCustomField(field.id, "label", event.target.value)
+                          updateCustomField(
+                            field.id,
+                            "label",
+                            event.target.value,
+                          )
                         }
                         placeholder="Warranty"
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor={`custom-field-value-${field.id}`}>Value</Label>
+                      <Label htmlFor={`custom-field-value-${field.id}`}>
+                        Value
+                      </Label>
                       <Input
                         id={`custom-field-value-${field.id}`}
                         value={field.value}
                         onChange={(event) =>
-                          updateCustomField(field.id, "value", event.target.value)
+                          updateCustomField(
+                            field.id,
+                            "value",
+                            event.target.value,
+                          )
                         }
                         placeholder="5 years"
                       />
@@ -337,7 +370,8 @@ export default function AdminProductForm({
                 ))
               ) : (
                 <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-5 text-sm text-slate-500 dark:border-white/10 dark:bg-[#0f1116] dark:text-slate-400">
-                  No extra fields yet. Add one when you need to capture a special spec or note.
+                  No extra fields yet. Add one when you need to capture a
+                  special spec or note.
                 </div>
               )}
             </div>
@@ -350,7 +384,8 @@ export default function AdminProductForm({
               Image preview
             </p>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Every selected image stays fully visible so you can check framing before saving.
+              Every selected image stays fully visible so you can check framing
+              before saving.
             </p>
           </div>
 
@@ -405,10 +440,35 @@ export default function AdminProductForm({
           ) : (
             <div className="flex min-h-112 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center dark:border-white/10 dark:bg-[#0f1116]">
               <div className="flex size-14 items-center justify-center rounded-full bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M4 16.5 8.2 12.3c.7-.7 1.8-.7 2.5 0l3.5 3.5 2.7-2.7c.7-.7 1.8-.7 2.5 0L20 14.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M8.5 10.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.7" />
-                  <rect x="3.5" y="3.5" width="17" height="17" rx="3.5" stroke="currentColor" strokeWidth="1.7" />
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 16.5 8.2 12.3c.7-.7 1.8-.7 2.5 0l3.5 3.5 2.7-2.7c.7-.7 1.8-.7 2.5 0L20 14.2"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M8.5 10.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                  />
+                  <rect
+                    x="3.5"
+                    y="3.5"
+                    width="17"
+                    height="17"
+                    rx="3.5"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                  />
                 </svg>
               </div>
               <p className="mt-4 text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -422,7 +482,9 @@ export default function AdminProductForm({
 
           <div className="flex flex-wrap gap-2">
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300">
-              {imageFiles.length > 0 ? `${imageFiles.length} selected` : "Live preview"}
+              {imageFiles.length > 0
+                ? `${imageFiles.length} selected`
+                : "Live preview"}
             </span>
           </div>
         </section>

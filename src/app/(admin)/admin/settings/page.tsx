@@ -1,12 +1,13 @@
 import AdminBrandsManager from "@/components/custom/AdminBrandsManager";
 import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
-import { readBrands } from "@/lib/products";
 import { getBrandLogos } from "@/lib/brand-logos";
-
-
+import { readBrands } from "@/lib/products";
 
 export default async function AdminSettingsPage() {
-  const [brands, brandLogos] = await Promise.all([readBrands(), getBrandLogos()]);
+  const [brands, brandLogos] = await Promise.all([
+    readBrands(),
+    getBrandLogos(),
+  ]);
 
   return (
     <AdminDashboardShell

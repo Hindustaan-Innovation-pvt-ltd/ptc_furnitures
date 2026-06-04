@@ -2,8 +2,6 @@ import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import AdminProductsCatalog from "@/components/custom/AdminProductsCatalog";
 import { readBrands, readProducts } from "@/lib/products";
 
-
-
 export default async function AdminProductsPage() {
   const [products, brands] = await Promise.all([readProducts(), readBrands()]);
 

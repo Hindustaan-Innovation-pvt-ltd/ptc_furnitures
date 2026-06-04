@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { type Document, Schema } from "mongoose";
 
 // ==========================================
 // 1. Stored File (Binary Media storage)
@@ -48,7 +48,7 @@ const ProductCustomFieldSchema = new Schema<IProductCustomField>(
     label: { type: String, required: true },
     value: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ProductSchema = new Schema<IProduct>({
@@ -105,7 +105,11 @@ const CatalogSchema = new Schema<ICatalog>({
   pdfUrl: { type: String },
   productIds: { type: [String], default: [] },
   createdAt: { type: String, required: true },
-  theme: { type: String, enum: ["minimal", "gold", "dark"], default: "minimal" },
+  theme: {
+    type: String,
+    enum: ["minimal", "gold", "dark"],
+    default: "minimal",
+  },
   brand: { type: String },
 });
 
@@ -274,14 +278,14 @@ export const DownloadLeadModel =
 // 11. Banking Details Schema (multi-account)
 // ==========================================
 export interface IBankingDetails extends Document {
-  label: string;         // e.g. "Primary Account", "UPI Only"
-  isActive: boolean;     // toggle visibility on public page
+  label: string; // e.g. "Primary Account", "UPI Only"
+  isActive: boolean; // toggle visibility on public page
   // Bank Transfer
   accountHolderName: string;
   bankName: string;
   accountNumber: string;
   ifscCode: string;
-  accountType: string;   // "Current" | "Savings" | "OD" | "NRI"
+  accountType: string; // "Current" | "Savings" | "OD" | "NRI"
   branchName?: string;
   // UPI
   upiId?: string;

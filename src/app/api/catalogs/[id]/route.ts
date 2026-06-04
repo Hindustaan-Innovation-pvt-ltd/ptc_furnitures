@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { deleteCatalog, updateCatalog } from "@/lib/catalogs";
 
-
-
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -22,35 +20,47 @@ export async function PUT(
     });
 
     if (!savedCatalog) {
-      return NextResponse.json({ error: "Catalog not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Catalog not found." },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json({ catalog: savedCatalog });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to update catalog." },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error ? error.message : "Unable to update catalog.",
+      },
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const removedCatalog = await deleteCatalog(id);
 
     if (!removedCatalog) {
-      return NextResponse.json({ error: "Catalog not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Catalog not found." },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json({ catalog: removedCatalog });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to delete catalog." },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error ? error.message : "Unable to delete catalog.",
+      },
+      { status: 500 },
     );
   }
 }

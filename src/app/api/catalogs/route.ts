@@ -1,10 +1,8 @@
-import { NextResponse } from "next/server";
-import { addCatalog, readCatalogs } from "@/lib/catalogs";
-import { connectToDatabase } from "@/lib/mongodb";
-import { StoredFile } from "@/lib/db-models";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import crypto from "node:crypto";
+import { NextResponse } from "next/server";
+import { addCatalog, readCatalogs } from "@/lib/catalogs";
 
 export async function GET() {
   try {
@@ -12,8 +10,11 @@ export async function GET() {
     return NextResponse.json({ catalogs });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to read catalogs." },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error ? error.message : "Unable to read catalogs.",
+      },
+      { status: 500 },
     );
   }
 }
@@ -31,24 +32,30 @@ export async function POST(request: Request) {
       const pdfFile = formData.get("pdfFile") as File;
 
       if (!title || !title.trim()) {
-        return NextResponse.json({ error: "Catalog title is required." }, { status: 400 });
+        return NextResponse.json(
+          { error: "Catalog title is required." },
+          { status: 400 },
+        );
       }
 
       if (!pdfFile || pdfFile.size === 0) {
-        return NextResponse.json({ error: "PDF file is required for upload." }, { status: 400 });
+        return NextResponse.json(
+          { error: "PDF file is required for upload." },
+          { status: 400 },
+        );
       }
 
       const arrayBuffer = await pdfFile.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
- 
+
       const uploadDir = path.join(process.cwd(), "public", "upload");
       await fs.mkdir(uploadDir, { recursive: true });
- 
+
       const extension = pdfFile.name.split(".").pop() || "pdf";
       const uniqueId = crypto.randomUUID();
       const filename = `catalog_${uniqueId}.${extension}`;
       const filePath = path.join(uploadDir, filename);
- 
+
       await fs.writeFile(filePath, buffer);
       const pdfUrl = `/upload/${filename}`;
 
@@ -70,7 +77,10 @@ export async function POST(request: Request) {
     const { title, description, productIds, theme, brand } = body;
 
     if (!title || !title.trim()) {
-      return NextResponse.json({ error: "Catalog title is required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Catalog title is required." },
+        { status: 400 },
+      );
     }
 
     const savedCatalog = await addCatalog({
@@ -85,8 +95,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ catalog: savedCatalog }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to create catalog." },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error ? error.message : "Unable to create catalog.",
+      },
+      { status: 500 },
     );
   }
 }

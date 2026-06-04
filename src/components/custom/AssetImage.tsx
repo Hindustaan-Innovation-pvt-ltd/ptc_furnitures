@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image, { type ImageProps } from "next/image";
+import { useEffect, useState } from "react";
 
 type AssetImageProps = Omit<ImageProps, "src" | "alt"> & {
   src: string;

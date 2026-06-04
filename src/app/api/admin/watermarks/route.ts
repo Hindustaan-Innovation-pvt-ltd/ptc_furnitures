@@ -1,20 +1,27 @@
 import "server-only";
-import { NextResponse } from "next/server";
-import { readBrandWatermarks, setBrandWatermark, BrandWatermark } from "@/lib/brand-watermarks";
-import { Product } from "@/lib/db-models";
-import { rewatermarkImage } from "@/lib/image-processor";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import crypto from "node:crypto";
+import { NextResponse } from "next/server";
+import {
+  type BrandWatermark,
+  readBrandWatermarks,
+  setBrandWatermark,
+} from "@/lib/brand-watermarks";
+import { Product } from "@/lib/db-models";
+import { rewatermarkImage } from "@/lib/image-processor";
 
 async function syncBrandProducts(brand: string) {
   const productsToUpdate = await Product.find({ brand });
-  console.log(`==> [Brand Watermark Update] Re-applying new watermark configuration for brand "${brand}" onto ${productsToUpdate.length} products...`);
-  
+  console.log(
+    `==> [Brand Watermark Update] Re-applying new watermark configuration for brand "${brand}" onto ${productsToUpdate.length} products...`,
+  );
+
   for (const prod of productsToUpdate) {
-    const originalImages = prod.originalImages && prod.originalImages.length > 0
-      ? prod.originalImages
-      : prod.images;
+    const originalImages =
+      prod.originalImages && prod.originalImages.length > 0
+        ? prod.originalImages
+        : prod.images;
 
     const newImages: string[] = [];
     for (const img of originalImages) {
@@ -28,9 +35,7 @@ async function syncBrandProducts(brand: string) {
   }
 }
 
-
 export async function GET() {
-
   const map = readBrandWatermarks();
   return NextResponse.json({ watermarks: map });
 }
@@ -45,16 +50,22 @@ export async function POST(request: Request) {
       const file = form.get("file") as File | null;
 
       if (!brand) {
-        return NextResponse.json({ error: "Brand is required" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Brand is required" },
+          { status: 400 },
+        );
       }
 
       if (!file) {
-        return NextResponse.json({ error: "File is required" }, { status: 400 });
+        return NextResponse.json(
+          { error: "File is required" },
+          { status: 400 },
+        );
       }
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      
+
       const uploadDir = path.join(process.cwd(), "public", "upload");
       await fs.mkdir(uploadDir, { recursive: true });
 
@@ -80,14 +91,18 @@ export async function POST(request: Request) {
         "south_east",
         "south_west",
       ];
-      const safePosition = allowedPositions.includes(position as NonNullable<BrandWatermark["position"]>)
+      const safePosition = allowedPositions.includes(
+        position as NonNullable<BrandWatermark["position"]>,
+      )
         ? (position as NonNullable<BrandWatermark["position"]>)
         : "center";
 
       const wm: BrandWatermark = {
         url: uploadedUrl,
         size: (size as BrandWatermark["size"]) ?? "medium",
-        opacity: Number.isFinite(opacity) ? Math.max(0, Math.min(100, opacity)) : 20,
+        opacity: Number.isFinite(opacity)
+          ? Math.max(0, Math.min(100, opacity))
+          : 20,
         position: safePosition,
       };
 
@@ -114,18 +129,25 @@ export async function POST(request: Request) {
       "south_east",
       "south_west",
     ];
-    const safePosition = allowedPositions.includes(position as NonNullable<BrandWatermark["position"]>)
+    const safePosition = allowedPositions.includes(
+      position as NonNullable<BrandWatermark["position"]>,
+    )
       ? (position as NonNullable<BrandWatermark["position"]>)
       : "center";
 
     if (!brand || !watermarkUrl) {
-      return NextResponse.json({ error: "brand and watermark are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "brand and watermark are required" },
+        { status: 400 },
+      );
     }
 
     const wm: BrandWatermark = {
       url: watermarkUrl,
       size: (size as BrandWatermark["size"]) ?? "medium",
-      opacity: Number.isFinite(opacity) ? Math.max(0, Math.min(100, opacity)) : 80,
+      opacity: Number.isFinite(opacity)
+        ? Math.max(0, Math.min(100, opacity))
+        : 80,
       position: safePosition,
     };
 
@@ -133,6 +155,9 @@ export async function POST(request: Request) {
     await syncBrandProducts(brand);
     return NextResponse.json({ brand, watermark: wm });
   } catch (err: any) {
-    return NextResponse.json({ error: String(err?.message ?? err) }, { status: 500 });
+    return NextResponse.json(
+      { error: String(err?.message ?? err) },
+      { status: 500 },
+    );
   }
 }

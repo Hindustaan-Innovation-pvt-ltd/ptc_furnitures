@@ -1,12 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { type FormEvent, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { BrandLogo } from "@/lib/brand-logos";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 type AdminBrandsManagerProps = {
   brands: string[];
@@ -28,11 +34,15 @@ export default function AdminBrandsManager({
 
   const getLogo = (brandName: string) => {
     const norm = brandName.trim().replace(/\s+/g, " ").toLowerCase();
-    return initialBrandLogos.find(
-      (entry) =>
-        entry.brand.trim().replace(/\s+/g, " ").toLowerCase() === norm ||
-        entry.aliases.some((alias) => alias.trim().replace(/\s+/g, " ").toLowerCase() === norm),
-    ) ?? null;
+    return (
+      initialBrandLogos.find(
+        (entry) =>
+          entry.brand.trim().replace(/\s+/g, " ").toLowerCase() === norm ||
+          entry.aliases.some(
+            (alias) => alias.trim().replace(/\s+/g, " ").toLowerCase() === norm,
+          ),
+      ) ?? null
+    );
   };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -177,7 +187,8 @@ export default function AdminBrandsManager({
             Brand logos
           </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            These public assets are used as the transparent watermark overlay in the UI.
+            These public assets are used as the transparent watermark overlay in
+            the UI.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -195,18 +206,30 @@ export default function AdminBrandsManager({
                 unoptimized
               />
               <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{logo.brand}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{logo.src}</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  {logo.brand}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {logo.src}
+                </p>
               </div>
             </div>
           ))}
         </div>
 
-        <form className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#111318]" onSubmit={handleLogoUpload}>
+        <form
+          className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#111318]"
+          onSubmit={handleLogoUpload}
+        >
           <div className="grid gap-3 md:grid-cols-[1.2fr_1fr_auto] md:items-end">
             <div className="grid gap-1">
-              <label className="text-xs font-medium text-slate-500">Brand</label>
-              <Select value={logoBrand} onValueChange={(value) => setLogoBrand(value)}>
+              <label className="text-xs font-medium text-slate-500">
+                Brand
+              </label>
+              <Select
+                value={logoBrand}
+                onValueChange={(value) => setLogoBrand(value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a brand to update" />
                 </SelectTrigger>
@@ -221,11 +244,15 @@ export default function AdminBrandsManager({
             </div>
 
             <div className="grid gap-1">
-              <label className="text-xs font-medium text-slate-500">Logo file</label>
+              <label className="text-xs font-medium text-slate-500">
+                Logo file
+              </label>
               <Input
                 type="file"
                 accept="image/*"
-                onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)}
+                onChange={(event) =>
+                  setLogoFile(event.target.files?.[0] ?? null)
+                }
               />
             </div>
 
@@ -234,7 +261,9 @@ export default function AdminBrandsManager({
             </Button>
           </div>
           {logoMessage ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">{logoMessage}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {logoMessage}
+            </p>
           ) : null}
         </form>
       </div>
@@ -249,6 +278,6 @@ export default function AdminBrandsManager({
           </p>
         ) : null}
       </div>
-    </section >
+    </section>
   );
 }

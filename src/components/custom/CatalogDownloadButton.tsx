@@ -3,70 +3,70 @@ import React from "react";
 import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
 
 type CatalogDownloadButtonProps = {
-    /** The URL to download (PDF) */
-    href: string;
-    /** Button label */
-    label?: string;
-    className?: string;
-    children?: React.ReactNode;
-    /** If true, triggers window.print() instead of file download */
-    isPrint?: boolean;
-    title?: string;
+  /** The URL to download (PDF) */
+  href: string;
+  /** Button label */
+  label?: string;
+  className?: string;
+  children?: React.ReactNode;
+  /** If true, triggers window.print() instead of file download */
+  isPrint?: boolean;
+  title?: string;
 };
 
 export default function CatalogDownloadButton({
-    href,
-    label = "Download PDF",
-    className = "",
-    children,
-    isPrint = false,
-    title,
+  href,
+  label = "Download PDF",
+  className = "",
+  children,
+  isPrint = false,
+  title,
 }: CatalogDownloadButtonProps) {
-    const [modalOpen, setModalOpen] = React.useState(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
 
-    async function handleConfirm(lead: { name: string; mobile: string }) {
-        // Silently log lead (best-effort)
-        fetch("/api/download-leads", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: lead.name,
-                mobile: lead.mobile,
-                action: isPrint ? "catalog_print" : "catalog_download",
-                catalogUrl: href,
-            }),
-        }).catch(() => {});
+  async function handleConfirm(lead: { name: string; mobile: string }) {
+    // Silently log lead (best-effort)
+    fetch("/api/download-leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: lead.name,
+        mobile: lead.mobile,
+        action: isPrint ? "catalog_print" : "catalog_download",
+        catalogUrl: href,
+      }),
+    }).catch(() => {});
 
-        if (isPrint) {
-            window.print();
-        } else {
-            // Trigger the download programmatically
-            const a = document.createElement("a");
-            a.href = href;
-            a.download = "";
-            a.target = "_blank";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        }
+    if (isPrint) {
+      window.print();
+    } else {
+      // Trigger the download programmatically
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = "";
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
+  }
 
-    return (
-        <>
-            <LeadCaptureModal
-                open={modalOpen}
-                onOpenChange={setModalOpen}
-                actionLabel={isPrint ? "Print / Save PDF" : "Download Catalog"}
-                onConfirm={handleConfirm}
-            />
-            <button
-                type="button"
-                onClick={() => setModalOpen(true)}
-                className={className}
-                title={title}
-            >
-                {children ?? label}
-            </button>
-        </>
-    );
+  return (
+    <>
+      <LeadCaptureModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        actionLabel={isPrint ? "Print / Save PDF" : "Download Catalog"}
+        onConfirm={handleConfirm}
+      />
+      <button
+        type="button"
+        onClick={() => setModalOpen(true)}
+        className={className}
+        title={title}
+      >
+        {children ?? label}
+      </button>
+    </>
+  );
 }

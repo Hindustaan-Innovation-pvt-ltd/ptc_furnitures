@@ -1,13 +1,15 @@
-import sharp from "sharp";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import sharp from "sharp";
 import { getBrandLogo } from "./brand-logos";
 import { readBrandWatermarks } from "./brand-watermarks";
-import { connectToDatabase } from "./mongodb";
 import { StoredFile } from "./db-models";
-import crypto from "node:crypto";
+import { connectToDatabase } from "./mongodb";
 
-export async function removeWhiteBackground(imageBuffer: Buffer): Promise<Buffer> {
+export async function removeWhiteBackground(
+  imageBuffer: Buffer,
+): Promise<Buffer> {
   try {
     const { data, info } = await sharp(imageBuffer)
       .ensureAlpha()
@@ -46,7 +48,10 @@ export async function removeWhiteBackground(imageBuffer: Buffer): Promise<Buffer
   }
 }
 
-export async function compositeBrandWatermark(imageBuffer: Buffer, brand: string): Promise<Buffer> {
+export async function compositeBrandWatermark(
+  imageBuffer: Buffer,
+  brand: string,
+): Promise<Buffer> {
   let logo = getBrandLogo(brand);
 
   // Fallback to PTC logo as default watermark
@@ -75,7 +80,11 @@ export async function compositeBrandWatermark(imageBuffer: Buffer, brand: string
       logoBuffer = Buffer.from(storedFile.data);
     } else {
       // Legacy: read from public folder
-      const logoPath = path.join(process.cwd(), "public", logo.src.replace(/^\//, ""));
+      const logoPath = path.join(
+        process.cwd(),
+        "public",
+        logo.src.replace(/^\//, ""),
+      );
       logoBuffer = await fs.readFile(logoPath);
     }
 
@@ -146,7 +155,10 @@ export async function compositeBrandWatermark(imageBuffer: Buffer, brand: string
   }
 }
 
-export async function rewatermarkImage(source: string, brand: string): Promise<string> {
+export async function rewatermarkImage(
+  source: string,
+  brand: string,
+): Promise<string> {
   try {
     let imageBuffer: Buffer | null = null;
     let isLocalUpload = false;
@@ -160,12 +172,19 @@ export async function rewatermarkImage(source: string, brand: string): Promise<s
       imageBuffer = Buffer.from(parts[1], "base64");
     } else if (source.startsWith("/")) {
       try {
-        const filePath = path.join(process.cwd(), "public", source.replace(/^\//, ""));
+        const filePath = path.join(
+          process.cwd(),
+          "public",
+          source.replace(/^\//, ""),
+        );
         imageBuffer = await fs.readFile(filePath);
         isLocalUpload = true;
         originalFilename = path.basename(filePath);
       } catch (err: any) {
-        console.error("Failed to read local file for re-watermarking:", err.message);
+        console.error(
+          "Failed to read local file for re-watermarking:",
+          err.message,
+        );
       }
     } else {
       // It is a remote URL or base64 data URI from MongoDB — fetch it
@@ -178,8 +197,11 @@ export async function rewatermarkImage(source: string, brand: string): Promise<s
     if (isLocalUpload && originalFilename) {
       const ext = originalFilename.split(".").pop() || "png";
       const lastDotIndex = originalFilename.lastIndexOf(".");
-      const baseName = lastDotIndex !== -1 ? originalFilename.substring(0, lastDotIndex) : originalFilename;
-      
+      const baseName =
+        lastDotIndex !== -1
+          ? originalFilename.substring(0, lastDotIndex)
+          : originalFilename;
+
       let checkOrigFilename = "";
       if (baseName.endsWith("_original")) {
         checkOrigFilename = originalFilename;
@@ -207,19 +229,31 @@ export async function rewatermarkImage(source: string, brand: string): Promise<s
     // 2. Add brand watermark
     const watermarked = await compositeBrandWatermark(bgRemoved, brand);
 
-    if (isLocalUpload && originalFilename && originalFilename.includes("_original")) {
-      const filename = originalFilename.replace("_original", "").replace(/\.[^.]+$/, ".webp");
+    if (
+      isLocalUpload &&
+      originalFilename &&
+      originalFilename.includes("_original")
+    ) {
+      const filename = originalFilename
+        .replace("_original", "")
+        .replace(/\.[^.]+$/, ".webp");
       const filePath = path.join(uploadDir, filename);
       // Re-save as WebP for optimized file size
-      await sharp(watermarked).webp({ quality: 90, lossless: false }).toFile(filePath);
+      await sharp(watermarked)
+        .webp({ quality: 90, lossless: false })
+        .toFile(filePath);
       return `/upload/${filename}`;
     } else {
       const uniqueId = crypto.randomUUID();
       const filename = `${uniqueId}.webp`;
       const origFilename = `${uniqueId}_original.webp`;
 
-      await sharp(watermarked).webp({ quality: 90, lossless: false }).toFile(path.join(uploadDir, filename));
-      await sharp(bgRemoved).webp({ quality: 92, lossless: false }).toFile(path.join(uploadDir, origFilename));
+      await sharp(watermarked)
+        .webp({ quality: 90, lossless: false })
+        .toFile(path.join(uploadDir, filename));
+      await sharp(bgRemoved)
+        .webp({ quality: 92, lossless: false })
+        .toFile(path.join(uploadDir, origFilename));
 
       return `/upload/${filename}`;
     }

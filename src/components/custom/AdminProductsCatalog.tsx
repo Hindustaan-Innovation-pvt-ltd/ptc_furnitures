@@ -1,16 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import Link from "next/link";
 import AdminProductForm from "@/components/custom/AdminProductForm";
 import AssetImage from "@/components/custom/AssetImage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Product } from "@/lib/products";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { fetchProducts, PRODUCTS_CACHE_KEY } from "@/lib/product-cache";
+import type { Product } from "@/lib/products";
 
 type AdminProductsCatalogProps = {
   products: Product[];
@@ -24,7 +30,9 @@ export default function AdminProductsCatalog({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrandFilter, setSelectedBrandFilter] = useState("ALL");
   const [assignmentFilter, setAssignmentFilter] = useState("ALL");
-  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(
+    null,
+  );
   const [showAddForm, setShowAddForm] = useState(false);
 
   const { data: cachedProducts = products, mutate } = useSWR(
@@ -44,7 +52,10 @@ export default function AdminProductsCatalog({
       formData.set("brand", targetBrand);
       formData.set("existingImages", JSON.stringify(product.images));
       if (product.originalImages) {
-        formData.set("existingOriginalImages", JSON.stringify(product.originalImages));
+        formData.set(
+          "existingOriginalImages",
+          JSON.stringify(product.originalImages),
+        );
       }
       if (product.name) formData.set("name", product.name);
       if (product.price) formData.set("price", product.price);
@@ -90,10 +101,16 @@ export default function AdminProductsCatalog({
   const filteredProducts = useMemo(() => {
     return cachedProducts.filter((product) => {
       // 1. Search Term Filter
-      const nameMatch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-      const idMatch = product.id.toLowerCase().includes(searchTerm.toLowerCase());
-      const brandMatch = product.brand.toLowerCase().includes(searchTerm.toLowerCase());
-      const queryMatch = searchTerm.trim() === "" || nameMatch || idMatch || brandMatch;
+      const nameMatch =
+        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
+      const idMatch = product.id
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const brandMatch = product.brand
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const queryMatch =
+        searchTerm.trim() === "" || nameMatch || idMatch || brandMatch;
 
       // 2. Brand Dropdown Filter
       const brandFilterMatch =
@@ -103,8 +120,10 @@ export default function AdminProductsCatalog({
       // 3. Assignment Status Filter
       const statusMatch =
         assignmentFilter === "ALL" ||
-        (assignmentFilter === "ASSIGNED" && (product.brand || "").trim() !== "") ||
-        (assignmentFilter === "UNASSIGNED" && (product.brand || "").trim() === "");
+        (assignmentFilter === "ASSIGNED" &&
+          (product.brand || "").trim() !== "") ||
+        (assignmentFilter === "UNASSIGNED" &&
+          (product.brand || "").trim() === "");
 
       return queryMatch && brandFilterMatch && statusMatch;
     });
@@ -119,7 +138,8 @@ export default function AdminProductsCatalog({
             Unified Catalog Management
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Search, filter, and assign brands dynamically. Toggle uploader form below to add new product batches.
+            Search, filter, and assign brands dynamically. Toggle uploader form
+            below to add new product batches.
           </p>
         </div>
         <Button
@@ -147,10 +167,14 @@ export default function AdminProductsCatalog({
 
       {/* Filtering Actions Panel */}
       <section className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-xs dark:border-white/5 dark:bg-[#111318] grid gap-4 md:grid-cols-[1.5fr_1fr_1fr_auto] items-end select-none">
-
         {/* Input Search */}
         <div className="grid gap-2">
-          <Label htmlFor="search" className="text-xs font-bold uppercase tracking-wider text-slate-400">Search Products</Label>
+          <Label
+            htmlFor="search"
+            className="text-xs font-bold uppercase tracking-wider text-slate-400"
+          >
+            Search Products
+          </Label>
           <Input
             id="search"
             value={searchTerm}
@@ -162,15 +186,22 @@ export default function AdminProductsCatalog({
 
         {/* Brand Filter Selector */}
         <div className="grid gap-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Filter by Brand</Label>
-          <Select value={selectedBrandFilter} onValueChange={setSelectedBrandFilter}>
+          <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Filter by Brand
+          </Label>
+          <Select
+            value={selectedBrandFilter}
+            onValueChange={setSelectedBrandFilter}
+          >
             <SelectTrigger className="w-full h-9 rounded-lg text-xs">
               <SelectValue placeholder="All Brands" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All Brands</SelectItem>
               {brands.map((b) => (
-                <SelectItem key={b} value={b}>{b}</SelectItem>
+                <SelectItem key={b} value={b}>
+                  {b}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -178,7 +209,9 @@ export default function AdminProductsCatalog({
 
         {/* Status Filter Selector */}
         <div className="grid gap-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Status</Label>
+          <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Status
+          </Label>
           <Select value={assignmentFilter} onValueChange={setAssignmentFilter}>
             <SelectTrigger className="w-full h-9 rounded-lg text-xs">
               <SelectValue placeholder="All Status" />
@@ -210,11 +243,28 @@ export default function AdminProductsCatalog({
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filteredProducts.length === 0 ? (
           <div className="flex h-56 col-span-full flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 dark:border-white/5 bg-white dark:bg-[#111318] text-center p-8">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-slate-400 mb-3" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-slate-400 mb-3"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
-            <p className="text-base font-semibold text-slate-500 dark:text-slate-400">No products matched</p>
-            <p className="text-xs text-slate-400 mt-1">Adjust search parameters or clear filters above</p>
+            <p className="text-base font-semibold text-slate-500 dark:text-slate-400">
+              No products matched
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              Adjust search parameters or clear filters above
+            </p>
           </div>
         ) : (
           filteredProducts.map((product) => (
@@ -298,21 +348,32 @@ export default function AdminProductsCatalog({
                         disabled={deletingProductId === product.id}
                         className="text-[10px] font-bold uppercase tracking-wider text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 shrink-0"
                       >
-                        {deletingProductId === product.id ? "Unlinking..." : "Unlink Brand"}
+                        {deletingProductId === product.id
+                          ? "Unlinking..."
+                          : "Unlink Brand"}
                       </button>
                     ) : null}
                   </div>
                   <Select
                     value={product.brand || "UNASSIGNED"}
-                    onValueChange={(val) => updateProductBrand(product, val === "UNASSIGNED" ? "" : val)}
+                    onValueChange={(val) =>
+                      updateProductBrand(
+                        product,
+                        val === "UNASSIGNED" ? "" : val,
+                      )
+                    }
                   >
                     <SelectTrigger className="w-full h-8 rounded-lg text-xs bg-slate-50/50 hover:bg-slate-100/50 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5">
                       <SelectValue placeholder="No Brand (Unassigned)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="UNASSIGNED">No Brand (Unassigned)</SelectItem>
+                      <SelectItem value="UNASSIGNED">
+                        No Brand (Unassigned)
+                      </SelectItem>
                       {brands.map((b) => (
-                        <SelectItem key={b} value={b}>{b}</SelectItem>
+                        <SelectItem key={b} value={b}>
+                          {b}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

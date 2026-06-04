@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { addBrand, isBrandInput, readBrands } from "@/lib/products";
 
-
 export async function GET() {
   const brands = await readBrands();
   return NextResponse.json({ brands });

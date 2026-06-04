@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
-import { readReviews, addReview, updateReviewStatus, deleteReview } from "@/lib/reviews";
-
+import {
+  addReview,
+  deleteReview,
+  readReviews,
+  updateReviewStatus,
+} from "@/lib/reviews";
 
 export async function GET(request: Request) {
   try {
@@ -11,16 +15,18 @@ export async function GET(request: Request) {
 
     if (productId) {
       // For storefront customer views: only return approved reviews for this product
-      const filtered = reviews.filter((r) => r.productId === productId && r.status === "approved");
+      const filtered = reviews.filter(
+        (r) => r.productId === productId && r.status === "approved",
+      );
       return NextResponse.json({ success: true, reviews: filtered });
     }
 
     // For admin view: return all reviews
     return NextResponse.json({ success: true, reviews });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { success: false, error: "Failed to read reviews" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -32,8 +38,12 @@ export async function POST(request: Request) {
 
     if (!productId || !productName || !rating || !text) {
       return NextResponse.json(
-        { success: false, error: "Product ID, product name, rating, and review text are required." },
-        { status: 400 }
+        {
+          success: false,
+          error:
+            "Product ID, product name, rating, and review text are required.",
+        },
+        { status: 400 },
       );
     }
 
@@ -44,11 +54,14 @@ export async function POST(request: Request) {
       text,
     });
 
-    return NextResponse.json({ success: true, review: newReview }, { status: 201 });
+    return NextResponse.json(
+      { success: true, review: newReview },
+      { status: 201 },
+    );
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error?.message || "Failed to create review" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -61,7 +74,7 @@ export async function PATCH(request: Request) {
     if (!id || !status) {
       return NextResponse.json(
         { success: false, error: "Review ID and status are required." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -69,15 +82,18 @@ export async function PATCH(request: Request) {
     if (!updated) {
       return NextResponse.json(
         { success: false, error: "Review not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json({ success: true, review: updated });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error?.message || "Failed to update review status" },
-      { status: 500 }
+      {
+        success: false,
+        error: error?.message || "Failed to update review status",
+      },
+      { status: 500 },
     );
   }
 }
@@ -90,7 +106,7 @@ export async function DELETE(request: Request) {
     if (!id) {
       return NextResponse.json(
         { success: false, error: "Review ID is required." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -98,7 +114,7 @@ export async function DELETE(request: Request) {
     if (!deleted) {
       return NextResponse.json(
         { success: false, error: "Review not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -106,7 +122,7 @@ export async function DELETE(request: Request) {
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error?.message || "Failed to delete review" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { connectToDatabase } from "./mongodb";
 import { DealerLeadModel } from "./db-models";
+import { connectToDatabase } from "./mongodb";
 
 export type DealerLead = {
   id: string;
@@ -44,7 +44,7 @@ export async function readLeads(): Promise<DealerLead[]> {
   }
 }
 
-export async function writeLeads(leads: DealerLead[]): Promise<void> {
+export async function writeLeads(_leads: DealerLead[]): Promise<void> {
   // Deprecated no-op
 }
 
@@ -68,7 +68,7 @@ export async function addLead(input: DealerLeadInput): Promise<DealerLead> {
 
 export async function updateLead(
   id: string,
-  updates: Partial<DealerLead>
+  updates: Partial<DealerLead>,
 ): Promise<DealerLead | null> {
   await connectToDatabase();
 
@@ -81,16 +81,20 @@ export async function updateLead(
   if (updates.name !== undefined) cleanUpdates.name = updates.name.trim();
   if (updates.phone !== undefined) cleanUpdates.phone = updates.phone.trim();
   if (updates.city !== undefined) cleanUpdates.city = updates.city.trim();
-  if (updates.email !== undefined) cleanUpdates.email = updates.email.trim() || undefined;
+  if (updates.email !== undefined)
+    cleanUpdates.email = updates.email.trim() || undefined;
   if (updates.status !== undefined) cleanUpdates.status = updates.status;
-  if (updates.whatsappStatus !== undefined) cleanUpdates.whatsappStatus = updates.whatsappStatus;
-  if (updates.whatsappSentAt !== undefined) cleanUpdates.whatsappSentAt = updates.whatsappSentAt;
-  if (updates.whatsappMessage !== undefined) cleanUpdates.whatsappMessage = updates.whatsappMessage;
+  if (updates.whatsappStatus !== undefined)
+    cleanUpdates.whatsappStatus = updates.whatsappStatus;
+  if (updates.whatsappSentAt !== undefined)
+    cleanUpdates.whatsappSentAt = updates.whatsappSentAt;
+  if (updates.whatsappMessage !== undefined)
+    cleanUpdates.whatsappMessage = updates.whatsappMessage;
 
   const doc = await DealerLeadModel.findOneAndUpdate(
     { id },
     { $set: cleanUpdates },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!doc) {
@@ -113,7 +117,7 @@ export async function updateLead(
 
 export async function updateLeadStatus(
   id: string,
-  status: DealerLead["status"]
+  status: DealerLead["status"],
 ): Promise<DealerLead | null> {
   return updateLead(id, { status });
 }
@@ -143,7 +147,7 @@ export async function deleteLead(id: string): Promise<DealerLead | null> {
 export async function updateLeadWhatsAppStatus(
   id: string,
   whatsappStatus: "sent" | "failed",
-  whatsappMessage: string
+  whatsappMessage: string,
 ): Promise<DealerLead | null> {
   return updateLead(id, {
     whatsappStatus,

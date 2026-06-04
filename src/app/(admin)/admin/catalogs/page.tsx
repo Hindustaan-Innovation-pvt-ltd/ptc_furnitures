@@ -1,9 +1,7 @@
-import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import AdminCatalogsManager from "@/components/custom/AdminCatalogsManager";
+import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import { readCatalogs } from "@/lib/catalogs";
-import { readProducts, readBrands } from "@/lib/products";
-
-
+import { readBrands, readProducts } from "@/lib/products";
 
 export default async function AdminCatalogsPage() {
   const [catalogs, products, brands] = await Promise.all([
@@ -17,7 +15,11 @@ export default async function AdminCatalogsPage() {
       title="Brochures & Catalogs Hub"
       subtitle="Upload catalog PDFs or build custom digital interactive product portfolios"
     >
-      <AdminCatalogsManager catalogs={catalogs} products={products} brands={brands} />
+      <AdminCatalogsManager
+        catalogs={catalogs}
+        products={products}
+        brands={brands}
+      />
     </AdminDashboardShell>
   );
 }

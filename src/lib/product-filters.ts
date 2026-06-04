@@ -31,6 +31,10 @@ function normalizeValue(value?: string) {
   return value?.trim().toLowerCase() ?? "";
 }
 
+function cleanAlphanumeric(value?: string): string {
+  return value?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "";
+}
+
 function buildSearchIndex(product: Product) {
   return [
     product.name,
@@ -39,7 +43,10 @@ function buildSearchIndex(product: Product) {
     product.tag,
     product.craftedBy,
     product.price,
-    ...(product.customFields ?? []).flatMap((field) => [field.label, field.value]),
+    ...(product.customFields ?? []).flatMap((field) => [
+      field.label,
+      field.value,
+    ]),
   ]
     .filter((value): value is string => typeof value === "string")
     .join(" ");
@@ -71,7 +78,7 @@ function uniqueValues(values: Array<string | undefined | null>) {
   );
 }
 
-function parsePriceValue(price?: string) {
+function _parsePriceValue(price?: string) {
   if (!price) {
     return null;
   }
@@ -85,7 +92,9 @@ function parsePriceValue(price?: string) {
   return Number.isFinite(parsedPrice) ? parsedPrice : null;
 }
 
-export function getProductFilterOptions(products: Product[]): ProductFilterOptions {
+export function getProductFilterOptions(
+  products: Product[],
+): ProductFilterOptions {
   return {
     categories: uniqueValues(products.map((product) => product.tag)),
     materials: uniqueValues(products.map((product) => product.material)),
@@ -97,20 +106,37 @@ export function filterAndSortProducts(
   filters: ProductFiltersState,
 ) {
   const searchQuery = normalizeValue(filters.search);
+  const searchTokens = searchQuery.split(/\s+/).filter(Boolean);
+  const cleanedTokens = searchTokens
+    .map((t) => cleanAlphanumeric(t))
+    .filter(Boolean);
 
   const filteredProducts = products.filter((product) => {
     const matchesBrand =
-      filters.brand === "all" || normalizeValue(product.brand) === normalizeValue(filters.brand);
+      filters.brand === "all" ||
+      normalizeValue(product.brand) === normalizeValue(filters.brand);
 
-    const matchesSearch =
-      searchQuery.length === 0 || normalizeValue(buildSearchIndex(product)).includes(searchQuery);
+    let matchesSearch = true;
+    if (searchQuery.length > 0) {
+      const productSearchIndex = buildSearchIndex(product);
+      if (cleanedTokens.length > 0) {
+        const cleanedIndex = cleanAlphanumeric(productSearchIndex);
+        matchesSearch = cleanedTokens.every((token) =>
+          cleanedIndex.includes(token),
+        );
+      } else {
+        matchesSearch = normalizeValue(productSearchIndex).includes(searchQuery);
+      }
+    }
 
     return matchesBrand && matchesSearch;
   });
 
   // Always sort oldest -> newest (ascending by createdAt)
   return filteredProducts.slice().sort((left, right) => {
-    return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
+    return (
+      new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
+    );
   });
 }
 

@@ -1,14 +1,95 @@
 "use client";
 
-import React, { useState } from "react";
-import Navigation from "@/components/custom/Navigation";
+import {
+  Building2,
+  Check,
+  Percent,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+  Globe,
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 import Footer from "@/components/custom/Footer";
+import Navigation from "@/components/custom/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, ShieldCheck, Truck, Percent, Sparkles, Building2 } from "lucide-react";
+
+type Language = "en" | "hi";
+
+const TRANSLATIONS = {
+  en: {
+    programTag: "Partner Showroom Program",
+    titleStart: "Become an Authorized ",
+    titleEnd: "Dealer",
+    subtitle: "Unlock wholesale catalog pricing, custom showroom credits, priority fabrication, and co-marketing benefits. Partner with PTC Furnitures to inspire considered spaces.",
+    benefitsHeading: "Exclusive Partnership Benefits",
+    benefitsDesc: "Join a distinguished network of trade professionals and showrooms curated for exceptional hospitality and residential interior designs.",
+    benefit1Title: "Trade Pricing & Multi-Tier Discounts",
+    benefit1Desc: "Access tier-1 trade pricing with volume scales up to 45% off retail lists, with tax exemption workflows.",
+    benefit2Title: "White-Glove Priority Freight",
+    benefit2Desc: "Expedited fabrication processing with consolidated shipping routes and local logistics support.",
+    benefit3Title: "Dedicated Project Consultations",
+    benefit3Desc: "Custom upholstery specifications, CAD layouts, material swatches, and 3D modeling support.",
+    showroomTitle: "Showroom Sample Program",
+    showroomDesc: "Qualify for up to 50% discount on showroom demonstration furniture collections to assist local retail presentation.",
+    formHeading: "Partnership Inquiry Form",
+    formDesc: "Submit details below to initiate dealer approval. A partnership advisor will contact you within 24 hours.",
+    labelName: "Full Name *",
+    labelPhone: "Phone Number *",
+    labelCity: "City *",
+    labelEmail: "Email Address (Optional)",
+    placeholderName: "e.g. John Doe",
+    placeholderPhone: "e.g. +1 (555) 000-0000",
+    placeholderCity: "e.g. Seattle",
+    placeholderEmail: "e.g. john@example.com",
+    btnSubmit: "Submit Partnership Application",
+    btnSubmitting: "Submitting Inquiry...",
+    successTitle: "Application Logged!",
+    successRef: "Reference ID: ",
+    successDesc: "Thank you for applying to the PTC Furniture authorized dealer program. A regional distribution consultant has been assigned to your reference and will review your credentials soon.",
+    successWaNotify: "We've opened a WhatsApp chat for you. Please tap \"Send\" in the opened window to notify us.",
+    successReset: "Send Another Inquiry"
+  },
+  hi: {
+    programTag: "पार्टनर शोरूम कार्यक्रम",
+    titleStart: "अधिकृत ",
+    titleEnd: "डीलर बनें",
+    subtitle: "थोक सूची मूल्य निर्धारण, विशेष शोरूम क्रेडिट, निर्माण में प्राथमिकता और सह-विपणन लाभों को अनलॉक करें। सुरुचिपूर्ण और आधुनिक स्थानों के लिए पीटीसी फर्नीचर्स के साथ साझेदारी करें।",
+    benefitsHeading: "अनन्य साझेदारी लाभ",
+    benefitsDesc: "असाधारण आतिथ्य और आवासीय इंटीरियर डिजाइन के लिए तैयार किए गए इंटीरियर पेशेवरों और शोरूम के एक प्रतिष्ठित नेटवर्क में शामिल हों।",
+    benefit1Title: "ट्रेड मूल्य निर्धारण और बहु-स्तरीय छूट",
+    benefit1Desc: "कर छूट वर्कफ़्लो के साथ, खुदरा मूल्य सूची पर 45% तक की छूट के साथ टियर-1 व्यापार मूल्य निर्धारण का लाभ उठाएं।",
+    benefit2Title: "व्हाइट-ग्लव प्राथमिकता शिपिंग",
+    benefit2Desc: "समेकित शिपिंग मार्गों और स्थानीय लॉजिस्टिक्स सहायता के साथ निर्माण और वितरण प्रक्रिया में प्राथमिकता।",
+    benefit3Title: "समर्पित परियोजना परामर्श",
+    benefit3Desc: "कस्टम अपहोल्स्ट्री विनिर्देश, सीएडी (CAD) लेआउट, सामग्री नमूने और 3डी मॉडलिंग सहायता प्राप्त करें।",
+    showroomTitle: "शोरूम नमूना कार्यक्रम",
+    showroomDesc: "स्थानीय खुदरा प्रदर्शन में सहायता के लिए शोरूम प्रदर्शन फर्नीचर संग्रह पर 50% तक की छूट के पात्र बनें।",
+    formHeading: "साझेदारी पूछताछ फॉर्म",
+    formDesc: "डीलर बनने की प्रक्रिया शुरू करने के लिए नीचे विवरण भरें। एक साझेदारी सलाहकार 24 घंटे के भीतर आपसे संपर्क करेगा।",
+    labelName: "पूरा नाम *",
+    labelPhone: "फ़ोन नंबर *",
+    labelCity: "शहर *",
+    labelEmail: "ईमेल पता (वैकल्पिक)",
+    placeholderName: "जैसे: राहुल कुमार",
+    placeholderPhone: "जैसे: +91 99999 99999",
+    placeholderCity: "जैसे: दिल्ली / मुंबई",
+    placeholderEmail: "जैसे: rahul@example.com",
+    btnSubmit: "साझेदारी आवेदन जमा करें",
+    btnSubmitting: "आवेदन भेजा जा रहा है...",
+    successTitle: "आवेदन सफलतापूर्वक दर्ज हुआ!",
+    successRef: "संदर्भ संख्या: ",
+    successDesc: "पीटीसी फर्नीचर अधिकृत डीलर कार्यक्रम के लिए आवेदन करने के लिए धन्यवाद। एक क्षेत्रीय वितरण सलाहकार को आपका संदर्भ सौंपा गया है और वह जल्द ही आपके विवरण की समीक्षा करेंगे।",
+    successWaNotify: "हमने आपके लिए एक व्हाट्सएप चैट खोली है। कृपया हमें सूचित करने के लिए खुली हुई विंडो में \"Send\" (भेजें) पर टैप करें।",
+    successReset: "दूसरा आवेदन भेजें"
+  }
+};
 
 export default function DealersPage() {
+  const [lang, setLang] = useState<Language>("en");
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -24,6 +105,8 @@ export default function DealersPage() {
     dealerName?: string;
     error?: string;
   } | null>(null);
+
+  const t = TRANSLATIONS[lang];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,7 +130,12 @@ export default function DealersPage() {
         const leadId = data.lead.id;
         const city = formData.city;
         // Immediately open WhatsApp to business number with dealer's details
-        const notifyUrl = buildOwnerNotifyUrl(submittedName, submittedPhone, city, leadId);
+        const notifyUrl = buildOwnerNotifyUrl(
+          submittedName,
+          submittedPhone,
+          city,
+          leadId,
+        );
         window.open(notifyUrl, "_blank", "noopener,noreferrer");
         setSubmitResult({
           success: true,
@@ -62,19 +150,30 @@ export default function DealersPage() {
           email: "",
         });
       } else {
-        setSubmitResult({ success: false, error: data.error || "Failed to submit partnership request." });
+        setSubmitResult({
+          success: false,
+          error: data.error || "Failed to submit partnership request.",
+        });
       }
-    } catch (err) {
-      setSubmitResult({ success: false, error: "An unexpected error occurred. Please try again." });
+    } catch (_err) {
+      setSubmitResult({
+        success: false,
+        error: "An unexpected error occurred. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
   }
 
   /** Opens a wa.me chat to the BUSINESS number with the dealer's details pre-filled */
-  function buildOwnerNotifyUrl(name: string, phone: string, city: string, leadId: string) {
+  function buildOwnerNotifyUrl(
+    name: string,
+    phone: string,
+    city: string,
+    leadId: string,
+  ) {
     const message = encodeURIComponent(
-      `Hello PTC Furnitures! 🙋\n\nI just submitted a dealer application. Here are my details:\n\n👤 Name: ${name}\n📞 Phone: ${phone}\n🏙️ City: ${city}\n🔖 Reference ID: ${leadId}\n\nLooking forward to partnering with you!`
+      `Hello PTC Furnitures! 🙋\n\nI just submitted a dealer application. Here are my details:\n\n👤 Name: ${name}\n📞 Phone: ${phone}\n🏙️ City: ${city}\n🔖 Reference ID: ${leadId}\n\nLooking forward to partnering with you!`,
     );
     return `https://wa.me/919294512259?text=${message}`;
   }
@@ -86,29 +185,53 @@ export default function DealersPage() {
       {/* Decorative Grid Background */}
       <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none opacity-40" />
 
-      <header className="relative mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 sm:py-24 lg:px-8">
+      <header className="relative mx-auto max-w-7xl px-4 py-12 text-center sm:px-6 sm:py-16 lg:px-8">
+        {/* Premium Language Selector - Pill design */}
+        <div className="flex justify-center items-center gap-1 bg-slate-200/50 dark:bg-white/5 p-1 rounded-full w-fit mx-auto mb-8 border border-slate-200/30 dark:border-white/5 shadow-xs">
+          <div className="pl-3 pr-1 text-slate-400 dark:text-slate-500">
+            <Globe className="size-3.5" />
+          </div>
+          {[
+            { code: "en", label: "English" },
+            { code: "hi", label: "हिंदी" },
+          ].map((l) => (
+            <button
+              key={l.code}
+              type="button"
+              onClick={() => setLang(l.code as Language)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer ${
+                lang === l.code
+                  ? "bg-red-600 text-white shadow-xs"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              }`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-xs font-semibold tracking-wider uppercase mb-5">
           <Sparkles className="size-3.5" />
-          Partner Showroom Program
+          {t.programTag}
         </div>
         <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl tracking-tight">
-          Become an Authorized <span className="text-red-700 dark:text-red-500">Dealer</span>
+          {t.titleStart}
+          <span className="text-red-700 dark:text-red-500">{t.titleEnd}</span>
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-base text-slate-500 dark:text-slate-400 sm:text-lg">
-          Unlock wholesale catalog pricing, custom showroom credits, priority fabrication, and co-marketing benefits. Partner with PTC Furnitures to inspire considered spaces.
+        <p className="mx-auto mt-6 max-w-2xl text-base text-slate-500 dark:text-slate-400 sm:text-lg leading-relaxed">
+          {t.subtitle}
         </p>
       </header>
 
       <main className="relative mx-auto max-w-7xl px-4 pb-32 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-12 items-start">
-
           {/* Left Column: Benefits Cards */}
           <section className="lg:col-span-5 space-y-6">
             <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
-              Exclusive Partnership Benefits
+              {t.benefitsHeading}
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Join a distinguished network of trade professionals and showrooms curated for exceptional hospitality and residential interior designs.
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              {t.benefitsDesc}
             </p>
 
             <div className="grid gap-4.5">
@@ -118,9 +241,11 @@ export default function DealersPage() {
                   <Percent className="size-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">Trade Pricing & Multi-Tier Discounts</h3>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                    {t.benefit1Title}
+                  </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                    Access tier-1 trade pricing with volume scales up to 45% off retail lists, with tax exemption workflows.
+                    {t.benefit1Desc}
                   </p>
                 </div>
               </div>
@@ -131,9 +256,11 @@ export default function DealersPage() {
                   <Truck className="size-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">White-Glove Priority Freight</h3>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                    {t.benefit2Title}
+                  </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                    Expedited fabrication processing with consolidated shipping routes and local logistics support.
+                    {t.benefit2Desc}
                   </p>
                 </div>
               </div>
@@ -144,9 +271,11 @@ export default function DealersPage() {
                   <ShieldCheck className="size-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">Dedicated Project Consultations</h3>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                    {t.benefit3Title}
+                  </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                    Custom upholstery specifications, CAD layouts, material swatches, and 3D modeling support.
+                    {t.benefit3Desc}
                   </p>
                 </div>
               </div>
@@ -155,10 +284,10 @@ export default function DealersPage() {
             <div className="p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 bg-slate-100/50 dark:bg-[#111318]/30">
               <div className="flex items-center gap-2.5 text-xs font-bold text-slate-600 dark:text-slate-300">
                 <Building2 className="size-4 text-red-600 dark:text-red-400" />
-                Showroom Sample Program
+                {t.showroomTitle}
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
-                Qualify for up to 50% discount on showroom demonstration furniture collections to assist local retail presentation.
+                {t.showroomDesc}
               </p>
             </div>
           </section>
@@ -166,65 +295,92 @@ export default function DealersPage() {
           {/* Right Column: Simplified Form */}
           <section className="lg:col-span-7">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 shadow-lg shadow-slate-100 dark:border-white/5 dark:bg-[#0f1116] dark:shadow-none relative overflow-hidden">
-
               {/* Top Accent line */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-red-600 to-red-500" />
 
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                Partnership Inquiry Form
+                {t.formHeading}
               </h2>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Submit details below to initiate dealer approval. A partnership advisor will contact you within 24 hours.
+                {t.formDesc}
               </p>
 
               {/* Form Element */}
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 <div className="grid gap-5">
                   <div className="grid gap-2">
-                    <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Full Name *</Label>
+                    <Label
+                      htmlFor="name"
+                      className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                    >
+                      {t.labelName}
+                    </Label>
                     <Input
                       id="name"
                       required
-                      placeholder="e.g. John Doe"
+                      placeholder={t.placeholderName}
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       className="rounded-xl border-slate-200/80 bg-slate-50/50 dark:border-white/10 dark:bg-[#08090d]"
                     />
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Phone Number *</Label>
+                    <Label
+                      htmlFor="phone"
+                      className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                    >
+                      {t.labelPhone}
+                    </Label>
                     <Input
                       id="phone"
                       type="tel"
                       required
-                      placeholder="e.g. +1 (555) 000-0000"
+                      placeholder={t.placeholderPhone}
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       className="rounded-xl border-slate-200/80 bg-slate-50/50 dark:border-white/10 dark:bg-[#08090d]"
                     />
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="city" className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">City *</Label>
+                    <Label
+                      htmlFor="city"
+                      className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                    >
+                      {t.labelCity}
+                    </Label>
                     <Input
                       id="city"
                       required
-                      placeholder="e.g. Seattle"
+                      placeholder={t.placeholderCity}
                       value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
                       className="rounded-xl border-slate-200/80 bg-slate-50/50 dark:border-white/10 dark:bg-[#08090d]"
                     />
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Email Address (Optional)</Label>
+                    <Label
+                      htmlFor="email"
+                      className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                    >
+                      {t.labelEmail}
+                    </Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="e.g. john@example.com"
+                      placeholder={t.placeholderEmail}
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       className="rounded-xl border-slate-200/80 bg-slate-50/50 dark:border-white/10 dark:bg-[#08090d]"
                     />
                   </div>
@@ -241,7 +397,7 @@ export default function DealersPage() {
                   disabled={loading}
                   className="w-full h-11 rounded-xl bg-linear-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-bold text-sm tracking-wide shadow-md shadow-red-500/10 dark:from-red-700 dark:to-red-600 cursor-pointer disabled:opacity-50"
                 >
-                  {loading ? "Submitting Inquiry..." : "Submit Partnership Application"}
+                  {loading ? t.btnSubmitting : t.btnSubmit}
                 </Button>
               </form>
 
@@ -252,30 +408,34 @@ export default function DealersPage() {
                     <Check className="size-8 stroke-3" />
                   </div>
                   <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
-                    Application Logged!
+                    {t.successTitle}
                   </h3>
                   <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 text-xs font-mono text-slate-600 dark:text-slate-300 mt-3 select-all">
-                    Reference ID: <span className="font-bold text-red-600 dark:text-red-400">{submitResult.leadId}</span>
+                    {t.successRef}
+                    <span className="font-bold text-red-600 dark:text-red-400">
+                      {submitResult.leadId}
+                    </span>
                   </div>
                   <p className="max-w-md text-sm text-slate-500 dark:text-slate-400 mt-6 leading-relaxed">
-                    Thank you for applying to the PTC Furniture authorized dealer program. A regional distribution consultant has been assigned to your reference and will review your credentials soon.
+                    {t.successDesc}
                   </p>
 
                   {/* WhatsApp chat opened automatically — dealer can check phone for your message */}
-                  <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">We've opened a WhatsApp chat for you. Please tap "Send" in the opened window to notify us.</p>
+                  <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {t.successWaNotify}
+                  </p>
 
                   <Button
                     onClick={() => setSubmitResult(null)}
                     variant="outline"
                     className="mt-4 rounded-xl px-6 cursor-pointer font-bold text-xs tracking-wider uppercase"
                   >
-                    Send Another Inquiry
+                    {t.successReset}
                   </Button>
                 </div>
               )}
             </div>
           </section>
-
         </div>
       </main>
 

@@ -1,20 +1,20 @@
-import { connectToDatabase } from "./mongodb";
 import { BrandWatermarkModel } from "./db-models";
+import { connectToDatabase } from "./mongodb";
 
 export type BrandWatermark = {
   url: string;
   size?: "small" | "medium" | "large";
   opacity?: number; // 0-100
   position?:
-  | "center"
-  | "north"
-  | "south"
-  | "east"
-  | "west"
-  | "north_east"
-  | "north_west"
-  | "south_east"
-  | "south_west";
+    | "center"
+    | "north"
+    | "south"
+    | "east"
+    | "west"
+    | "north_east"
+    | "north_west"
+    | "south_east"
+    | "south_west";
 };
 
 let cachedWatermarks: Record<string, BrandWatermark> = {};
@@ -65,7 +65,7 @@ export async function setBrandWatermark(
         position: watermark.position || "center",
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 
   // Update memory cache

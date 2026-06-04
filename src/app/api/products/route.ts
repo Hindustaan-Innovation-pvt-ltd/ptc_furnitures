@@ -1,4 +1,14 @@
+import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { NextResponse } from "next/server";
+import { Product } from "@/lib/db-models";
+import {
+  compositeBrandWatermark,
+  removeWhiteBackground,
+  rewatermarkImage,
+} from "@/lib/image-processor";
+import { connectToDatabase } from "@/lib/mongodb";
 import {
   addProduct,
   deleteProduct,
@@ -6,14 +16,6 @@ import {
   readProducts,
   updateProduct,
 } from "@/lib/products";
-import { connectToDatabase } from "@/lib/mongodb";
-import { Product } from "@/lib/db-models";
-import { removeWhiteBackground, compositeBrandWatermark, rewatermarkImage } from "@/lib/image-processor";
-import fs from "node:fs/promises";
-import path from "node:path";
-import crypto from "node:crypto";
-
-
 
 function getStringField(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -39,7 +41,10 @@ function getOptionalStringField(
   return trimmedValue.length > 0 ? trimmedValue : undefined;
 }
 
-async function storeProductImage(file: File, brand: string): Promise<{ watermarked: string; unwatermarked: string }> {
+async function storeProductImage(
+  file: File,
+  brand: string,
+): Promise<{ watermarked: string; unwatermarked: string }> {
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const uploadDir = path.join(process.cwd(), "public", "upload");
   await fs.mkdir(uploadDir, { recursive: true });
@@ -62,14 +67,18 @@ async function storeProductImage(file: File, brand: string): Promise<{ watermark
 
     // Write WebP at quality 90 — visually lossless but half the PNG size
     const { default: sharp } = await import("sharp");
-    await sharp(watermarked).webp({ quality: 90, lossless: false }).toFile(filePath);
-    await sharp(bgRemoved).webp({ quality: 92, lossless: false }).toFile(originalFilePath);
+    await sharp(watermarked)
+      .webp({ quality: 90, lossless: false })
+      .toFile(filePath);
+    await sharp(bgRemoved)
+      .webp({ quality: 92, lossless: false })
+      .toFile(originalFilePath);
 
     return {
       watermarked: `/upload/${filename}`,
       unwatermarked: `/upload/${originalFilename}`,
     };
-  } catch (err) {
+  } catch (_err) {
     // Fallback: save raw file if sharp processing fails
     const filename = `${uniqueId}.webp`;
     const filePath = path.join(uploadDir, filename);
@@ -108,7 +117,10 @@ async function parseProductRequest(
     const formData = await request.formData();
     const id = formData.get("id");
     const existingImages = getOptionalStringField(formData, "existingImages");
-    const existingOriginalImages = getOptionalStringField(formData, "existingOriginalImages");
+    const existingOriginalImages = getOptionalStringField(
+      formData,
+      "existingOriginalImages",
+    );
     const customFields = getOptionalStringField(formData, "customFields");
     const imageEntries = formData
       .getAll("images")
@@ -117,7 +129,8 @@ async function parseProductRequest(
       );
     const brand = getStringField(formData, "brand");
 
-    let uploadedImages: Array<{ watermarked: string; unwatermarked: string }> = [];
+    let uploadedImages: Array<{ watermarked: string; unwatermarked: string }> =
+      [];
     if (imageEntries.length > 0) {
       uploadedImages = await Promise.all(
         imageEntries.map((file) => storeProductImage(file, brand)),
@@ -140,19 +153,25 @@ async function parseProductRequest(
         }
       }
       finalImages = Array.isArray(fallbackImages)
-        ? fallbackImages.filter((value): value is string => typeof value === "string")
+        ? fallbackImages.filter(
+            (value): value is string => typeof value === "string",
+          )
         : [];
 
       let fallbackOriginalImages: unknown = [];
       if (existingOriginalImages) {
         try {
-          fallbackOriginalImages = JSON.parse(existingOriginalImages) as unknown;
+          fallbackOriginalImages = JSON.parse(
+            existingOriginalImages,
+          ) as unknown;
         } catch {
           fallbackOriginalImages = [];
         }
       }
       finalOriginalImages = Array.isArray(fallbackOriginalImages)
-        ? fallbackOriginalImages.filter((value): value is string => typeof value === "string")
+        ? fallbackOriginalImages.filter(
+            (value): value is string => typeof value === "string",
+          )
         : [];
     }
 
@@ -183,10 +202,7 @@ async function parseProductRequest(
       }
     }
 
-    if (
-      finalImages.length === 0 &&
-      !allowMissingImage
-    ) {
+    if (finalImages.length === 0 && !allowMissingImage) {
       throw new Error("An image file is required.");
     }
 
@@ -264,11 +280,15 @@ export async function PUT(request: Request) {
 
     if (existingProduct) {
       if (existingProduct.brand !== product.brand) {
-        console.log(`==> Product ${id} brand changed from "${existingProduct.brand}" to "${product.brand}". Re-applying watermarks...`);
+        console.log(
+          `==> Product ${id} brand changed from "${existingProduct.brand}" to "${product.brand}". Re-applying watermarks...`,
+        );
 
-        const originalImagesToUse = existingProduct.originalImages && existingProduct.originalImages.length > 0
-          ? existingProduct.originalImages
-          : existingProduct.images;
+        const originalImagesToUse =
+          existingProduct.originalImages &&
+          existingProduct.originalImages.length > 0
+            ? existingProduct.originalImages
+            : existingProduct.images;
 
         const newImages: string[] = [];
         for (const img of originalImagesToUse) {
@@ -280,9 +300,11 @@ export async function PUT(request: Request) {
         product.originalImages = originalImagesToUse;
       } else {
         // Keep existing original images pristine in DB
-        product.originalImages = existingProduct.originalImages && existingProduct.originalImages.length > 0
-          ? existingProduct.originalImages
-          : existingProduct.images;
+        product.originalImages =
+          existingProduct.originalImages &&
+          existingProduct.originalImages.length > 0
+            ? existingProduct.originalImages
+            : existingProduct.images;
       }
     }
 

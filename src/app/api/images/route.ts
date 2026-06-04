@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
-import { connectToDatabase } from "@/lib/mongodb";
 import { StoredFile } from "@/lib/db-models";
-
-
+import { connectToDatabase } from "@/lib/mongodb";
 
 export async function GET(request: Request) {
-
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
@@ -35,7 +32,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || "Failed to fetch image" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

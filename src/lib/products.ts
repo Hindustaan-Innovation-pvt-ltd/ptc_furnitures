@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { BrandModel, Product as ProductModel, StoredFile } from "./db-models";
 import { connectToDatabase } from "./mongodb";
-import { Product as ProductModel, BrandModel, StoredFile } from "./db-models";
-
 
 export type Product = {
   id: string;
@@ -15,6 +14,7 @@ export type Product = {
   craftedBy?: string;
   tag?: string;
   customFields?: ProductCustomField[];
+  updatedAt?: string;
 };
 
 export type ProductCustomField = {
@@ -62,7 +62,9 @@ async function deleteStoredFileByURL(imagePath: string) {
 }
 
 async function deleteStoredFiles(imagePaths: string[]) {
-  await Promise.all(imagePaths.map((imagePath) => deleteStoredFileByURL(imagePath)));
+  await Promise.all(
+    imagePaths.map((imagePath) => deleteStoredFileByURL(imagePath)),
+  );
 }
 
 export function isProductInput(value: unknown): value is ProductInput {
@@ -226,8 +228,12 @@ export async function updateProduct(
     {
       $set: {
         brand: product.brand.trim().replace(/\s+/g, " "),
-        images: normalizedImages.length > 0 ? normalizedImages : existingDoc.images,
-        originalImages: product.originalImages || existingDoc.originalImages || (normalizedImages.length > 0 ? normalizedImages : existingDoc.images),
+        images:
+          normalizedImages.length > 0 ? normalizedImages : existingDoc.images,
+        originalImages:
+          product.originalImages ||
+          existingDoc.originalImages ||
+          (normalizedImages.length > 0 ? normalizedImages : existingDoc.images),
         name: product.name?.trim() || undefined,
         price: product.price?.trim() || undefined,
         material: product.material?.trim() || undefined,
@@ -236,7 +242,7 @@ export async function updateProduct(
         customFields: product.customFields || [],
       },
     },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!updatedDoc) {
@@ -258,7 +264,9 @@ export async function updateProduct(
   };
 }
 
-export async function deleteProduct(productId: string): Promise<Product | null> {
+export async function deleteProduct(
+  productId: string,
+): Promise<Product | null> {
   await connectToDatabase();
 
   const doc = await ProductModel.findOneAndDelete({ id: productId }).lean();

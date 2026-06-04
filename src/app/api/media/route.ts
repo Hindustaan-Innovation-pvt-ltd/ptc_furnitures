@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import sharp from "sharp";
-import { removeWhiteBackground, compositeBrandWatermark } from "@/lib/image-processor";
-import { readProducts } from "@/lib/products";
-import { connectToDatabase } from "@/lib/mongodb";
+import { NextResponse } from "next/server";
 import { StoredFile } from "@/lib/db-models";
-
-
+import {
+  compositeBrandWatermark,
+  removeWhiteBackground,
+} from "@/lib/image-processor";
+import { connectToDatabase } from "@/lib/mongodb";
+import { readProducts } from "@/lib/products";
 
 type ResolvedImage = {
   source: string;
@@ -91,7 +91,9 @@ async function loadSourceBuffer(source: string): Promise<Buffer | null> {
     }
 
     if (source.startsWith("/")) {
-      return await fs.readFile(path.join(process.cwd(), "public", source.replace(/^\//, "")));
+      return await fs.readFile(
+        path.join(process.cwd(), "public", source.replace(/^\//, "")),
+      );
     }
   } catch (error) {
     console.error("Failed to load source buffer:", error);
@@ -100,20 +102,25 @@ async function loadSourceBuffer(source: string): Promise<Buffer | null> {
   return null;
 }
 
-
-
 export async function GET(request: Request) {
-
   try {
     const requestUrl = new URL(request.url);
     const legacySource = requestUrl.searchParams.get("src");
     const mediaId = requestUrl.searchParams.get("id");
-    const removeBackground = requestUrl.searchParams.get("removeBackground") !== "0";
+    const removeBackground =
+      requestUrl.searchParams.get("removeBackground") !== "0";
 
-    const resolved = legacySource ? { source: legacySource, brand: "" } : mediaId ? await resolveSourceById(mediaId) : null;
+    const resolved = legacySource
+      ? { source: legacySource, brand: "" }
+      : mediaId
+        ? await resolveSourceById(mediaId)
+        : null;
 
     if (!resolved) {
-      return NextResponse.json({ error: "Missing image source." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing image source." },
+        { status: 400 },
+      );
     }
 
     const { source, brand } = resolved;
@@ -149,6 +156,9 @@ export async function GET(request: Request) {
       headers,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to process image." }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Failed to process image." },
+      { status: 500 },
+    );
   }
 }

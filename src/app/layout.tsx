@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { GoogleAnalytics } from '@next/third-parties/google'
+import { cn } from "@/lib/utils";
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,10 +19,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "PTC Furnitures: Re-imagined",
-  description: "Portfolio of PTC Furnitures, showcasing our latest collections and designs.",
+  description:
+    "Portfolio of PTC Furnitures, showcasing our latest collections and designs.",
   icons: {
-    icon: "/PTC.png"
-  }
+    icon: "/PTC.png",
+  },
 };
 
 export default function RootLayout({
@@ -35,7 +36,14 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+        "font-sans",
+        inter.variable,
+      )}
     >
       {gaId && <GoogleAnalytics gaId={gaId} />}
       <body className="min-h-screen overflow-x-hidden">

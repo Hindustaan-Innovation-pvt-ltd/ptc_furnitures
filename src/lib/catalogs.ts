@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { connectToDatabase } from "./mongodb";
 import { CatalogModel, StoredFile } from "./db-models";
+import { connectToDatabase } from "./mongodb";
 
 export type Catalog = {
   id: string;
@@ -45,7 +45,7 @@ export async function readCatalogs(): Promise<Catalog[]> {
   }
 }
 
-export async function writeCatalogs(catalogs: Catalog[]): Promise<void> {
+export async function writeCatalogs(_catalogs: Catalog[]): Promise<void> {
   // Deprecated no-op
 }
 
@@ -70,7 +70,7 @@ export async function addCatalog(input: CatalogInput): Promise<Catalog> {
 
 export async function updateCatalog(
   id: string,
-  input: Partial<CatalogInput>
+  input: Partial<CatalogInput>,
 ): Promise<Catalog | null> {
   await connectToDatabase();
 
@@ -81,17 +81,20 @@ export async function updateCatalog(
 
   const updates: any = {};
   if (input.title !== undefined) updates.title = input.title.trim();
-  if (input.description !== undefined) updates.description = input.description.trim() || undefined;
+  if (input.description !== undefined)
+    updates.description = input.description.trim() || undefined;
   if (input.type !== undefined) updates.type = input.type;
-  if (input.pdfUrl !== undefined) updates.pdfUrl = input.pdfUrl.trim() || undefined;
+  if (input.pdfUrl !== undefined)
+    updates.pdfUrl = input.pdfUrl.trim() || undefined;
   if (input.productIds !== undefined) updates.productIds = input.productIds;
   if (input.theme !== undefined) updates.theme = input.theme;
-  if (input.brand !== undefined) updates.brand = input.brand.trim() || undefined;
+  if (input.brand !== undefined)
+    updates.brand = input.brand.trim() || undefined;
 
   const doc = await CatalogModel.findOneAndUpdate(
     { id },
     { $set: updates },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!doc) {

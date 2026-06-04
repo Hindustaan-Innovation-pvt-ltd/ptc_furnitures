@@ -1,5 +1,5 @@
-import { connectToDatabase } from "./mongodb";
 import { BgRemovedCacheModel } from "./db-models";
+import { connectToDatabase } from "./mongodb";
 
 export async function readBgCache(): Promise<Record<string, string>> {
   await connectToDatabase();
@@ -11,32 +11,46 @@ export async function readBgCache(): Promise<Record<string, string>> {
   return record;
 }
 
-export async function getCachedBgVariant(original: string): Promise<string | null> {
+export async function getCachedBgVariant(
+  original: string,
+): Promise<string | null> {
   await connectToDatabase();
-  const doc = await BgRemovedCacheModel.findOne({ originalImage: original }).lean();
+  const doc = await BgRemovedCacheModel.findOne({
+    originalImage: original,
+  }).lean();
   return doc ? doc.derivedImage : null;
 }
 
-export async function getCachedBgVariantByKey(cacheKey: string): Promise<string | null> {
+export async function getCachedBgVariantByKey(
+  cacheKey: string,
+): Promise<string | null> {
   await connectToDatabase();
-  const doc = await BgRemovedCacheModel.findOne({ originalImage: cacheKey }).lean();
+  const doc = await BgRemovedCacheModel.findOne({
+    originalImage: cacheKey,
+  }).lean();
   return doc ? doc.derivedImage : null;
 }
 
-export async function setCachedBgVariant(original: string, derived: string): Promise<void> {
+export async function setCachedBgVariant(
+  original: string,
+  derived: string,
+): Promise<void> {
   await connectToDatabase();
   await BgRemovedCacheModel.findOneAndUpdate(
     { originalImage: original },
     { $set: { derivedImage: derived } },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 }
 
-export async function setCachedBgVariantByKey(cacheKey: string, derived: string): Promise<void> {
+export async function setCachedBgVariantByKey(
+  cacheKey: string,
+  derived: string,
+): Promise<void> {
   await connectToDatabase();
   await BgRemovedCacheModel.findOneAndUpdate(
     { originalImage: cacheKey },
     { $set: { derivedImage: derived } },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 }

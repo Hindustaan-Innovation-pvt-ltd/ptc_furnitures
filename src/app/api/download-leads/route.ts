@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { connectToDatabase } from "@/lib/mongodb";
 import { DownloadLeadModel } from "@/lib/db-models";
+import { connectToDatabase } from "@/lib/mongodb";
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     if (!name?.trim() || !mobile?.trim()) {
       return NextResponse.json(
         { success: false, error: "Name and mobile are required." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,21 +30,20 @@ export async function POST(request: Request) {
     console.error("Download lead error:", error);
     return NextResponse.json(
       { success: false, error: "Failed to save lead." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function GET() {
-
   try {
     await connectToDatabase();
     const leads = await DownloadLeadModel.find().sort({ createdAt: -1 }).lean();
     return NextResponse.json({ success: true, leads });
-  } catch (error: any) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: "Failed to fetch leads." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -54,15 +53,18 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id) {
-      return NextResponse.json({ success: false, error: "Missing id." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Missing id." },
+        { status: 400 },
+      );
     }
     await connectToDatabase();
     await DownloadLeadModel.findByIdAndDelete(id);
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (_error: any) {
     return NextResponse.json(
       { success: false, error: "Failed to delete lead." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { connectToDatabase } from "./mongodb";
 import { ProductReviewModel } from "./db-models";
+import { connectToDatabase } from "./mongodb";
 
 export type ProductReview = {
   id: string;
@@ -38,11 +38,13 @@ export async function readReviews(): Promise<ProductReview[]> {
   }
 }
 
-export async function writeReviews(reviews: ProductReview[]): Promise<void> {
+export async function writeReviews(_reviews: ProductReview[]): Promise<void> {
   // Deprecated no-op
 }
 
-export async function addReview(input: ProductReviewInput): Promise<ProductReview> {
+export async function addReview(
+  input: ProductReviewInput,
+): Promise<ProductReview> {
   await connectToDatabase();
 
   const newReview: ProductReview = {
@@ -61,14 +63,14 @@ export async function addReview(input: ProductReviewInput): Promise<ProductRevie
 
 export async function updateReviewStatus(
   id: string,
-  status: ProductReview["status"]
+  status: ProductReview["status"],
 ): Promise<ProductReview | null> {
   await connectToDatabase();
 
   const doc = await ProductReviewModel.findOneAndUpdate(
     { id },
     { $set: { status } },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!doc) {

@@ -1,5 +1,5 @@
-import { connectToDatabase } from "./mongodb";
 import { BrandLogoModel } from "./db-models";
+import { connectToDatabase } from "./mongodb";
 
 export type BrandLogo = {
   brand: string;
@@ -55,7 +55,7 @@ export async function loadLogosIntoCache() {
 
 export function getBrandLogo(brand: string): BrandLogo | null {
   const normalized = normalizeBrand(brand);
-  
+
   // 1. Check memory cache populated from DB
   const dynamicEntry = Object.values(cachedLogos).find(
     (entry) =>
@@ -99,7 +99,7 @@ export function getBrandLogos(): BrandLogo[] {
 
 export async function setBrandLogo(brand: string, logo: BrandLogo) {
   await connectToDatabase();
-  
+
   const targetBrand = brand.trim();
   const normalized = normalizeBrand(targetBrand);
 
@@ -113,7 +113,7 @@ export async function setBrandLogo(brand: string, logo: BrandLogo) {
         aliases: logo.aliases || [],
       },
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 
   // Update memory cache

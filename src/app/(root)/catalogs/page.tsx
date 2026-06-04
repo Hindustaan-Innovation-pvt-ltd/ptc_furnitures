@@ -1,21 +1,26 @@
-import Navigation from "@/components/custom/Navigation";
-import Footer from "@/components/custom/Footer";
-import StayInTouch from "@/components/custom/StayInTouch";
-import { readCatalogs } from "@/lib/catalogs";
-import { readProducts, readBrands } from "@/lib/products";
 import Image from "next/image";
 import Link from "next/link";
-import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
-import { Suspense } from "react";
 import { connection } from "next/server";
+import { Suspense } from "react";
+import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
+import Footer from "@/components/custom/Footer";
+import Navigation from "@/components/custom/Navigation";
+import StayInTouch from "@/components/custom/StayInTouch";
+import { readCatalogs } from "@/lib/catalogs";
+import { readBrands, readProducts } from "@/lib/products";
 
-export const unstable_instant = { prefetch: "static", unstable_disableValidation: true };
+export const unstable_instant = {
+  prefetch: "static",
+  unstable_disableValidation: true,
+};
 
 type PublicCatalogsPageProps = {
   searchParams: Promise<{ brand?: string }>;
 };
 
-export default async function PublicCatalogsPage({ searchParams }: PublicCatalogsPageProps) {
+export default async function PublicCatalogsPage({
+  searchParams,
+}: PublicCatalogsPageProps) {
   return (
     <section className="min-h-screen bg-[#fcfcfd] dark:bg-[#08090d] text-slate-900 dark:text-slate-100 flex flex-col justify-between transition-colors duration-300">
       <div>
@@ -28,17 +33,23 @@ export default async function PublicCatalogsPage({ searchParams }: PublicCatalog
               Inspiration Brochures
             </span>
             <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mt-3 text-slate-900 dark:text-slate-100">
-              Curated <span className="text-red-700">Portfolios & Catalogs</span>
+              Curated{" "}
+              <span className="text-red-700">Portfolios & Catalogs</span>
             </h1>
             <p className="mt-4 text-base text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-              Explore custom-curated digital portfolios or download official physical catalogs to inspire your interior designs.
+              Explore custom-curated digital portfolios or download official
+              physical catalogs to inspire your interior designs.
             </p>
           </div>
 
-          <Suspense fallback={<div className="text-center py-20 text-slate-500">Loading catalogs...</div>}>
-            <PublicCatalogsLoader
-              searchParams={searchParams}
-            />
+          <Suspense
+            fallback={
+              <div className="text-center py-20 text-slate-500">
+                Loading catalogs...
+              </div>
+            }
+          >
+            <PublicCatalogsLoader searchParams={searchParams} />
           </Suspense>
         </div>
       </div>
@@ -70,7 +81,7 @@ async function PublicCatalogsLoader({
     const images: string[] = [];
     for (const id of productIds) {
       const p = products.find((prod) => prod.id === id);
-      if (p && p.images[0]) {
+      if (p?.images[0]) {
         images.push(p.images[0]);
         if (images.length >= 3) break;
       }
@@ -78,7 +89,9 @@ async function PublicCatalogsLoader({
     return images;
   };
 
-  const filteredCatalogs = catalogs.filter((c) => (activeBrandFilter === "" ? true : c.brand === activeBrandFilter));
+  const filteredCatalogs = catalogs.filter((c) =>
+    activeBrandFilter === "" ? true : c.brand === activeBrandFilter,
+  );
 
   return (
     <>
@@ -126,7 +139,7 @@ async function PublicCatalogsLoader({
           </svg>
           <h3 className="text-base font-bold">No catalogs published yet</h3>
           <p className="text-xs text-slate-400 mt-1">
-            {activeBrandFilter 
+            {activeBrandFilter
               ? "We haven't uploaded copy brochures for this specific brand collection yet. Please select another collection."
               : "Check back soon or contact us to receive physical copy mailers."}
           </p>
@@ -148,12 +161,21 @@ async function PublicCatalogsLoader({
                     /* Beautiful PDF graphic representation */
                     <div className="flex flex-col items-center justify-center p-6 text-center">
                       <div className="h-16 w-16 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-3xl flex items-center justify-center shadow-xs mb-3 group-hover:scale-110 transition duration-300">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                          <polyline points="14 2 14 8 20 8"/>
-                          <line x1="16" y1="13" x2="8" y2="13"/>
-                          <line x1="16" y1="17" x2="8" y2="17"/>
-                          <polyline points="10 9 9 9 8 9"/>
+                        <svg
+                          width="32"
+                          height="32"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
+                          <polyline points="10 9 9 9 8 9" />
                         </svg>
                       </div>
                       <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest bg-amber-50 dark:bg-amber-950/20 px-2.5 py-1 rounded-full">
@@ -188,12 +210,28 @@ async function PublicCatalogsLoader({
                   ) : (
                     /* Placeholder for custom catalogs with no products */
                     <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
+                        <rect
+                          x="3"
+                          y="3"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          ry="2"
+                        />
                         <circle cx="8.5" cy="8.5" r="1.5" />
                         <polyline points="21 15 16 10 5 21" />
                       </svg>
-                      <span className="text-[10px] uppercase font-bold mt-2">Custom Showcase</span>
+                      <span className="text-[10px] uppercase font-bold mt-2">
+                        Custom Showcase
+                      </span>
                     </div>
                   )}
 
@@ -217,7 +255,8 @@ async function PublicCatalogsLoader({
                       {catalog.title}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-3 leading-relaxed">
-                      {catalog.description || "An exclusive furniture design collection curated for modern lifestyles."}
+                      {catalog.description ||
+                        "An exclusive furniture design collection curated for modern lifestyles."}
                     </p>
                   </div>
 
@@ -227,8 +266,17 @@ async function PublicCatalogsLoader({
                         href={catalog.pdfUrl!}
                         className="w-full text-center px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-800 dark:hover:border-white/30 text-xs font-bold text-slate-700 dark:text-slate-300 bg-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center justify-center gap-1.5"
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                         </svg>
                         Download PDF
                       </CatalogDownloadButton>
@@ -237,9 +285,18 @@ async function PublicCatalogsLoader({
                         href={`/catalogs/${catalog.id}`}
                         className="w-full text-center px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-red-700 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-red-500 dark:hover:text-white text-xs font-bold transition flex items-center justify-center gap-1.5"
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                         </svg>
                         View Digital Brochure
                       </Link>
