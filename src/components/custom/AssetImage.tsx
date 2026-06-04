@@ -1,7 +1,8 @@
 "use client";
 
 import Image, { type ImageProps } from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { sha256Sync } from "@/lib/hash-sync";
 
 type AssetImageProps = Omit<ImageProps, "src" | "alt"> & {
   src: string;
@@ -32,58 +33,14 @@ export default function AssetImage({
   onError,
   ...props
 }: AssetImageProps) {
-  // Compute the initial src SYNCHRONOUSLY so local /upload/ files render on
-  // the very first paint with zero placeholder flash.
-  const computeInitial = (s: string): string => {
-    const target = s || fallbackSrc;
-    if (isDirectServable(target)) return target;
-    // For anything that needs async resolution (legacy /api/images, etc.),
-    // show the fallback while the effect runs.
-    return fallbackSrc;
-  };
+  const [errorOccurred, setErrorOccurred] = useState(false);
 
-  const [resolvedSrc, setResolvedSrc] = useState(() => computeInitial(src));
+  const targetSrc = src || fallbackSrc;
+  const initialResolved = isDirectServable(targetSrc)
+    ? targetSrc
+    : `/api/media?id=${sha256Sync(targetSrc)}${!removeBackground ? "&removeBackground=0" : ""}`;
 
-  useEffect(() => {
-    const nextSrc = src || fallbackSrc;
-
-    // Direct-servable paths are already set synchronously above — no need to hash.
-    if (isDirectServable(nextSrc)) {
-      setResolvedSrc(nextSrc);
-      return;
-    }
-
-    let aborted = false;
-
-    async function hashValue(value: string): Promise<string> {
-      const encoded = new TextEncoder().encode(value);
-      const digest = await crypto.subtle.digest("SHA-256", encoded);
-      return Array.from(new Uint8Array(digest))
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join("");
-    }
-
-    async function resolveProtectedSource() {
-      try {
-        const mediaId = await hashValue(nextSrc);
-        if (aborted) return;
-
-        const protectedUrl = new URL("/api/media", window.location.origin);
-        protectedUrl.searchParams.set("id", mediaId);
-        if (!removeBackground) {
-          protectedUrl.searchParams.set("removeBackground", "0");
-        }
-        if (!aborted) setResolvedSrc(protectedUrl.toString());
-      } catch {
-        if (!aborted) setResolvedSrc(nextSrc);
-      }
-    }
-
-    void resolveProtectedSource();
-    return () => {
-      aborted = true;
-    };
-  }, [fallbackSrc, removeBackground, src]);
+  const resolvedSrc = errorOccurred ? fallbackSrc : initialResolved;
 
   return (
     <span
@@ -102,7 +59,7 @@ export default function AssetImage({
         draggable={false}
         onContextMenu={(event) => event.preventDefault()}
         onError={(event) => {
-          setResolvedSrc(fallbackSrc);
+          setErrorOccurred(true);
           onError?.(event);
         }}
       />

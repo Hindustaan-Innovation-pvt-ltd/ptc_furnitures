@@ -125,6 +125,29 @@ export async function GET(request: Request) {
 
     const { source, brand } = resolved;
 
+    // Check disk cache first!
+    const effectiveId = mediaId || hashSource(source);
+    const cleanBrand = brand ? brand.replace(/[^a-zA-Z0-9_-]/g, "_") : "nobrand";
+    const cacheFileName = `${effectiveId}_${removeBackground ? "bg" : "nobg"}_${cleanBrand}.png`;
+    const cacheDir = path.join(process.cwd(), "public", "upload", "cache");
+    const cacheFilePath = path.join(cacheDir, cacheFileName);
+
+    try {
+      const cachedData = await fs.readFile(cacheFilePath);
+      const headers = new Headers();
+      headers.set("content-type", "image/png");
+      headers.set("cache-control", "public, max-age=31536000, immutable");
+      headers.set("content-disposition", "inline");
+      headers.set("x-robots-tag", "noindex, nofollow, noimageindex");
+      headers.set("cross-origin-resource-policy", "same-site");
+      return new NextResponse(new Uint8Array(cachedData), {
+        status: 200,
+        headers,
+      });
+    } catch {
+      // Proceed to load source and process it
+    }
+
     // Load original image buffer
     let upstreamBuffer = await loadSourceBuffer(source);
 
@@ -143,10 +166,18 @@ export async function GET(request: Request) {
     // Composite the brand watermark locally using sharp (placed from the top!)
     const finalBuffer = await compositeBrandWatermark(upstreamBuffer, brand);
 
+    // Save to disk cache!
+    try {
+      await fs.mkdir(cacheDir, { recursive: true });
+      await fs.writeFile(cacheFilePath, finalBuffer);
+    } catch (cacheErr) {
+      console.error("Failed to write image cache:", cacheErr);
+    }
+
     const headers = new Headers();
     headers.set("content-type", "image/png");
-    // Set no-store so the user sees changes immediately during interactive verification
-    headers.set("cache-control", "private, no-store, max-age=0");
+    // Long-lived browser caching!
+    headers.set("cache-control", "public, max-age=31536000, immutable");
     headers.set("content-disposition", "inline");
     headers.set("x-robots-tag", "noindex, nofollow, noimageindex");
     headers.set("cross-origin-resource-policy", "same-site");

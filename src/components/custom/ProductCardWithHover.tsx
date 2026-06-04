@@ -69,21 +69,15 @@ function RatingStars({ rating, size = 11 }: { rating: number; size?: number }) {
   );
 }
 
+import { sha256Sync } from "@/lib/hash-sync";
+
 async function getWatermarkedUrl(
   src: string,
   _brand?: string,
 ): Promise<string> {
   if (!src) return "/product-placeholder.svg";
-
-  const encoded = new TextEncoder().encode(src);
-  const digest = await crypto.subtle.digest("SHA-256", encoded);
-  const mediaId = Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-
-  const url = new URL("/api/media", window.location.origin);
-  url.searchParams.set("id", mediaId);
-  return url.toString();
+  const mediaId = sha256Sync(src);
+  return `/api/media?id=${mediaId}`;
 }
 
 export default function ProductCardWithHover({

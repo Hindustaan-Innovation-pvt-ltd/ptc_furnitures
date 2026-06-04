@@ -35,6 +35,22 @@ async function syncBrandProducts(brand: string) {
   }
 }
 
+async function invalidateImageCacheForBrand(brand: string) {
+  try {
+    const cleanBrand = brand.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const cacheDir = path.join(process.cwd(), "public", "upload", "cache");
+    const files = await fs.readdir(cacheDir);
+    const suffix = `_${cleanBrand}.png`;
+    for (const file of files) {
+      if (file.endsWith(suffix)) {
+        await fs.unlink(path.join(cacheDir, file));
+      }
+    }
+  } catch (err) {
+    // Ignore if cache directory does not exist or error occurs
+  }
+}
+
 export async function GET() {
   const map = readBrandWatermarks();
   return NextResponse.json({ watermarks: map });
@@ -108,6 +124,7 @@ export async function POST(request: Request) {
 
       await setBrandWatermark(brand, wm);
       await syncBrandProducts(brand);
+      await invalidateImageCacheForBrand(brand);
 
       return NextResponse.json({ brand, watermark: wm });
     }
@@ -153,6 +170,7 @@ export async function POST(request: Request) {
 
     await setBrandWatermark(brand, wm);
     await syncBrandProducts(brand);
+    await invalidateImageCacheForBrand(brand);
     return NextResponse.json({ brand, watermark: wm });
   } catch (err: any) {
     return NextResponse.json(
