@@ -3,6 +3,7 @@ import { Download } from "lucide-react";
 import React from "react";
 import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
 import { Button } from "@/components/ui/button";
+import { sendGAEvent } from "@next/third-parties/google";
 
 type QrCodeDownloaderProps = {
   qrImage: string;
@@ -18,6 +19,12 @@ export default function QrCodeDownloader({
   const [leadModalOpen, setLeadModalOpen] = React.useState(false);
 
   async function handleConfirmDownload(lead: { name: string; mobile: string }) {
+    // Track QR Code Download event in Google Analytics
+    sendGAEvent("event", "qr_code_download", {
+      qr_label: label,
+      lead_name: lead.name,
+    });
+
     // Save lead details to backend
     try {
       await fetch("/api/download-leads", {

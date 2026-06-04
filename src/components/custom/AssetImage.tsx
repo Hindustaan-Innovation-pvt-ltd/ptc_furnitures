@@ -54,7 +54,6 @@ export default function AssetImage({
         style={fill ? undefined : style}
         src={resolvedSrc}
         alt={alt}
-        unoptimized
         loading={props.priority ? "eager" : "lazy"}
         draggable={false}
         onContextMenu={(event) => event.preventDefault()}

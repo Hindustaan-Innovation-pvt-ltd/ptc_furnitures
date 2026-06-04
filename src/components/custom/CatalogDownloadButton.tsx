@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
+import { sendGAEvent } from "@next/third-parties/google";
 
 type CatalogDownloadButtonProps = {
   /** The URL to download (PDF) */
@@ -36,6 +37,12 @@ export default function CatalogDownloadButton({
         catalogUrl: href,
       }),
     }).catch(() => {});
+
+    // Track the action via Google Analytics
+    sendGAEvent("event", isPrint ? "catalog_print" : "catalog_download", {
+      catalog_url: href,
+      lead_name: lead.name,
+    });
 
     if (isPrint) {
       window.print();

@@ -31,7 +31,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
   return (
     <html
       lang="en"
@@ -45,7 +44,7 @@ export default function RootLayout({
         inter.variable,
       )}
     >
-      {gaId && <GoogleAnalytics gaId={gaId} />}
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || ''} />
       <body className="min-h-screen overflow-x-hidden">
         <ThemeProvider
           attribute="class"

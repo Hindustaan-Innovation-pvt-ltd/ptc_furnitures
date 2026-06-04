@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
+import { sendGAEvent } from "@next/third-parties/google";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import { Button } from "@/components/ui/button";
@@ -129,6 +130,14 @@ export default function DealersPage() {
       if (response.ok && data.success) {
         const leadId = data.lead.id;
         const city = formData.city;
+        
+        // Track dealer lead submission via Google Analytics
+        sendGAEvent("event", "dealer_lead_submit", {
+          lead_id: leadId,
+          dealer_city: city,
+          dealer_name: submittedName,
+        });
+
         // Immediately open WhatsApp to business number with dealer's details
         const notifyUrl = buildOwnerNotifyUrl(
           submittedName,

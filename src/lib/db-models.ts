@@ -318,3 +318,26 @@ const BankingDetailsSchema = new Schema<IBankingDetails>({
 export const BankingDetailsModel =
   mongoose.models.BankingDetails ||
   mongoose.model<IBankingDetails>("BankingDetails", BankingDetailsSchema);
+
+// ==========================================
+// 12. Contact Message Schema
+// ==========================================
+export interface IContactMessage extends Document {
+  name: string;
+  phone: string;
+  subject: string;
+  message: string;
+  createdAt: Date;
+}
+
+const ContactMessageSchema = new Schema<IContactMessage>({
+  name: { type: String, required: true },
+  phone: { type: String, required: true },
+  subject: { type: String, required: true },
+  message: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
+
+export const ContactMessageModel =
+  mongoose.models.ContactMessage ||
+  mongoose.model<IContactMessage>("ContactMessage", ContactMessageSchema);

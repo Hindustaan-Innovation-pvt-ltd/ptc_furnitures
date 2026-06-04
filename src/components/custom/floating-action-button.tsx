@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { sendGAEvent } from "@next/third-parties/google";
 
 export default function FloatingActionButton() {
   const router = useRouter();
@@ -11,6 +12,9 @@ export default function FloatingActionButton() {
         variant="default"
         className="text-white rounded-full shadow-lg animate-pulse"
         onClick={() => {
+          sendGAEvent("event", "whatsapp_click", {
+            phone_number: "+919826134111",
+          });
           router.push("https://wa.me/+919826134111");
         }}
       >

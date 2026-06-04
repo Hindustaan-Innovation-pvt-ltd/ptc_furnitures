@@ -3,12 +3,18 @@
 import { type FormEvent, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { sendGAEvent } from "@next/third-parties/google";
 
 export default function StayInTouchForm() {
   const [email, setEmail] = useState("");
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (email.trim()) {
+      sendGAEvent("event", "newsletter_subscribe", {
+        subscriber_email: email.trim(),
+      });
+    }
     alert(`Subscribed: ${email}`);
     setEmail("");
   };
