@@ -89,6 +89,9 @@ ENV HOSTNAME="0.0.0.0"
 # Copy production assets
 COPY --from=builder --chown=node:node /app/public ./public
 
+# Back up pre-seeded upload images to ensure they aren't shadowed by Docker volume mounts
+RUN cp -r /app/public/upload /app/public/upload_default && chown -R node:node /app/public/upload_default
+
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown node:node .next
@@ -108,5 +111,5 @@ USER node
 # Expose port 3000 to allow HTTP traffic
 EXPOSE 3000
 
-# Start Next.js standalone server
-CMD ["node", "server.js",".next/standalone/server.js"]
+# Start Next.js standalone server, restoring pre-seeded images to the volume mount if missing
+CMD ["sh", "-c", "mkdir -p /app/public/upload && cp -rn /app/public/upload_default/. /app/public/upload/ 2>/dev/null || true; node server.js"]
