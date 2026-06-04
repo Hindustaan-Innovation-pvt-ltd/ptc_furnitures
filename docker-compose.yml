@@ -27,6 +27,9 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/ptc_furnitures
+      - MSG91_AUTH_KEY=${MSG91_AUTH_KEY}
+      - MSG91_TEMPLATE_ID=${MSG91_TEMPLATE_ID}
+      - ADMIN_SMS_RECIPIENT=${ADMIN_SMS_RECIPIENT}
     env_file:
       - .env
     depends_on:
