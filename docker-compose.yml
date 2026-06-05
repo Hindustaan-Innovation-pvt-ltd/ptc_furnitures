@@ -27,7 +27,7 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/ptc_furnitures
-      - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-JGB09E5S7
+      - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-R8LPMY4PN7
       - MSG91_AUTH_KEY=${MSG91_AUTH_KEY}
       - MSG91_TEMPLATE_ID=${MSG91_TEMPLATE_ID}
       - ADMIN_SMS_RECIPIENT=${ADMIN_SMS_RECIPIENT}
