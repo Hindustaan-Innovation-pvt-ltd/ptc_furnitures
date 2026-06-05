@@ -130,7 +130,7 @@ export default function DealersPage() {
       if (response.ok && data.success) {
         const leadId = data.lead.id;
         const city = formData.city;
-        
+
         // Track dealer lead submission via Google Analytics
         sendGAEvent("event", "dealer_lead_submit", {
           lead_id: leadId,
@@ -208,11 +208,10 @@ export default function DealersPage() {
               key={l.code}
               type="button"
               onClick={() => setLang(l.code as Language)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer ${
-                lang === l.code
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer ${lang === l.code
                   ? "bg-red-600 text-white shadow-xs"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-              }`}
+                }`}
             >
               {l.label}
             </button>

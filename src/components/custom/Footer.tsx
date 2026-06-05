@@ -191,6 +191,8 @@ function FooterColumn({ title, links }: FooterColumnProps) {
     if (link === "Authorized Dealers") return "/dealers";
     if (link === "Contact Us") return "/contact";
     if (link === "Payment Details") return "/payment";
+    if (link === "Privacy Policy") return "/privacy-policy";
+    if (link === "Terms of Use") return "/terms-of-use";
     if (link === "PTC GOLD") return "/collections?q=PTC%20GOLD";
     if (link === "REX") return "/collections?q=REX";
     if (link === "ALTECH") return "/collections?q=ALTECH";
