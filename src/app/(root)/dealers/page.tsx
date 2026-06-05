@@ -233,7 +233,7 @@ export default function DealersPage() {
       </header>
 
       <main className="relative mx-auto max-w-7xl px-4 pb-32 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-12 items-start">
+        <div className="flex flex-col-reverse gap-12 lg:grid lg:grid-cols-12 lg:items-start">
           {/* Left Column: Benefits Cards */}
           <section className="lg:col-span-5 space-y-6">
             <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
