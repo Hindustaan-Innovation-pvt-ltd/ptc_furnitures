@@ -1,4 +1,3 @@
-import twilio from "twilio";
 import type { DealerLead } from "./leads";
 
 export async function sendLeadSmsNotification(
@@ -76,30 +75,7 @@ ${email ? `Email: ${email}` : ""}`;
     }
   }
 
-  // 2. Try Twilio if configured
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_FROM_NUMBER;
-  const isTwilioConfigured = !!(accountSid && authToken && fromNumber);
-
-  if (isTwilioConfigured) {
-    try {
-      const client = twilio(accountSid, authToken);
-      await client.messages.create({
-        body: messageText,
-        from: fromNumber,
-        to: recipientNumber,
-      });
-
-      console.log(`[Twilio] SMS alert sent successfully for lead: ${id}`);
-      return { success: true };
-    } catch (err: any) {
-      console.error("Twilio SMS dispatch failed:", err);
-      return { success: false, error: err?.message || String(err) };
-    }
-  }
-
-  // 3. Fallback: Stunning Visual console simulation
+  // 2. Fallback: Stunning Visual console simulation
   const timestamp = new Date().toISOString();
   console.log(
     "\n\x1b[33m┌────────────────────────────────────────────────────────┐\x1b[0m",
@@ -111,7 +87,7 @@ ${email ? `Email: ${email}` : ""}`;
     "\x1b[33m├────────────────────────────────────────────────────────┤\x1b[0m",
   );
   console.log(
-    `\x1b[33m│\x1b[0m \x1b[1;30mStatus:\x1b[0m    \x1b[1;32mSIMULATED SENT (MSG91 / Twilio Offline)     \x1b[0m\x1b[33m│\x1b[0m`,
+    `\x1b[33m│\x1b[0m \x1b[1;30mStatus:\x1b[0m    \x1b[1;32mSIMULATED SENT (MSG91 Offline)              \x1b[0m\x1b[33m│\x1b[0m`,
   );
   console.log(
     `\x1b[33m│\x1b[0m \x1b[1;30mTimestamp:\x1b[0m \x1b[36m${timestamp.substring(0, 24)} \x1b[0m                  \x1b[33m│\x1b[0m`,

@@ -62,7 +62,7 @@ export default function PrivacyPolicyPage() {
               <strong>Google Analytics:</strong> We track anonymous usage statistics, search terms, and submission conversions to improve our user experience.
             </li>
             <li>
-              <strong>SMS & WhatsApp Notifications:</strong> When you submit an inquiry, we route confirmation alerts via Twilio and WhatsApp to ensure timely updates. We do not sell or lease your phone number or trade profile to third-party brokers.
+              <strong>SMS & WhatsApp Notifications:</strong> When you submit an inquiry, we route confirmation alerts via SMS and WhatsApp to ensure timely updates. We do not sell or lease your phone number or trade profile to third-party brokers.
             </li>
           </ul>
         </div>

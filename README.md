@@ -1,90 +1,81 @@
-# Furnitures
+# PTC Furnitures Storefront & Operations Portal
 
-Modern furniture storefront built with Next.js 16, React 19, TypeScript, Tailwind CSS 4, and shadcn/ui.
+Modern furniture storefront and business management platform built with React 19, Next.js 16 (App Router), Tailwind CSS 4, MongoDB, and Sharp.
 
-## Overview
+> [!IMPORTANT]
+> For comprehensive details on system navigation, database collections, operations, and step-by-step guides, please refer directly to the **[DOCUMENTATION.md](DOCUMENTATION.md)** file.
 
-This project showcases a furniture catalog with a marketing site, product browsing, and admin tools.
+---
 
-Key features:
+## 🛠️ Tech Stack Overview
 
-- Brand-based product filtering
-- Product pagination
-- Cloudinary-backed image storage and delivery
-- Background removal and transparent image delivery
-- Brand-specific watermark handling
-- Admin product and brand management
-- Contact and about pages with a consistent storefront layout
+- **Frontend:** Next.js 16 App Router (Partial Prerendering enabled), React 19, Tailwind CSS v4, shadcn/ui
+- **Backend/Database:** Node.js standalone runtime, MongoDB 8.0 (via Mongoose 9.6)
+- **Integrations:** Sharp (background removal & watermark scaling), Meta WhatsApp Business APIs, MSG91 SMS
 
-## Tech Stack
+---
 
-- Next.js App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- shadcn/ui
-- Cloudinary
-- sharp
+## ⚙️ Environment Configuration
 
-## Getting Started
-
-Install dependencies:
+Set these variables in a `.env` file in the root directory:
 
 ```bash
-npm install
+# Database URI
+MONGODB_URI=mongodb://127.0.0.1:27017/furnitures
+
+# Analytics
+NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-JGB09E5S7F
+
+# MSG91 SMS Config
+MSG91_AUTH_KEY=your_msg91_auth_key
+MSG91_TEMPLATE_ID=your_msg91_template_id
+MSG91_SENDER=your_msg91_approved_sender
+
+# Admin SMS Alerts Target
+ADMIN_SMS_RECIPIENT=+91XXXXXXXXXX
+
+# Meta WhatsApp Business API Config
+WHATSAPP_PHONE_NUMBER_ID=your_meta_phone_id
+WHATSAPP_ACCESS_TOKEN=your_meta_system_user_token
 ```
 
-Start the development server:
+---
+
+## 🏃 Getting Started
+
+### Local Development
+
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Start Development Server:**
+   ```bash
+   npm run dev
+   ```
+3. **Check Code Quality (Biome):**
+   ```bash
+   npm run lint
+   npm run format
+   ```
+
+### Docker Deployment
+
+Run the complete platform stack (Next.js server + MongoDB database) in the background with persistent volumes mapped for catalog images and backups:
 
 ```bash
-npm run dev
+docker compose up -d --build
 ```
 
-Open the app at `http://localhost:3000`.
+---
 
-## Available Scripts
+## 🧹 Maintenance Scripts
 
-- `npm run dev` - start the development server
-- `npm run build` - build the app for production
-- `npm run start` - start the production server
-- `npm run lint` - run Biome checks
-- `npm run format` - format the codebase with Biome
-
-## Environment Variables
-
-Cloudinary is required for image upload and image processing features.
-
-Set these variables in your environment:
-
-```bash
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-```
-
-If these are missing, Cloudinary upload and derived image features will not work.
-
-## Project Structure
-
-```text
-src/
-  app/        Next.js routes and pages
-  components/ Reusable UI and custom storefront components
-  lib/        Shared helpers for products, Cloudinary, caching, and utilities
-data/         JSON-backed content stores used by the app
-public/       Static assets, including brand logos
-```
-
-## Main Pages
-
-- `/` - storefront home page
-- `/about` - brand story and values
-- `/contact` - contact page
-- `/collections` - product browsing page
-- `/admin` - admin dashboard
-
-## Notes
-
-- Product data is backed by JSON files in `data/`.
-- Legacy images can be migrated to Cloudinary through the existing product management flow.
-- Images displayed in the storefront are routed through the app to keep the UI consistent and support watermarking/background removal.
+- **Asset Ingestion & Re-watermarking:** Migrate legacy image URLs and Base64 buffers to WebP disk files under `/public/upload/`:
+  ```bash
+  npx tsx scripts/migrate-images.ts
+  ```
+- **Database Backup Export:** Back up the MongoDB products collection locally:
+  ```bash
+  npx tsx scripts/export-db.ts
+  ```

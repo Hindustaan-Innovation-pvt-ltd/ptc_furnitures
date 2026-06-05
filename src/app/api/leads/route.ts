@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     // Asynchronously trigger the WhatsApp dispatch which persists the whatsappStatus
     await sendDealerWhatsAppMessage(newLead);
 
-    // Asynchronously trigger the Twilio SMS alert
+    // Asynchronously trigger the MSG91 SMS alert
     await sendLeadSmsNotification(newLead);
 
     // Retrieve the fully updated lead with its WhatsApp status populated

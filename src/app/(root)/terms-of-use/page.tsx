@@ -74,7 +74,7 @@ export default function TermsOfUsePage() {
       title: "5. Automated Notifications Consent",
       content: (
         <p>
-          By submitting a form on our platform (including catalog download authorizations, contact messages, and dealer applications), you explicitly consent to receive automated notifications, confirmation messages, and administrative updates via Twilio SMS alerts and WhatsApp text messages on the phone number provided.
+          By submitting a form on our platform (including catalog download authorizations, contact messages, and dealer applications), you explicitly consent to receive automated notifications, confirmation messages, and administrative updates via SMS alerts and WhatsApp text messages on the phone number provided.
         </p>
       ),
     },
