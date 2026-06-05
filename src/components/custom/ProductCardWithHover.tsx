@@ -11,6 +11,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import {
   Dialog,
@@ -92,6 +93,40 @@ export default function ProductCardWithHover({
     imageUrl: string;
     index: number | null;
   } | null>(null);
+
+  // Carousel APIs and active index trackers
+  const [mainApi, setMainApi] = React.useState<CarouselApi>();
+  const [mainIndex, setMainIndex] = React.useState(0);
+
+  const [hoverApi, setHoverApi] = React.useState<CarouselApi>();
+  const [hoverIndex, setHoverIndex] = React.useState(0);
+
+  const [dialogApi, setDialogApi] = React.useState<CarouselApi>();
+  const [dialogIndex, setDialogIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!mainApi) return;
+    const onSelect = () => setMainIndex(mainApi.selectedScrollSnap());
+    mainApi.on("select", onSelect);
+    onSelect();
+    return () => { mainApi.off("select", onSelect); };
+  }, [mainApi]);
+
+  React.useEffect(() => {
+    if (!hoverApi) return;
+    const onSelect = () => setHoverIndex(hoverApi.selectedScrollSnap());
+    hoverApi.on("select", onSelect);
+    onSelect();
+    return () => { hoverApi.off("select", onSelect); };
+  }, [hoverApi]);
+
+  React.useEffect(() => {
+    if (!dialogApi) return;
+    const onSelect = () => setDialogIndex(dialogApi.selectedScrollSnap());
+    dialogApi.on("select", onSelect);
+    onSelect();
+    return () => { dialogApi.off("select", onSelect); };
+  }, [dialogApi]);
 
   React.useEffect(() => {
     async function fetchReviews() {
@@ -279,6 +314,7 @@ export default function ProductCardWithHover({
               <div className="overflow-hidden rounded-xl aspect-square flex items-center justify-center bg-slate-50 relative">
                 {product.images && product.images.length > 1 ? (
                   <Carousel
+                    setApi={setMainApi}
                     className="w-full aspect-square relative group/carousel"
                     opts={{ loop: true }}
                   >
@@ -299,6 +335,27 @@ export default function ProductCardWithHover({
                         </CarouselItem>
                       ))}
                     </CarouselContent>
+
+                    {/* Tiny dots indicator buttons to switch images */}
+                    <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10 bg-slate-900/60 dark:bg-slate-900/80 px-2 py-1 rounded-full backdrop-blur-xs">
+                      {product.images.map((_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            mainApi?.scrollTo(idx);
+                          }}
+                          className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                            mainIndex === idx
+                              ? "bg-red-600 dark:bg-red-500 scale-120 w-3.5"
+                              : "bg-white/70 hover:bg-white"
+                          }`}
+                          aria-label={`Go to image ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+
                     <CarouselPrevious
                       onClick={(e) => e.stopPropagation()}
                       className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 bg-white/90 hover:bg-white border border-slate-200 size-7 shadow-xs text-slate-800"
@@ -438,6 +495,7 @@ export default function ProductCardWithHover({
                 <div className="overflow-hidden rounded-xl border border-slate-200/40 w-full h-40 relative bg-slate-50/50 flex items-center justify-center group/card-carousel">
                   {product.images && product.images.length > 1 ? (
                     <Carousel
+                      setApi={setHoverApi}
                       className="w-full h-full relative"
                       opts={{ loop: true }}
                     >
@@ -458,6 +516,27 @@ export default function ProductCardWithHover({
                           </CarouselItem>
                         ))}
                       </CarouselContent>
+
+                      {/* Tiny indicator dots to switch images */}
+                      <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10 bg-slate-900/60 dark:bg-slate-900/80 px-2 py-1 rounded-full backdrop-blur-xs">
+                        {product.images.map((_, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              hoverApi?.scrollTo(idx);
+                            }}
+                            className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                              hoverIndex === idx
+                                ? "bg-red-600 dark:bg-red-500 scale-120 w-3"
+                                : "bg-white/70 hover:bg-white"
+                            }`}
+                            aria-label={`Go to image ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+
                       <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/card-carousel:opacity-100 transition-opacity size-6 text-slate-800 border-slate-200 bg-white" />
                       <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/card-carousel:opacity-100 transition-opacity size-6 text-slate-800 border-slate-200 bg-white" />
                     </Carousel>
@@ -644,6 +723,7 @@ export default function ProductCardWithHover({
                 {viewMode === "carousel" || !product.images || product.images.length <= 1 ? (
                   product.images && product.images.length > 1 ? (
                     <Carousel
+                      setApi={setDialogApi}
                       className="w-full h-full relative"
                       opts={{ loop: true }}
                     >
@@ -664,6 +744,27 @@ export default function ProductCardWithHover({
                           </CarouselItem>
                         ))}
                       </CarouselContent>
+
+                      {/* Tiny indicator dots to switch images */}
+                      <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10 bg-slate-900/60 dark:bg-slate-900/80 px-2 py-1 rounded-full backdrop-blur-xs">
+                        {product.images.map((_, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              dialogApi?.scrollTo(idx);
+                            }}
+                            className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                              dialogIndex === idx
+                                ? "bg-red-600 dark:bg-red-500 scale-120 w-3"
+                                : "bg-white/70 hover:bg-white"
+                            }`}
+                            aria-label={`Go to image ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+
                       <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/95 border border-slate-200 text-slate-800 size-8" />
                       <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/95 border border-slate-200 text-slate-800 size-8" />
                     </Carousel>

@@ -43,7 +43,7 @@ export async function connectToDatabase() {
                 const versionDoc = await metadataCol.findOne({
                   key: "watermark-version",
                 });
-                if (!versionDoc || versionDoc.version !== "5.0") {
+                if (!versionDoc || versionDoc.version !== "5.1") {
                   console.log(
                     "==> [Sync] Detected outdated watermark sizes in MongoDB. Synchronizing all products to fixed 200px watermarks...",
                   );
@@ -87,7 +87,7 @@ export async function connectToDatabase() {
 
                   await metadataCol.updateOne(
                     { key: "watermark-version" },
-                    { $set: { version: "5.0" } },
+                    { $set: { version: "5.1" } },
                     { upsert: true },
                   );
                   console.log(
@@ -95,7 +95,7 @@ export async function connectToDatabase() {
                   );
                 } else {
                   console.log(
-                    "==> [Sync] Watermarks in MongoDB are already in sync (v5.0).",
+                    "==> [Sync] Watermarks in MongoDB are already in sync (v5.1).",
                   );
                 }
               } catch (err: any) {

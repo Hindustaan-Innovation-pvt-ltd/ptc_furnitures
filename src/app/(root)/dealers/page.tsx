@@ -43,7 +43,7 @@ const TRANSLATIONS = {
     labelCity: "City *",
     labelEmail: "Email Address (Optional)",
     placeholderName: "e.g. Rahul Kumar",
-    placeholderPhone: "e.g. +91 9999999999",
+    placeholderPhone: "e.g. +91 99999 99999",
     placeholderCity: "e.g. Mumbai",
     placeholderEmail: "e.g. someone@example.com",
     btnSubmit: "Submit Partnership Application",
