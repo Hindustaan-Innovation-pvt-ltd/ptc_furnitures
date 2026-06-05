@@ -1,43 +1,42 @@
 "use client";
 
 import Image, { type ImageProps } from "next/image";
-import { useEffect, useState } from "react";
-import { sha256Sync } from "@/lib/hash-sync";
+import { useState } from "react";
 
 type AssetImageProps = Omit<ImageProps, "src" | "alt"> & {
   src: string;
   alt: string;
   fallbackSrc?: string;
+  /**
+   * @deprecated Processing now happens at upload time — this prop is ignored.
+   */
   removeBackground?: boolean;
+  /**
+   * @deprecated Watermark is baked in at upload time — this prop is ignored.
+   */
   brand?: string;
 };
 
-// Global memory cache for calculated hashes to avoid re-computation
-const hashCache = new Map<string, string>();
-
-function getHash(str: string): string {
-  let h = hashCache.get(str);
-  if (!h) {
-    h = sha256Sync(str);
-    hashCache.set(str, h);
-  }
-  return h;
-}
-
-/** Returns true for paths served directly by Next.js without any proxying. */
-function isDirectServable(src: string): boolean {
-  if (!src) return false;
-  // Local static files: /upload/..., /PTC.png, /AL.png, /product-placeholder.svg etc.
-  if (src.startsWith("/") && !src.startsWith("/api/")) return true;
-  return false;
+/**
+ * Resolves an image src to a URL that Next.js <Image> can serve.
+ *
+ * - `/upload/…`, `/PTC.png`, `/api/images?id=…` etc. → served directly as local paths.
+ * - `https://…` external URLs → served directly (must be in next.config remotePatterns).
+ * - `data:…` base64 URIs → served directly.
+ * - Anything else → served as-is with fallback on error.
+ */
+function resolveSrc(src: string, fallbackSrc: string): string {
+  if (!src) return fallbackSrc;
+  return src;
 }
 
 export default function AssetImage({
   src,
   alt,
   fallbackSrc = "/product-placeholder.svg",
-  removeBackground = true,
-  brand,
+  // Kept for backward-compat — unused, processing baked in at upload time
+  removeBackground: _removeBackground,
+  brand: _brand,
   className,
   fill,
   style,
@@ -45,44 +44,8 @@ export default function AssetImage({
   ...props
 }: AssetImageProps) {
   const [errorOccurred, setErrorOccurred] = useState(false);
-  const targetSrc = src || fallbackSrc;
 
-  // Render direct servable URLs immediately, otherwise use fallbackSrc as initial placeholder
-  const [resolvedSrc, setResolvedSrc] = useState<string>(() => {
-    return isDirectServable(targetSrc) ? targetSrc : fallbackSrc;
-  });
-
-  useEffect(() => {
-    if (isDirectServable(targetSrc)) {
-      setResolvedSrc(targetSrc);
-      return;
-    }
-
-    let active = true;
-
-    // Defer the hash calculation and proxy URL resolution to avoid blocking the main thread
-    const defer = typeof window !== "undefined" && (window as any).requestIdleCallback
-      ? (window as any).requestIdleCallback.bind(window)
-      : (cb: () => void) => setTimeout(cb, 50);
-
-    defer(() => {
-      if (!active) return;
-      try {
-        const hash = getHash(targetSrc);
-        const finalUrl = `/api/media?id=${hash}${!removeBackground ? "&removeBackground=0" : ""}`;
-        setResolvedSrc(finalUrl);
-      } catch (err) {
-        console.error("Failed to resolve asset image source:", err);
-        setResolvedSrc(fallbackSrc);
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [targetSrc, removeBackground, fallbackSrc]);
-
-  const displaySrc = errorOccurred ? fallbackSrc : resolvedSrc;
+  const displaySrc = errorOccurred ? fallbackSrc : resolveSrc(src, fallbackSrc);
 
   return (
     <span

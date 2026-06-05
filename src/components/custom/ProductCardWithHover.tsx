@@ -69,16 +69,7 @@ function RatingStars({ rating, size = 11 }: { rating: number; size?: number }) {
   );
 }
 
-import { sha256Sync } from "@/lib/hash-sync";
 
-async function getWatermarkedUrl(
-  src: string,
-  _brand?: string,
-): Promise<string> {
-  if (!src) return "/product-placeholder.svg";
-  const mediaId = sha256Sync(src);
-  return `/api/media?id=${mediaId}`;
-}
 
 export default function ProductCardWithHover({
   product,
@@ -204,9 +195,9 @@ export default function ProductCardWithHover({
       let blob: Blob;
 
       if (imageUrl.startsWith("data:")) {
-        // Parse base64 data URI to Blob to prevent URL length limits or raw anchor download quirks
+        // Parse base64 data URI to Blob
         const parts = imageUrl.split(",");
-        const mime = parts[0].match(/:(.*?);/)?.[1] || "image/png";
+        const mime = parts[0].match(/:(.*?);/)?.[1] || "image/webp";
         const bstr = atob(parts[1]);
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
@@ -215,20 +206,19 @@ export default function ProductCardWithHover({
         }
         blob = new Blob([u8arr], { type: mime });
       } else {
-        let downloadUrl = imageUrl;
-        // If not starting with data: or a local api endpoint, hash it and fetch from our watermark api proxy
-        if (
+        // Images are stored as watermarked /upload/uuid.webp — fetch directly.
+        // For legacy external https:// URLs, route through /api/media?src=<encoded>.
+        const downloadUrl =
           !imageUrl.startsWith("/") &&
           !imageUrl.startsWith("http://localhost") &&
           !imageUrl.startsWith("https://localhost")
-        ) {
-          downloadUrl = await getWatermarkedUrl(imageUrl, product.brand);
-        }
+            ? `/api/media?src=${encodeURIComponent(imageUrl)}`
+            : imageUrl;
 
         const response = await fetch(downloadUrl);
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch watermarked image (HTTP ${response.status})`,
+            `Failed to fetch image (HTTP ${response.status})`,
           );
         }
         blob = await response.blob();

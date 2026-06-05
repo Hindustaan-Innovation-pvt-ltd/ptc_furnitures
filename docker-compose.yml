@@ -38,9 +38,7 @@ services:
         condition: service_healthy
     volumes:
       - media_uploads:/app/public/upload
-      - next_cache:/app/.next/cache
 
 volumes:
   mongodb_data:
   media_uploads:
-  next_cache:

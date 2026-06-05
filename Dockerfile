@@ -105,11 +105,11 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 # cached responses are available immediately on startup, uncomment this line:
 # COPY --from=builder --chown=node:node /app/.next/cache ./.next/cache
 
-# Switch to non-root user for security best practices
-USER node
-
 # Expose port 3000 to allow HTTP traffic
 EXPOSE 3000
 
 # Start Next.js standalone server, restoring pre-seeded images to the volume mount if missing
-CMD ["sh", "-c", "mkdir -p /app/public/upload && cp -rn /app/public/upload_default/. /app/public/upload/ 2>/dev/null || true; node server.js"]
+# We need to run as root briefly to fix volume ownership (Docker mounts volumes owned by root)
+# then drop back to node to run the server
+USER root
+CMD ["sh", "-c", "mkdir -p /app/public/upload && chown -R node:node /app/public/upload && su node -s /bin/sh -c 'cp -rn /app/public/upload_default/. /app/public/upload/ 2>/dev/null; node /app/server.js'"]

@@ -6,6 +6,12 @@ import useSWR from "swr";
 import AdminProductForm from "@/components/custom/AdminProductForm";
 import AssetImage from "@/components/custom/AssetImage";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -23,6 +29,13 @@ type AdminProductsCatalogProps = {
   brands: string[];
 };
 
+type DeleteModalState = {
+  open: boolean;
+  product: Product | null;
+  purgeFiles: boolean;
+  isDeleting: boolean;
+};
+
 export default function AdminProductsCatalog({
   products,
   brands,
@@ -34,6 +47,12 @@ export default function AdminProductsCatalog({
     null,
   );
   const [showAddForm, setShowAddForm] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
+    open: false,
+    product: null,
+    purgeFiles: false,
+    isDeleting: false,
+  });
 
   const { data: cachedProducts = products, mutate } = useSWR(
     PRODUCTS_CACHE_KEY,
@@ -84,6 +103,32 @@ export default function AdminProductsCatalog({
     }
   }
 
+  function openDeleteModal(product: Product) {
+    setDeleteModal({ open: true, product, purgeFiles: false, isDeleting: false });
+  }
+
+  async function confirmDelete() {
+    if (!deleteModal.product) return;
+    setDeleteModal((s) => ({ ...s, isDeleting: true }));
+    try {
+      const url = `/api/products?id=${deleteModal.product.id}${
+        deleteModal.purgeFiles ? "&purgeFiles=true" : ""
+      }`;
+      const response = await fetch(url, { method: "DELETE" });
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        throw new Error(payload.error ?? "Unable to delete product.");
+      }
+      await mutate();
+      setDeleteModal({ open: false, product: null, purgeFiles: false, isDeleting: false });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to delete product.";
+      window.alert(message);
+      setDeleteModal((s) => ({ ...s, isDeleting: false }));
+    }
+  }
+
   async function handleRemoveBrand(product: Product) {
     const shouldRemove = window.confirm(
       `Remove this product from the ${product.brand} brand? The product will remain in the catalog as unassigned.`,
@@ -131,6 +176,85 @@ export default function AdminProductsCatalog({
 
   return (
     <div className="grid gap-8">
+      {/* ── Delete Confirmation Modal ─────────────────────────────── */}
+      <Dialog
+        open={deleteModal.open}
+        onOpenChange={(open) =>
+          !deleteModal.isDeleting && setDeleteModal((s) => ({ ...s, open }))
+        }
+      >
+        <DialogContent className="max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#111318]">
+          <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+            Remove Product from Catalog
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Confirm product removal from the catalog.
+          </DialogDescription>
+
+          <div className="mt-1 flex flex-col gap-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
+                {deleteModal.product?.name || "This product"}
+              </span>{" "}
+              will be removed from the catalog. The image files will stay on
+              disk and can be reassigned to another brand at any time.
+            </p>
+
+            {/* Purge files opt-in */}
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-red-200 bg-red-50/60 p-3 dark:border-red-900/40 dark:bg-red-950/10">
+              <input
+                type="checkbox"
+                checked={deleteModal.purgeFiles}
+                onChange={(e) =>
+                  setDeleteModal((s) => ({ ...s, purgeFiles: e.target.checked }))
+                }
+                className="mt-0.5 accent-red-600 size-4 shrink-0"
+              />
+              <div>
+                <p className="text-xs font-bold text-red-700 dark:text-red-400">
+                  Also permanently delete image files from disk
+                </p>
+                <p className="mt-0.5 text-[11px] text-red-600/80 dark:text-red-500">
+                  ⚠ This cannot be undone. Files will be removed from{" "}
+                  <code className="font-mono">/upload/</code> and cannot be
+                  recovered.
+                </p>
+              </div>
+            </label>
+
+            <div className="flex gap-2 justify-end pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full px-5"
+                disabled={deleteModal.isDeleting}
+                onClick={() =>
+                  setDeleteModal({ open: false, product: null, purgeFiles: false, isDeleting: false })
+                }
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className={`rounded-full px-5 ${
+                  deleteModal.purgeFiles
+                    ? "bg-red-700 hover:bg-red-800"
+                    : "bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900"
+                } text-white transition-colors`}
+                disabled={deleteModal.isDeleting}
+                onClick={confirmDelete}
+              >
+                {deleteModal.isDeleting
+                  ? "Deleting…"
+                  : deleteModal.purgeFiles
+                    ? "Delete & Purge Files"
+                    : "Remove from Catalog"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Header Controller Bar */}
       <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/50 pb-4 dark:border-white/5 select-none">
         <div>
@@ -377,6 +501,17 @@ export default function AdminProductsCatalog({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Delete from catalog */}
+                <div className="pt-2 border-t border-slate-100 dark:border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => openDeleteModal(product)}
+                    className="w-full rounded-xl border border-slate-200/60 dark:border-white/5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:border-red-300 hover:text-red-600 dark:hover:border-red-800/60 dark:hover:text-red-400 transition-colors duration-200"
+                  >
+                    Delete from Catalog
+                  </button>
                 </div>
               </div>
             </article>

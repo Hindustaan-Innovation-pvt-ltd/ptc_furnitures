@@ -48,6 +48,7 @@ const seedBrands: Brand[] = [
 ];
 
 async function deleteStoredFileByURL(imagePath: string) {
+  // Legacy GridFS path — delete binary data from MongoDB StoredFile collection
   if (imagePath.startsWith("/api/images")) {
     try {
       const urlObj = new URL(imagePath, "http://localhost");
@@ -58,7 +59,38 @@ async function deleteStoredFileByURL(imagePath: string) {
     } catch {
       // Ignore
     }
+    return;
   }
+
+  // Disk-based /upload/ files are intentionally NOT auto-deleted here.
+  // Files persist on disk so they can be reassigned to other brands.
+  // Use purgeUploadFile() for explicit admin-confirmed deletion.
+}
+
+/**
+ * Permanently removes a single /upload/*.webp file from disk.
+ * Should only be called after explicit admin confirmation in the UI.
+ */
+export async function purgeUploadFile(imagePath: string): Promise<void> {
+  if (!imagePath.startsWith("/upload/")) return;
+  try {
+    const { default: fs } = await import("node:fs/promises");
+    const { default: path } = await import("node:path");
+    const filename = imagePath.replace(/^\/upload\//, "");
+    const filePath = path.join(process.cwd(), "public", "upload", filename);
+    await fs.unlink(filePath);
+  } catch {
+    // File may already be missing — not an error
+  }
+}
+
+/**
+ * Permanently removes all disk files (watermarked + original) for a product.
+ * Should only be called after explicit admin confirmation in the UI.
+ */
+export async function purgeProductFiles(imagePaths: string[], originalImagePaths: string[]): Promise<void> {
+  const allPaths = [...new Set([...imagePaths, ...originalImagePaths])];
+  await Promise.all(allPaths.map((p) => purgeUploadFile(p)));
 }
 
 async function deleteStoredFiles(imagePaths: string[]) {
@@ -215,7 +247,8 @@ export async function updateProduct(
     .map((image) => image.trim())
     .filter((image) => image.length > 0);
 
-  // If there are updated images, delete orphaned StoredFiles from MongoDB
+  // Clean up orphaned MongoDB StoredFile records for legacy /api/images?id=... URLs.
+  // Disk files (/upload/*.webp) are intentionally preserved so they can be reassigned.
   if (normalizedImages.length > 0) {
     const removedImages = (existingDoc.images || []).filter(
       (image: string) => !normalizedImages.includes(image),
@@ -274,9 +307,14 @@ export async function deleteProduct(
     return null;
   }
 
-  // Delete all associated dynamic images
-  if (doc.images && doc.images.length > 0) {
-    await deleteStoredFiles(doc.images);
+  // Clean up legacy MongoDB StoredFile records (if any).
+  // Disk files are preserved on purpose — use purgeProductFiles() for explicit deletion.
+  const allImagePaths = [
+    ...(doc.images || []),
+    ...(doc.originalImages || []),
+  ];
+  if (allImagePaths.length > 0) {
+    await deleteStoredFiles(allImagePaths);
   }
 
   return {

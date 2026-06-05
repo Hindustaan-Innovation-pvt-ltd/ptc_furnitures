@@ -1,4 +1,3 @@
-// Trigger dev server reload to run the v5.0 MongoDB watermark synchronization pipeline
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -13,14 +12,13 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
-    // Allow static /upload/ files to be served without width restrictions
-    unoptimized: false,
+    // Images in /upload/ are already processed WebP files — no need to restrict formats
     formats: ["image/webp"],
   },
   experimental: {
     instantNavigationDevToolsToggle: true,
   },
-  // Add long-lived cache headers for all uploaded media
+  // Long-lived cache headers for all uploaded media
   async headers() {
     return [
       {

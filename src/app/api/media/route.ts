@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
@@ -8,40 +7,19 @@ import {
   removeWhiteBackground,
 } from "@/lib/image-processor";
 import { connectToDatabase } from "@/lib/mongodb";
-import { readProducts } from "@/lib/products";
 
-type ResolvedImage = {
-  source: string;
-  brand: string;
-};
-
-function hashSource(source: string): string {
-  return createHash("sha256").update(source).digest("hex");
-}
-
-async function resolveSourceById(id: string): Promise<ResolvedImage | null> {
-  const products = await readProducts();
-
-  for (const product of products) {
-    // Check original images first since they hold pristine unwatermarked URLs
-    if (product.originalImages) {
-      for (const image of product.originalImages) {
-        if (hashSource(image) === id) {
-          return { source: image, brand: product.brand };
-        }
-      }
-    }
-    // Fallback to currently watermarked base64 images
-    for (const image of product.images) {
-      if (hashSource(image) === id) {
-        return { source: image, brand: product.brand };
-      }
-    }
-  }
-
-  return null;
-}
-
+/**
+ * Legacy media proxy — kept for backward-compatibility with:
+ *   - Old product records that reference external `https://` URLs (e.g. Cloudinary).
+ *   - Old `/api/images?id=…` (GridFS/StoredFile) references that need re-processing.
+ *
+ * All new product images are stored as `/upload/uuid.webp` on disk and served
+ * directly by Next.js static file serving — no proxy needed for them.
+ *
+ * Query params:
+ *   ?src=<url-encoded-source>         — process and return image from any URL or local path
+ *   ?removeBackground=0               — skip background removal (default: do remove)
+ */
 async function fetchImageBuffer(url: string): Promise<Buffer | null> {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const response = await fetch(url, { cache: "no-store" });
@@ -106,30 +84,33 @@ export async function GET(request: Request) {
   try {
     const requestUrl = new URL(request.url);
     const legacySource = requestUrl.searchParams.get("src");
-    const mediaId = requestUrl.searchParams.get("id");
     const removeBackground =
       requestUrl.searchParams.get("removeBackground") !== "0";
 
-    const resolved = legacySource
-      ? { source: legacySource, brand: "" }
-      : mediaId
-        ? await resolveSourceById(mediaId)
-        : null;
-
-    if (!resolved) {
+    // The old ?id=<hash> lookup path is retired — callers should use ?src=<url> instead.
+    // Return 410 Gone so callers know to update.
+    if (requestUrl.searchParams.has("id") && !legacySource) {
       return NextResponse.json(
-        { error: "Missing image source." },
+        {
+          error:
+            "The ?id= hash lookup is no longer supported. Images are now served directly from /upload/. Use ?src=<url-encoded-source> for legacy remote images.",
+        },
+        { status: 410 },
+      );
+    }
+
+    if (!legacySource) {
+      return NextResponse.json(
+        { error: "Missing image source. Provide ?src=<url-encoded-source>." },
         { status: 400 },
       );
     }
 
-    const { source, brand } = resolved;
-
-    // Check disk cache first!
-    const effectiveId = mediaId || hashSource(source);
-    const cleanBrand = brand ? brand.replace(/[^a-zA-Z0-9_-]/g, "_") : "nobrand";
-    const cacheFileName = `${effectiveId}_${removeBackground ? "bg" : "nobg"}_${cleanBrand}.png`;
+    // Check disk cache first
+    const { createHash } = await import("node:crypto");
+    const effectiveId = createHash("sha256").update(legacySource).digest("hex");
     const cacheDir = path.join(process.cwd(), "public", "upload", "cache");
+    const cacheFileName = `${effectiveId}_${removeBackground ? "bg" : "nobg"}.png`;
     const cacheFilePath = path.join(cacheDir, cacheFileName);
 
     try {
@@ -145,11 +126,11 @@ export async function GET(request: Request) {
         headers,
       });
     } catch {
-      // Proceed to load source and process it
+      // Not cached — proceed to process
     }
 
     // Load original image buffer
-    let upstreamBuffer = await loadSourceBuffer(source);
+    let upstreamBuffer = await loadSourceBuffer(legacySource);
 
     if (!upstreamBuffer) {
       return NextResponse.json(
@@ -158,15 +139,15 @@ export async function GET(request: Request) {
       );
     }
 
-    // Locally remove white background using sharp if removeBackground is true
+    // Remove white background if requested
     if (removeBackground) {
       upstreamBuffer = await removeWhiteBackground(upstreamBuffer);
     }
 
-    // Composite the brand watermark locally using sharp (placed from the top!)
-    const finalBuffer = await compositeBrandWatermark(upstreamBuffer, brand);
+    // Composite default PTC watermark (no brand context for legacy calls)
+    const finalBuffer = await compositeBrandWatermark(upstreamBuffer, "");
 
-    // Save to disk cache!
+    // Save to disk cache
     try {
       await fs.mkdir(cacheDir, { recursive: true });
       await fs.writeFile(cacheFilePath, finalBuffer);
@@ -176,7 +157,6 @@ export async function GET(request: Request) {
 
     const headers = new Headers();
     headers.set("content-type", "image/png");
-    // Long-lived browser caching!
     headers.set("cache-control", "public, max-age=31536000, immutable");
     headers.set("content-disposition", "inline");
     headers.set("x-robots-tag", "noindex, nofollow, noimageindex");

@@ -13,9 +13,11 @@ import {
   addProduct,
   deleteProduct,
   isProductInput,
+  purgeProductFiles,
   readProducts,
   updateProduct,
 } from "@/lib/products";
+
 
 function getStringField(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -330,6 +332,7 @@ export async function DELETE(request: Request) {
   try {
     const requestUrl = new URL(request.url);
     const id = requestUrl.searchParams.get("id");
+    const purgeFiles = requestUrl.searchParams.get("purgeFiles") === "true";
 
     if (!id) {
       return NextResponse.json(
@@ -347,7 +350,16 @@ export async function DELETE(request: Request) {
       );
     }
 
-    return NextResponse.json({ product: deletedProduct });
+    // Only purge files from disk when explicitly requested by admin (with confirmation in UI).
+    // By default, files stay on disk so they can be reassigned to other brands.
+    if (purgeFiles) {
+      await purgeProductFiles(
+        deletedProduct.images,
+        deletedProduct.originalImages ?? [],
+      );
+    }
+
+    return NextResponse.json({ product: deletedProduct, filesPurged: purgeFiles });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unable to delete product.";
