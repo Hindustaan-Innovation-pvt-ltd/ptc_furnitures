@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ContactMessageModel } from "@/lib/db-models";
 import { connectToDatabase } from "@/lib/mongodb";
+import { sendContactMessageEmail } from "@/lib/mail";
 
 export async function POST(request: Request) {
   try {
@@ -40,6 +41,15 @@ export async function POST(request: Request) {
       phone: phone.trim(),
       subject: subject.trim(),
       message: message.trim(),
+    });
+
+    // Send email alert asynchronously
+    await sendContactMessageEmail({
+      name: msg.name,
+      phone: msg.phone,
+      subject: msg.subject,
+      message: msg.message,
+      createdAt: msg.createdAt,
     });
 
     // If it's a standard form submission, redirect back to /contact with success

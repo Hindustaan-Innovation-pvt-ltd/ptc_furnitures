@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { addLead, deleteLead, readLeads, updateLead } from "@/lib/leads";
 import { sendLeadSmsNotification } from "@/lib/sms";
 import { sendDealerWhatsAppMessage } from "@/lib/whatsapp";
+import { sendDealerLeadEmail } from "@/lib/mail";
 
 export async function GET() {
   try {
@@ -31,6 +32,9 @@ export async function POST(request: Request) {
 
     // Asynchronously trigger the MSG91 SMS alert
     await sendLeadSmsNotification(newLead);
+
+    // Asynchronously trigger the email alert
+    await sendDealerLeadEmail(newLead);
 
     // Retrieve the fully updated lead with its WhatsApp status populated
     const leads = await readLeads();

@@ -25,6 +25,7 @@ type ProductsProps = {
   initialProducts: Product[];
   initialBrands: string[];
   initialSearchTerm: string;
+  maxItems?: number;
 };
 
 const initialFilters: ProductFiltersState = {
@@ -41,6 +42,7 @@ export default function Products({
   initialProducts,
   initialBrands,
   initialSearchTerm,
+  maxItems,
 }: ProductsProps) {
   const [products, _setProducts] = React.useState<Product[]>(initialProducts);
   const [brands, _setBrands] = React.useState<string[]>(initialBrands);
@@ -58,8 +60,13 @@ export default function Products({
   );
 
   const pagination = React.useMemo(
-    () => paginateProducts(visibleProducts, currentPage, itemsPerPage),
-    [currentPage, visibleProducts],
+    () =>
+      paginateProducts(
+        visibleProducts,
+        currentPage,
+        maxItems !== undefined ? maxItems : itemsPerPage,
+      ),
+    [currentPage, visibleProducts, maxItems],
   );
 
   const [pageWindowStart, setPageWindowStart] = React.useState(1);
@@ -152,7 +159,7 @@ export default function Products({
       </div>
 
       <div className="mx-auto mt-12 flex max-w-7xl flex-col items-center gap-4 px-4 sm:px-6 lg:px-8">
-        {pagination.totalPages > 1 ? (
+        {maxItems === undefined && pagination.totalPages > 1 ? (
           <Pagination className="justify-center sm:justify-end">
             <PaginationContent className="flex-wrap justify-center gap-2">
               <PaginationItem>
@@ -278,7 +285,7 @@ export default function Products({
             router.push("/collections");
           }}
         >
-          Full Catalogue
+          View Full Collection
           <svg
             width="24"
             height="24"

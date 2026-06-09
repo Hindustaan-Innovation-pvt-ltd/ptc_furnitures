@@ -1,8 +1,10 @@
+import { connection } from "next/server";
 import AdminBrandGrid from "@/components/custom/AdminBrandGrid";
 import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import { readBrands, readProducts } from "@/lib/products";
 
 export default async function AdminPage() {
+  await connection();
   const [products, brands] = await Promise.all([readProducts(), readBrands()]);
 
   // Compute analytics metrics

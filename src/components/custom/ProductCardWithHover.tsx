@@ -87,12 +87,7 @@ export default function ProductCardWithHover({
   const [downloadingImgIndex, setDownloadingImgIndex] = React.useState<
     number | null
   >(null);
-  // Lead capture gate
-  const [leadModalOpen, setLeadModalOpen] = React.useState(false);
-  const pendingDownload = React.useRef<{
-    imageUrl: string;
-    index: number | null;
-  } | null>(null);
+
 
   // Carousel APIs and active index trackers
   const [mainApi, setMainApi] = React.useState<CarouselApi>();
@@ -146,10 +141,10 @@ export default function ProductCardWithHover({
   const averageRating =
     reviews.length > 0
       ? Number(
-          (
-            reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
-          ).toFixed(1),
-        )
+        (
+          reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+        ).toFixed(1),
+      )
       : 5.0;
 
   async function handleAddReview(e: React.FormEvent) {
@@ -185,31 +180,7 @@ export default function ProductCardWithHover({
     }
   }
 
-  /** Opens the lead-capture modal; actual download happens in handleLeadConfirmed */
-  function requestDownload(imageUrl: string, index: number | null = null) {
-    if (downloading) return;
-    pendingDownload.current = { imageUrl, index };
-    setLeadModalOpen(true);
-  }
 
-  async function handleLeadConfirmed(lead: { name: string; mobile: string }) {
-    if (!pendingDownload.current) return;
-    const { imageUrl, index } = pendingDownload.current;
-    pendingDownload.current = null;
-    // Silently log lead (best-effort)
-    fetch("/api/download-leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: lead.name,
-        mobile: lead.mobile,
-        action: "image_download",
-        productId: product.id,
-        productName: product.name ?? product.brand,
-      }),
-    }).catch(() => {});
-    await downloadWatermarked(imageUrl, index);
-  }
 
   async function downloadWatermarked(
     imageUrl: string,
@@ -245,8 +216,8 @@ export default function ProductCardWithHover({
         // For legacy external https:// URLs, route through /api/media?src=<encoded>.
         const downloadUrl =
           !imageUrl.startsWith("/") &&
-          !imageUrl.startsWith("http://localhost") &&
-          !imageUrl.startsWith("https://localhost")
+            !imageUrl.startsWith("http://localhost") &&
+            !imageUrl.startsWith("https://localhost")
             ? `/api/media?src=${encodeURIComponent(imageUrl)}`
             : imageUrl;
 
@@ -277,12 +248,6 @@ export default function ProductCardWithHover({
 
   return (
     <>
-      <LeadCaptureModal
-        open={leadModalOpen}
-        onOpenChange={setLeadModalOpen}
-        actionLabel="Download Image"
-        onConfirm={handleLeadConfirmed}
-      />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <HoverCard
           openDelay={150}
@@ -346,11 +311,10 @@ export default function ProductCardWithHover({
                             e.stopPropagation();
                             mainApi?.scrollTo(idx);
                           }}
-                          className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                            mainIndex === idx
-                              ? "bg-red-600 dark:bg-red-500 scale-120 w-3.5"
-                              : "bg-white/70 hover:bg-white"
-                          }`}
+                          className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${mainIndex === idx
+                            ? "bg-red-600 dark:bg-red-500 scale-120 w-3.5"
+                            : "bg-white/70 hover:bg-white"
+                            }`}
                           aria-label={`Go to image ${idx + 1}`}
                         />
                       ))}
@@ -434,9 +398,17 @@ export default function ProductCardWithHover({
                       <Button
                         size="icon"
                         variant="outline"
-                        onClick={() =>
-                          requestDownload(product.images?.[0] ?? "", null)
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const activeIndex =
+                            product.images && product.images.length > 1
+                              ? hoverIndex
+                              : 0;
+                          downloadWatermarked(
+                            product.images?.[activeIndex] ?? "",
+                            activeIndex,
+                          );
+                        }}
                         disabled={downloading}
                         className="rounded-full size-8 shrink-0 bg-white hover:bg-slate-50 text-slate-700 hover:text-red-600 border-slate-200 cursor-pointer shadow-xs transition-all duration-300 hover:scale-105 active:scale-95"
                       >
@@ -467,21 +439,19 @@ export default function ProductCardWithHover({
                 <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-full border border-slate-200/50">
                   <button
                     onClick={() => setViewMode("carousel")}
-                    className={`px-3 py-1 text-[9px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${
-                      viewMode === "carousel"
-                        ? "bg-white text-red-600 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
+                    className={`px-3 py-1 text-[9px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${viewMode === "carousel"
+                      ? "bg-white text-red-600 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
+                      }`}
                   >
                     Carousel
                   </button>
                   <button
                     onClick={() => setViewMode("grid")}
-                    className={`px-3 py-1 text-[9px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${
-                      viewMode === "grid"
-                        ? "bg-white text-red-600 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
+                    className={`px-3 py-1 text-[9px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${viewMode === "grid"
+                      ? "bg-white text-red-600 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
+                      }`}
                   >
                     Collage Grid
                   </button>
@@ -527,11 +497,10 @@ export default function ProductCardWithHover({
                               e.stopPropagation();
                               hoverApi?.scrollTo(idx);
                             }}
-                            className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                              hoverIndex === idx
-                                ? "bg-red-600 dark:bg-red-500 scale-120 w-3"
-                                : "bg-white/70 hover:bg-white"
-                            }`}
+                            className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${hoverIndex === idx
+                              ? "bg-red-600 dark:bg-red-500 scale-120 w-3"
+                              : "bg-white/70 hover:bg-white"
+                              }`}
                             aria-label={`Go to image ${idx + 1}`}
                           />
                         ))}
@@ -571,7 +540,7 @@ export default function ProductCardWithHover({
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <button
-                                onClick={() => requestDownload(image, idx)}
+                                onClick={() => downloadWatermarked(image, idx)}
                                 disabled={downloading}
                                 className="absolute right-1 bottom-1 p-1 bg-white/95 border border-slate-200/50 rounded-full hover:bg-red-600 hover:text-white transition shadow-md cursor-pointer disabled:opacity-50 shrink-0 flex items-center justify-center"
                               >
@@ -696,21 +665,19 @@ export default function ProductCardWithHover({
                   <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-full border border-slate-200/50">
                     <button
                       onClick={() => setViewMode("carousel")}
-                      className={`px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${
-                        viewMode === "carousel"
-                          ? "bg-white text-red-600 shadow-sm"
-                          : "text-slate-500 hover:text-slate-800"
-                      }`}
+                      className={`px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${viewMode === "carousel"
+                        ? "bg-white text-red-600 shadow-sm"
+                        : "text-slate-500 hover:text-slate-800"
+                        }`}
                     >
                       Carousel
                     </button>
                     <button
                       onClick={() => setViewMode("grid")}
-                      className={`px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${
-                        viewMode === "grid"
-                          ? "bg-white text-red-600 shadow-sm"
-                          : "text-slate-500 hover:text-slate-800"
-                      }`}
+                      className={`px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${viewMode === "grid"
+                        ? "bg-white text-red-600 shadow-sm"
+                        : "text-slate-500 hover:text-slate-800"
+                        }`}
                     >
                       Grid
                     </button>
@@ -755,11 +722,10 @@ export default function ProductCardWithHover({
                               e.stopPropagation();
                               dialogApi?.scrollTo(idx);
                             }}
-                            className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                              dialogIndex === idx
-                                ? "bg-red-600 dark:bg-red-500 scale-120 w-3"
-                                : "bg-white/70 hover:bg-white"
-                            }`}
+                            className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${dialogIndex === idx
+                              ? "bg-red-600 dark:bg-red-500 scale-120 w-3"
+                              : "bg-white/70 hover:bg-white"
+                              }`}
                             aria-label={`Go to image ${idx + 1}`}
                           />
                         ))}
@@ -798,12 +764,12 @@ export default function ProductCardWithHover({
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
-                                  onClick={() => requestDownload(image, idx)}
+                                  onClick={() => downloadWatermarked(image, idx)}
                                   disabled={downloading}
                                   className="absolute right-1 bottom-1 p-1 bg-white/95 border border-slate-200/50 rounded-full hover:bg-red-600 hover:text-white transition shadow-md cursor-pointer disabled:opacity-50 shrink-0 flex items-center justify-center"
                                 >
                                   {downloading &&
-                                  downloadingImgIndex === idx ? (
+                                    downloadingImgIndex === idx ? (
                                     <Loader2 className="size-2.5 animate-spin text-red-500" />
                                   ) : (
                                     <Download className="size-2.5 text-slate-700" />
@@ -856,9 +822,17 @@ export default function ProductCardWithHover({
                         <Button
                           size="icon"
                           variant="outline"
-                          onClick={() =>
-                            requestDownload(product.images?.[0] ?? "", null)
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const activeIndex =
+                              product.images && product.images.length > 1
+                                ? dialogIndex
+                                : 0;
+                            downloadWatermarked(
+                              product.images?.[activeIndex] ?? "",
+                              activeIndex,
+                            );
+                          }}
                           disabled={downloading}
                           className="rounded-full size-9 shrink-0 bg-white hover:bg-slate-50 text-slate-700 hover:text-red-600 border-slate-200 cursor-pointer shadow-xs transition-all duration-300 hover:scale-105 active:scale-95"
                         >

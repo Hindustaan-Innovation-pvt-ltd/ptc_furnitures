@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import Script from "next/script";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import QrCodeDownloader from "@/components/custom/QrCodeDownloader";
@@ -102,7 +103,9 @@ export default async function PaymentPage() {
       </div>
 
       {/* Client-side copy script */}
-      <script
+      <Script
+        id="payment-copy-script"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
           document.addEventListener('click', function(e) {

@@ -1,9 +1,11 @@
+import { connection } from "next/server";
 import AdminBrandsManager from "@/components/custom/AdminBrandsManager";
 import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import { getBrandLogos } from "@/lib/brand-logos";
 import { readBrands } from "@/lib/products";
 
 export default async function AdminSettingsPage() {
+  await connection();
   const [brands, brandLogos] = await Promise.all([
     readBrands(),
     getBrandLogos(),

@@ -51,7 +51,7 @@ const TRANSLATIONS = {
     successTitle: "Application Logged!",
     successRef: "Reference ID: ",
     successDesc: "Thank you for applying to the PTC Furniture authorized dealer program. A regional distribution consultant has been assigned to your reference and will review your credentials soon.",
-    successWaNotify: "We've opened a WhatsApp chat for you. Please tap \"Send\" in the opened window to notify us.",
+    successEmailNotify: "A notification email has been dispatched to our sales team.",
     successReset: "Send Another Inquiry"
   },
   hi: {
@@ -84,7 +84,7 @@ const TRANSLATIONS = {
     successTitle: "आवेदन सफलतापूर्वक दर्ज हुआ!",
     successRef: "संदर्भ संख्या: ",
     successDesc: "पीटीसी फर्नीचर अधिकृत डीलर कार्यक्रम के लिए आवेदन करने के लिए धन्यवाद। एक क्षेत्रीय वितरण सलाहकार को आपका संदर्भ सौंपा गया है और वह जल्द ही आपके विवरण की समीक्षा करेंगे।",
-    successWaNotify: "हमने आपके लिए एक व्हाट्सएप चैट खोली है। कृपया हमें सूचित करने के लिए खुली हुई विंडो में \"Send\" (भेजें) पर टैप करें।",
+    successEmailNotify: "हमारी टीम को एक ईमेल सूचना भेज दी गई है।",
     successReset: "दूसरा आवेदन भेजें"
   }
 };
@@ -138,14 +138,6 @@ export default function DealersPage() {
           dealer_name: submittedName,
         });
 
-        // Immediately open WhatsApp to business number with dealer's details
-        const notifyUrl = buildOwnerNotifyUrl(
-          submittedName,
-          submittedPhone,
-          city,
-          leadId,
-        );
-        window.open(notifyUrl, "_blank", "noopener,noreferrer");
         setSubmitResult({
           success: true,
           leadId,
@@ -172,19 +164,6 @@ export default function DealersPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  /** Opens a wa.me chat to the BUSINESS number with the dealer's details pre-filled */
-  function buildOwnerNotifyUrl(
-    name: string,
-    phone: string,
-    city: string,
-    leadId: string,
-  ) {
-    const message = encodeURIComponent(
-      `Hello PTC Furnitures! 🙋\n\nI just submitted a dealer application. Here are my details:\n\n👤 Name: ${name}\n📞 Phone: ${phone}\n🏙️ City: ${city}\n🔖 Reference ID: ${leadId}\n\nLooking forward to partnering with you!`,
-    );
-    return `https://wa.me/919294512259?text=${message}`;
   }
 
   return (
@@ -428,9 +407,9 @@ export default function DealersPage() {
                     {t.successDesc}
                   </p>
 
-                  {/* WhatsApp chat opened automatically — dealer can check phone for your message */}
+                  {/* Email notification alert */}
                   <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                    {t.successWaNotify}
+                    {t.successEmailNotify}
                   </p>
 
                   <Button

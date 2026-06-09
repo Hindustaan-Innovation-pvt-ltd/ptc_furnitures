@@ -116,6 +116,7 @@ async function HomeProductsLoader({
       initialProducts={initialProducts}
       initialBrands={initialBrands}
       initialSearchTerm={initialSearchTerm}
+      maxItems={9}
     />
   );
 }

@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
@@ -23,6 +24,7 @@ type BrandPageProps = {
 };
 
 export default async function BrandPage({ params }: BrandPageProps) {
+  await connection();
   const { brand } = await params;
   const [brands, products] = await Promise.all([readBrands(), readProducts()]);
   const selectedBrand = brands.find(

@@ -165,6 +165,9 @@ export interface IProductReview extends Document {
   text: string;
   date: string;
   status: "approved" | "pending" | "rejected";
+  reviewerName?: string;
+  reviewerLocation?: string;
+  source?: "storefront" | "google";
 }
 
 const ProductReviewSchema = new Schema<IProductReview>({
@@ -179,6 +182,13 @@ const ProductReviewSchema = new Schema<IProductReview>({
     required: true,
     enum: ["approved", "pending", "rejected"],
     default: "approved",
+  },
+  reviewerName: { type: String, default: "Anonymous" },
+  reviewerLocation: { type: String, default: "" },
+  source: {
+    type: String,
+    enum: ["storefront", "google"],
+    default: "storefront",
   },
 });
 
@@ -341,3 +351,27 @@ const ContactMessageSchema = new Schema<IContactMessage>({
 export const ContactMessageModel =
   mongoose.models.ContactMessage ||
   mongoose.model<IContactMessage>("ContactMessage", ContactMessageSchema);
+
+// ==========================================
+// 13. Google Connection Schema
+// ==========================================
+export interface IGoogleConnection extends Document {
+  isConnected: boolean;
+  accountEmail?: string;
+  businessName?: string;
+  lastSyncedAt?: string;
+  accessToken?: string;
+}
+
+const GoogleConnectionSchema = new Schema<IGoogleConnection>({
+  isConnected: { type: Boolean, required: true, default: false },
+  accountEmail: { type: String },
+  businessName: { type: String },
+  lastSyncedAt: { type: String },
+  accessToken: { type: String },
+});
+
+export const GoogleConnectionModel =
+  mongoose.models.GoogleConnection ||
+  mongoose.model<IGoogleConnection>("GoogleConnection", GoogleConnectionSchema);
+

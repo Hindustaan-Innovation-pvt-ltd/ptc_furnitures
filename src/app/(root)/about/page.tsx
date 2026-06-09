@@ -28,15 +28,10 @@ export default function page() {
               Built on a Belief in <span className="text-red-700">Better</span>.
             </h2>
             <p className="max-w-xl text-sm leading-6 sm:text-base">
-              PTC was founded in 2019 by Sara Kvist, a furniture restorer turned
-              curator, with one conviction: that beautiful, honest objects make
-              daily life meaningfully better.
+              Founded in Raipur with a passion for timeless craftsmanship and thoughtful living, we believe that the right furniture does more than fill a space—it shapes the way people live, connect, and create memories.
             </p>
             <p className="max-w-xl text-sm leading-6 sm:text-base">
-              We don't manufacture — we seek. Our buyers travel to studios in
-              Oslo, Milan, Kyoto, and Copenhagen, looking for work that is
-              genuinely excellent: furniture designed to be understood, lived
-              with, and passed on.
+              We don't simply sell furniture—we curate it. Our team carefully selects pieces from skilled artisans, trusted manufacturers, and design houses across India, bringing together collections that combine comfort, durability, and enduring style. Every product is chosen with a focus on quality materials, functional design, and lasting value.
             </p>
           </div>
           <div className="grid grid-cols-2 border-t border-slate-600 divide-x divide-y divide-slate-200 dark:bg-stone-900/90 dark:divide-slate-600 sm:grid-cols-4 sm:divide-y-0">

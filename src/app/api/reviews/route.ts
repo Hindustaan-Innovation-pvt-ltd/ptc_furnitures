@@ -10,6 +10,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get("productId");
+    const source = searchParams.get("source");
 
     const reviews = await readReviews();
 
@@ -17,6 +18,14 @@ export async function GET(request: Request) {
       // For storefront customer views: only return approved reviews for this product
       const filtered = reviews.filter(
         (r) => r.productId === productId && r.status === "approved",
+      );
+      return NextResponse.json({ success: true, reviews: filtered });
+    }
+
+    if (source) {
+      // Filter by source (e.g. google, storefront)
+      const filtered = reviews.filter(
+        (r) => r.source === source && r.status === "approved"
       );
       return NextResponse.json({ success: true, reviews: filtered });
     }
@@ -34,7 +43,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { productId, productName, rating, text } = body;
+    const {
+      productId,
+      productName,
+      rating,
+      text,
+      reviewerName,
+      reviewerLocation,
+      source,
+      date,
+    } = body;
 
     if (!productId || !productName || !rating || !text) {
       return NextResponse.json(
@@ -52,6 +70,10 @@ export async function POST(request: Request) {
       productName,
       rating: Number(rating),
       text,
+      reviewerName,
+      reviewerLocation,
+      source: source || "storefront",
+      date,
     });
 
     return NextResponse.json(

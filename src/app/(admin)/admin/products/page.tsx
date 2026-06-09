@@ -1,8 +1,10 @@
+import { connection } from "next/server";
 import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import AdminProductsCatalog from "@/components/custom/AdminProductsCatalog";
 import { readBrands, readProducts } from "@/lib/products";
 
 export default async function AdminProductsPage() {
+  await connection();
   const [products, brands] = await Promise.all([readProducts(), readBrands()]);
 
   return (

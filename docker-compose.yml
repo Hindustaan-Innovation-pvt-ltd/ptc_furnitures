@@ -20,6 +20,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}
     container_name: furnitures-web
     restart: always
     ports:
@@ -27,10 +29,18 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/ptc_furnitures
-      - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-JGB09E5S7F
+      - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}
       - MSG91_AUTH_KEY=${MSG91_AUTH_KEY}
       - MSG91_TEMPLATE_ID=${MSG91_TEMPLATE_ID}
       - ADMIN_SMS_RECIPIENT=${ADMIN_SMS_RECIPIENT}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+      - BREVO_SMTP=${BREVO_SMTP}
+      - BREVO_PORT=${BREVO_PORT}
+      - BREVO_USER=${BREVO_USER}
+      - BREVO_PASSWORD=${BREVO_PASSWORD}
+      - BREVO_SENDER_MAIL=${BREVO_SENDER_MAIL}
     env_file:
       - .env
     depends_on:

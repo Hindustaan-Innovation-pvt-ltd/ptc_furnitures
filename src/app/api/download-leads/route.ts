@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { DownloadLeadModel } from "@/lib/db-models";
 import { connectToDatabase } from "@/lib/mongodb";
+import { sendDownloadLeadEmail } from "@/lib/mail";
 
 export async function POST(request: Request) {
   try {
@@ -16,13 +17,24 @@ export async function POST(request: Request) {
 
     await connectToDatabase();
 
-    await DownloadLeadModel.create({
+    const lead = await DownloadLeadModel.create({
       name: name.trim(),
       mobile: mobile.trim(),
       action: action || "image_download",
       productId: productId || undefined,
       productName: productName || undefined,
       catalogUrl: catalogUrl || undefined,
+    });
+
+    // Send email alert asynchronously
+    await sendDownloadLeadEmail({
+      name: lead.name,
+      mobile: lead.mobile,
+      action: lead.action,
+      productId: lead.productId,
+      productName: lead.productName,
+      catalogUrl: lead.catalogUrl,
+      createdAt: lead.createdAt,
     });
 
     return NextResponse.json({ success: true });
