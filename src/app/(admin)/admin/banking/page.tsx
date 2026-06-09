@@ -337,8 +337,7 @@ function EntryForm({
           </div>
           <div className="flex flex-col gap-3">
             <p className="text-xs text-slate-400 leading-relaxed">
-              Upload a UPI QR image (PNG, JPG). Customers can scan it directly
-              on the payment page.
+              Upload a UPI QR image (PNG, JPG). <strong>Note:</strong> Only one payment QR code can be active across all accounts. Uploading a QR here will automatically remove it from any other account.
             </p>
             <input
               ref={fileRef}
@@ -435,7 +434,11 @@ export default function AdminBankingPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setEntries((prev) => [...prev, data.entry]);
+        if (form.qrImage) {
+          await fetchEntries();
+        } else {
+          setEntries((prev) => [...prev, data.entry]);
+        }
         setAddingNew(false);
       }
     } finally {
@@ -453,9 +456,13 @@ export default function AdminBankingPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setEntries((prev) =>
-          prev.map((e) => (e._id === id ? { ...e, ...data.entry } : e)),
-        );
+        if (form.qrImage) {
+          await fetchEntries();
+        } else {
+          setEntries((prev) =>
+            prev.map((e) => (e._id === id ? { ...e, ...data.entry } : e)),
+          );
+        }
         setExpandedId(null);
         setSavedId(id);
         setTimeout(() => setSavedId(null), 2500);

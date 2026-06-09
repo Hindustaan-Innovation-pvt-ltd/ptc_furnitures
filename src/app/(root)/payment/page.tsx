@@ -5,6 +5,7 @@ import Script from "next/script";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import QrCodeDownloader from "@/components/custom/QrCodeDownloader";
+import ScrollToBank from "@/components/custom/ScrollToBank";
 import StayInTouch from "@/components/custom/StayInTouch";
 import { BankingDetailsModel } from "@/lib/db-models";
 import { connectToDatabase } from "@/lib/mongodb";
@@ -66,7 +67,11 @@ async function getActiveEntries(): Promise<BankEntry[]> {
   }
 }
 
-export default async function PaymentPage() {
+export default async function PaymentPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ bank?: string | string[] }>;
+}) {
   return (
     <section className="min-h-screen bg-[#fcfcfd] dark:bg-[#08090d] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       <div className="flex-1">
@@ -97,7 +102,7 @@ export default async function PaymentPage() {
               </div>
             }
           >
-            <PaymentEntriesLoader />
+            <PaymentEntriesLoader searchParams={searchParams} />
           </Suspense>
         </div>
       </div>
@@ -143,6 +148,25 @@ export default async function PaymentPage() {
               document.body.removeChild(textArea);
             }
           });
+
+          function handleHashScroll() {
+            var hash = window.location.hash;
+            if (!hash) return;
+            var id = decodeURIComponent(hash.substring(1));
+            var el = document.getElementById(id);
+            if (el) {
+              setTimeout(function() {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 300);
+            }
+          }
+          window.addEventListener('load', handleHashScroll);
+          window.addEventListener('hashchange', handleHashScroll);
+          if (document.readyState === 'complete') {
+            handleHashScroll();
+          } else {
+            document.addEventListener('DOMContentLoaded', handleHashScroll);
+          }
         `,
         }}
       />
@@ -153,7 +177,14 @@ export default async function PaymentPage() {
   );
 }
 
-async function PaymentEntriesLoader() {
+async function PaymentEntriesLoader({
+  searchParams,
+}: {
+  searchParams?: Promise<{ bank?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const selectedBank = Array.isArray(params?.bank) ? params.bank[0] : params?.bank;
+
   const entries = await getActiveEntries();
 
   if (entries.length === 0) {
@@ -181,31 +212,38 @@ async function PaymentEntriesLoader() {
     );
   }
 
+  // Find the single active QR image if any exists
+  const qrEntry = entries.find((e) => e.qrImage);
+  const mainQrImage = qrEntry?.qrImage;
+  const mainUpiId = qrEntry?.upiId;
+  const mainUpiName = qrEntry?.upiName || qrEntry?.accountHolderName;
+  const mainQrLabel = qrEntry?.label || "Payment QR Code";
+
   return (
-    <div className="max-w-5xl mx-auto space-y-10">
-      {entries.map((b, idx) => {
-        const hasBank = b.accountNumber || b.bankName;
-        const hasUpi = b.upiId;
-        const hasQr = b.qrImage;
+    <div className={`grid grid-cols-1 ${mainQrImage ? "lg:grid-cols-3" : ""} gap-8 items-start`}>
+      {/* Left Column: List of bank accounts */}
+      <div className={`space-y-8 ${mainQrImage ? "lg:col-span-2" : "max-w-2xl mx-auto w-full"}`}>
+        {entries.map((b, idx) => {
+          const hasBank = b.accountNumber || b.bankName;
+          const hasUpi = b.upiId;
 
-        return (
-          <div
-            key={b._id}
-            className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] shadow-xs overflow-hidden"
-          >
-            {/* Account header strip */}
-            <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-red-700 to-red-600 dark:from-red-800 dark:to-red-700">
-              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white text-sm font-black">
-                {idx + 1}
+          return (
+            <div
+              key={b._id}
+              id={b.bankName ? b.bankName.trim().toLowerCase().replace(/\s+/g, "-") : undefined}
+              className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] shadow-xs overflow-hidden scroll-mt-24"
+            >
+              {/* Account header strip */}
+              <div className="flex items-center gap-3 px-6 py-4 bg-linear-to-r from-red-700 to-red-600 dark:from-red-800 dark:to-red-700">
+                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white text-sm font-black">
+                  {idx + 1}
+                </div>
+                <h2 className="text-sm font-extrabold text-white tracking-wide">
+                  {b.label || `Payment Account ${idx + 1}`}
+                </h2>
               </div>
-              <h2 className="text-sm font-extrabold text-white tracking-wide">
-                {b.label || `Payment Account ${idx + 1}`}
-              </h2>
-            </div>
 
-            <div className={`p-4 sm:p-6 grid gap-6 ${hasQr ? "lg:grid-cols-2" : "max-w-2xl mx-auto w-full"} place-content-evenly`}>
-              {/* Left — bank + UPI details */}
-              <div className="flex flex-col gap-5">
+              <div className="p-4 sm:p-6 max-w-2xl mx-auto w-full flex flex-col gap-5">
                 {/* Bank Transfer */}
                 {hasBank && (
                   <div className="rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden">
@@ -378,26 +416,7 @@ async function PaymentEntriesLoader() {
                           </div>
                         ))}
                     </div>
-                    {b.upiId && (
-                      <div className="px-5 pb-4">
-                        <a
-                          href={`upi://pay?pa=${encodeURIComponent(b.upiId)}&pn=${encodeURIComponent(b.upiName || b.accountHolderName || "")}&cu=INR`}
-                          className="mt-2 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition w-full sm:w-auto"
-                        >
-                          <svg
-                            width="13"
-                            height="13"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                          </svg>
-                          Open in UPI App
-                        </a>
-                      </div>
-                    )}
+
                   </div>
                 )}
 
@@ -420,19 +439,79 @@ async function PaymentEntriesLoader() {
                   </div>
                 )}
               </div>
-
-              {/* Right — QR Code with Download & Lead Capture */}
-              {hasQr && b.qrImage && (
-                <QrCodeDownloader
-                  qrImage={b.qrImage}
-                  label={b.label || `Payment Account ${idx + 1}`}
-                  upiId={b.upiId}
-                />
-              )}
             </div>
+          );
+        })}
+      </div>
+
+      {/* Right Column: Single Main QR Code */}
+      {mainQrImage && (
+        <div className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] shadow-xs overflow-hidden lg:sticky lg:top-24">
+          <div className="flex items-center gap-3 px-6 py-4 bg-linear-to-r from-purple-700 to-purple-600 dark:from-purple-800 dark:to-purple-700">
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+            </div>
+            <h2 className="text-sm font-extrabold text-white tracking-wide">
+              Scan to Pay (UPI QR)
+            </h2>
           </div>
-        );
-      })}
+          <div className="p-6 flex flex-col items-center">
+            <QrCodeDownloader
+              qrImage={mainQrImage}
+              label={mainQrLabel}
+              upiId={mainUpiId}
+            />
+            {mainUpiId && (
+              <div className="w-full mt-5 border-t border-slate-100 dark:border-white/5 pt-4 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-400">UPI ID</span>
+                  <div className="flex items-center gap-1.5 font-mono font-bold text-slate-800 dark:text-slate-200">
+                    <span>{mainUpiId}</span>
+                    <button
+                      type="button"
+                      data-copy={mainUpiId}
+                      className="shrink-0 p-1 rounded-md text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition copy-btn"
+                      aria-label="Copy UPI ID"
+                    >
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <rect x="9" y="9" width="13" height="13" rx="2" />
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                {mainUpiName && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-slate-400">Registered Name</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">{mainUpiName}</span>
+                  </div>
+                )}
+
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      <ScrollToBank bankSlug={selectedBank} />
     </div>
   );
 }

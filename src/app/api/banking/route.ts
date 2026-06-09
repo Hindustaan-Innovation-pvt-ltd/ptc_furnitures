@@ -31,6 +31,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     await connectToDatabase();
 
+    if (body.qrImage) {
+      await BankingDetailsModel.updateMany({}, { $unset: { qrImage: "" } });
+    }
+
     const doc = await BankingDetailsModel.create({
       label: body.label?.trim() || "Bank Account",
       isActive: body.isActive ?? true,
@@ -68,6 +72,13 @@ export async function PATCH(request: Request) {
 
     const body = await request.json();
     await connectToDatabase();
+
+    if (body.qrImage) {
+      await BankingDetailsModel.updateMany(
+        { _id: { $ne: id } },
+        { $unset: { qrImage: "" } },
+      );
+    }
 
     const update: Record<string, any> = { updatedAt: new Date() };
     if (body.label !== undefined)

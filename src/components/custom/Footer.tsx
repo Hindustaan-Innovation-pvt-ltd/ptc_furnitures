@@ -166,7 +166,7 @@ export default function Footer() {
             ).map((card) => (
               <Link
                 key={card}
-                href="/payment"
+                href={`/payment?bank=${encodeURIComponent(card.trim().toLowerCase().replace(/\s+/g, "-"))}`}
                 className="inline-block border border-white/20 px-2.5 py-1 text-xs text-stone-400 hover:text-stone-200 hover:border-white/40 rounded-sm transition-all duration-300 hover:bg-white/5 cursor-pointer active:scale-95"
               >
                 {card}
