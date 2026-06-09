@@ -13,9 +13,9 @@ export default function FloatingActionButton() {
         className="text-white rounded-full shadow-lg animate-pulse"
         onClick={() => {
           sendGAEvent("event", "whatsapp_click", {
-            phone_number: "+919826134111",
+            phone_number: "+91 7880002245",
           });
-          router.push("https://wa.me/+919826134111");
+          router.push("https://wa.me/+917880002245");
         }}
       >
         <svg

@@ -151,7 +151,7 @@ function EntryForm({
       </div>
 
       {/* Bank Account */}
-      <div className="rounded-2xl border border-slate-100 dark:border-white/5 p-5 space-y-5 bg-slate-50/50 dark:bg-white/[0.02]">
+      <div className="rounded-2xl border border-slate-100 dark:border-white/5 p-5 space-y-5 bg-slate-50/50 dark:bg-white/2">
         <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-slate-400">
           <Building2 className="size-3.5" /> Bank Transfer Details
         </div>
@@ -260,7 +260,7 @@ function EntryForm({
       </div>
 
       {/* UPI */}
-      <div className="rounded-2xl border border-slate-100 dark:border-white/5 p-5 space-y-4 bg-slate-50/50 dark:bg-white/[0.02]">
+      <div className="rounded-2xl border border-slate-100 dark:border-white/5 p-5 space-y-4 bg-slate-50/50 dark:bg-white/2">
         <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-slate-400">
           <CreditCard className="size-3.5" /> UPI Details
         </div>
@@ -328,7 +328,7 @@ function EntryForm({
               </>
             ) : (
               <div className="flex flex-col items-center gap-1 text-slate-300 dark:text-slate-600">
-                <QrCode className="size-8 stroke-[1]" />
+                <QrCode className="size-8 stroke-1" />
                 <span className="text-[9px] font-bold uppercase tracking-wider">
                   No QR
                 </span>
@@ -568,7 +568,7 @@ export default function AdminBankingPage() {
 
           {/* Add new form */}
           {addingNew && (
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.015]">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/1.5">
               <div className="flex items-center gap-2 mb-5">
                 <div className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400">
                   <Plus className="size-4" />
@@ -617,7 +617,7 @@ export default function AdminBankingPage() {
                   <li key={entry._id} className="group">
                     {/* Entry row */}
                     <div
-                      className={`flex items-center gap-4 px-6 py-4 transition-colors ${isExpanded ? "bg-slate-50/70 dark:bg-white/[0.025]" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.015]"}`}
+                      className={`flex items-center gap-4 px-6 py-4 transition-colors ${isExpanded ? "bg-slate-50/70 dark:bg-white/2.5" : "hover:bg-slate-50/50 dark:hover:bg-white/1.5"}`}
                     >
                       {/* Active toggle */}
                       <button
@@ -711,7 +711,7 @@ export default function AdminBankingPage() {
 
                     {/* Expand: Edit form */}
                     {isExpanded && (
-                      <div className="px-6 pb-6 pt-2 bg-slate-50/50 dark:bg-white/[0.015] border-t border-slate-100 dark:border-white/5">
+                      <div className="px-6 pb-6 pt-2 bg-slate-50/50 dark:bg-white/1.5 border-t border-slate-100 dark:border-white/5">
                         <EntryForm
                           initial={{
                             label: entry.label,
