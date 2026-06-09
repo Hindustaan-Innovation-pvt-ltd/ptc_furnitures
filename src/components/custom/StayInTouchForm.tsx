@@ -30,7 +30,7 @@ export default function StayInTouchForm() {
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         required
-        className="w-full rounded-full border-stone-600 bg-white/5 px-4 py-4 text-white placeholder:text-gray-500"
+        className="w-full rounded-full border-stone-600 bg-white/5 px-4 py-4 dark:text-white placeholder:text-gray-500"
       />
 
       <Button

@@ -182,7 +182,7 @@ async function PaymentEntriesLoader({
 }: {
   searchParams?: Promise<{ bank?: string | string[] }>;
 }) {
-  const params = await searchParams;
+  const params = searchParams ? await searchParams : undefined;
   const selectedBank = Array.isArray(params?.bank) ? params.bank[0] : params?.bank;
 
   const entries = await getActiveEntries();
