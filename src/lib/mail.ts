@@ -325,3 +325,70 @@ export async function sendDownloadLeadEmail(lead: {
     html,
   });
 }
+
+// 4. Helper to send Newsletter Subscription Emails
+export async function sendSubscriberEmail(subscriber: {
+  email: string;
+  subscribedAt: Date | string;
+}) {
+  const formattedDate = new Date(subscriber.subscribedAt).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+  });
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); border: 1px solid #eef2f6; }
+    .header { background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 30px 20px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+    .header p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
+    .content { padding: 30px 25px; }
+    .content h2 { font-size: 18px; color: #1e293b; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+    .details-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+    .details-table th, .details-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    .details-table th { color: #64748b; font-weight: 600; width: 35%; background-color: #f8fafc; }
+    .details-table td { color: #334155; }
+    .footer { background-color: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .badge-subscriber { background-color: #ede9fe; color: #5b21b6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📬 New Newsletter Subscriber</h1>
+      <p>PTC Furniture — Stay in Touch Form</p>
+    </div>
+    <div class="content">
+      <h2>Subscription Details</h2>
+      <table class="details-table">
+        <tr>
+          <th>Email Address</th>
+          <td><a href="mailto:${subscriber.email}">${subscriber.email}</a></td>
+        </tr>
+        <tr>
+          <th>Subscribed At</th>
+          <td>${formattedDate}</td>
+        </tr>
+        <tr>
+          <th>Source</th>
+          <td><span class="badge badge-subscriber">Stay in Touch Form</span></td>
+        </tr>
+      </table>
+    </div>
+    <div class="footer">
+      <p>This is an automated notification from Pankaj Trading Co. newsletter system.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  return sendLeadEmail({
+    subject: `📬 New Newsletter Subscriber: ${subscriber.email}`,
+    html,
+  });
+}

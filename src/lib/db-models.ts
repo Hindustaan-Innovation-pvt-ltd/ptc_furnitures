@@ -375,3 +375,20 @@ export const GoogleConnectionModel =
   mongoose.models.GoogleConnection ||
   mongoose.model<IGoogleConnection>("GoogleConnection", GoogleConnectionSchema);
 
+// ==========================================
+// 14. Newsletter Subscriber Schema
+// ==========================================
+export interface INewsletterSubscriber extends Document {
+  email: string;
+  subscribedAt: Date;
+}
+
+const NewsletterSubscriberSchema = new Schema<INewsletterSubscriber>({
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  subscribedAt: { type: Date, default: Date.now },
+});
+
+export const NewsletterSubscriberModel =
+  mongoose.models.NewsletterSubscriber ||
+  mongoose.model<INewsletterSubscriber>("NewsletterSubscriber", NewsletterSubscriberSchema);
+

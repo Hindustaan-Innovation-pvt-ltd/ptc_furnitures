@@ -345,9 +345,9 @@ async function PaymentEntriesLoader({
                 {/* UPI */}
                 {hasUpi && (
                   <div className="rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden">
-                    <div className="flex items-center gap-2.5 px-5 py-3 bg-purple-50 dark:bg-purple-950/10 border-b border-purple-100 dark:border-purple-900/20">
+                    <div className="flex items-center gap-2.5 px-5 py-3 bg-red-50 dark:bg-red-950/10 border-b border-red-100 dark:border-red-900/20">
                       <svg
-                        className="size-4 text-purple-600 dark:text-purple-400"
+                        className="size-4 text-red-600 dark:text-red-400"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -355,7 +355,7 @@ async function PaymentEntriesLoader({
                       >
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                       </svg>
-                      <span className="text-xs font-extrabold uppercase tracking-wider text-purple-700 dark:text-purple-300">
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-red-700 dark:text-red-300">
                         UPI — PhonePe · GPay · Paytm
                       </span>
                     </div>
@@ -391,7 +391,7 @@ async function PaymentEntriesLoader({
                               <button
                                 type="button"
                                 data-copy={row.value}
-                                className="shrink-0 p-1 rounded-md text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition copy-btn"
+                                className="shrink-0 p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition copy-btn"
                                 aria-label={`Copy ${row.label}`}
                               >
                                 <svg
@@ -447,7 +447,7 @@ async function PaymentEntriesLoader({
       {/* Right Column: Single Main QR Code */}
       {mainQrImage && (
         <div className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] shadow-xs overflow-hidden lg:sticky lg:top-24">
-          <div className="flex items-center gap-3 px-6 py-4 bg-linear-to-r from-purple-700 to-purple-600 dark:from-purple-800 dark:to-purple-700">
+          <div className="flex items-center gap-3 px-6 py-4 bg-linear-to-r from-red-700 to-red-600 dark:from-red-800 dark:to-red-700">
             <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white">
               <svg
                 width="16"
@@ -482,7 +482,7 @@ async function PaymentEntriesLoader({
                     <button
                       type="button"
                       data-copy={mainUpiId}
-                      className="shrink-0 p-1 rounded-md text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition copy-btn"
+                      className="shrink-0 p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition copy-btn"
                       aria-label="Copy UPI ID"
                     >
                       <svg

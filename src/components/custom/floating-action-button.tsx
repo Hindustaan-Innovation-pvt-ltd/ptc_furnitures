@@ -15,7 +15,13 @@ export default function FloatingActionButton() {
           sendGAEvent("event", "whatsapp_click", {
             phone_number: "+91 7880002245",
           });
-          router.push("https://wa.me/+917880002245");
+          if (typeof window !== "undefined") {
+            window.open(
+              "https://wa.me/+917880002245",
+              "_blank",
+              "noopener,noreferrer"
+            );
+          }
         }}
       >
         <svg
