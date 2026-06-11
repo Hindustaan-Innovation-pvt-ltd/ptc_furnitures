@@ -29,9 +29,15 @@ async function syncBrandProducts(brand: string) {
       newImages.push(rewatermarked);
     }
 
-    prod.images = newImages;
-    prod.originalImages = originalImages;
-    await prod.save();
+    await Product.updateOne(
+      { id: prod.id },
+      {
+        $set: {
+          images: newImages,
+          originalImages: originalImages,
+        },
+      }
+    );
   }
 }
 
@@ -173,6 +179,7 @@ export async function POST(request: Request) {
     await invalidateImageCacheForBrand(brand);
     return NextResponse.json({ brand, watermark: wm });
   } catch (err: any) {
+    console.error("==> [Watermarks POST Error]:", err);
     return NextResponse.json(
       { error: String(err?.message ?? err) },
       { status: 500 },

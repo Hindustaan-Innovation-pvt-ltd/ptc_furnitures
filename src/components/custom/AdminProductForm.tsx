@@ -21,7 +21,6 @@ type EditableCustomField = ProductCustomField & {
 type ProductFormState = {
   brand: string;
   name: string;
-  premium: boolean;
 };
 
 type AdminProductFormProps = {
@@ -38,12 +37,10 @@ function getInitialState(product?: Product | null, initialBrand?: string): Produ
     ? {
         brand: product.brand,
         name: product.name ?? "",
-        premium: !!product.premium,
       }
     : {
         brand: initialBrand ?? "PTC GOLD",
         name: "",
-        premium: false,
       };
 }
 
@@ -130,7 +127,7 @@ export default function AdminProductForm({
     formData.set("brand", formState.brand);
     formData.set("name", formState.name);
     formData.set("customFields", JSON.stringify(normalizedCustomFields));
-    formData.set("premium", formState.premium ? "true" : "false");
+
 
     if (product) {
       formData.set("id", product.id);
@@ -298,23 +295,7 @@ export default function AdminProductForm({
                 </div>
               ) : null}
 
-              <div className="flex items-center gap-2 h-9 select-none">
-                <input
-                  type="checkbox"
-                  id="premium"
-                  checked={formState.premium}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      premium: event.target.checked,
-                    }))
-                  }
-                  className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500 cursor-pointer"
-                />
-                <Label htmlFor="premium" className="cursor-pointer font-semibold text-slate-800 dark:text-slate-200">
-                  Mark as Premium Item
-                </Label>
-              </div>
+
             </div>
           </section>
 

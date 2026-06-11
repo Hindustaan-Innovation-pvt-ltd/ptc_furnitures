@@ -25,6 +25,7 @@ type ProductsCollectionsProps = {
   initialProducts: Product[];
   initialBrands: string[];
   initialSearchTerm: string;
+  brandLogos?: { brand: string; src: string; alt: string; aliases: string[] }[];
 };
 
 const _sortOptions = [
@@ -50,6 +51,7 @@ export default function ProductsCollections({
   initialProducts,
   initialBrands,
   initialSearchTerm,
+  brandLogos,
 }: ProductsCollectionsProps) {
   const [products, _setProducts] = React.useState<Product[]>(initialProducts);
   const [brands, _setBrands] = React.useState<string[]>(initialBrands);
@@ -77,8 +79,10 @@ export default function ProductsCollections({
     setPageWindowStart(1);
   }, []);
   const _activeFilters = hasActiveProductFilters(filters);
-  const brandOptions =
-    brands.length > 0 ? brands : products.map((product) => product.brand);
+  const brandOptions = React.useMemo(() => {
+    const list = brands.length > 0 ? brands : products.map((product) => product.brand);
+    return Array.from(new Set(list.map((b) => b.trim()))).filter(Boolean).sort((a, b) => a.localeCompare(b));
+  }, [brands, products]);
 
   React.useEffect(() => {
     setFilters((current) => ({
@@ -121,44 +125,47 @@ export default function ProductsCollections({
               </span>
               {["all", ...brandOptions].map((brand) => {
                 const label = brand === "all" ? "All Brands" : brand;
+                const isSelected = filters.brand === brand;
+
+                const logo = brand === "all" ? null : brandLogos?.find(
+                  (l) => {
+                    const normB = brand.trim().toLowerCase();
+                    const normL = l.brand.trim().toLowerCase();
+                    return normL === normB || l.aliases.some((alias) => alias.trim().toLowerCase() === normB);
+                  }
+                );
 
                 return (
                   <Button
                     key={label}
-                    variant={filters.brand === brand ? "default" : "outline"}
+                    variant={isSelected ? "default" : "outline"}
                     size="sm"
-                    className="shrink-0 rounded-full text-xs"
+                    className="shrink-0 rounded-full text-xs flex items-center gap-2 select-none"
                     onClick={() => updateFilter("brand", brand)}
                   >
-                    {label}
+                    {brand === "all" ? (
+                      <svg className="size-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                      </svg>
+                    ) : logo?.src ? (
+                      <span className="inline-flex size-5 shrink-0 items-center justify-center rounded bg-white p-0.5 border border-slate-200/55 overflow-hidden">
+                        <img
+                          src={logo.src}
+                          alt={logo.alt || brand}
+                          className="h-full w-full object-contain"
+                        />
+                      </span>
+                    ) : (
+                      <span className={`inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${
+                        isSelected ? "bg-white/20 text-white dark:bg-black/20 dark:text-slate-200" : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-350"
+                      }`}>
+                        {brand.substring(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                    <span>{label}</span>
                   </Button>
                 );
               })}
-            </div>
-
-            <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0 border-t border-slate-100 dark:border-white/5 pt-3">
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
-                Tier
-              </span>
-              {[
-                { value: "all", label: "All Items" },
-                { value: "premium", label: "Premium Only" },
-                { value: "non-premium", label: "Regular Only" },
-              ].map((option) => (
-                <Button
-                  key={option.value}
-                  variant={
-                    (filters.premiumStatus || "all") === option.value
-                      ? "default"
-                      : "outline"
-                  }
-                  size="sm"
-                  className="shrink-0 rounded-full text-xs"
-                  onClick={() => updateFilter("premiumStatus", option.value as any)}
-                >
-                  {option.label}
-                </Button>
-              ))}
             </div>
           </div>
       </div>

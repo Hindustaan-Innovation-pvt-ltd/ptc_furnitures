@@ -8,26 +8,7 @@ export type BrandLogo = {
   aliases: string[];
 };
 
-const defaultLogos: BrandLogo[] = [
-  {
-    brand: "PTC",
-    src: "/PTC.png",
-    alt: "PTC logo",
-    aliases: ["ptc", "ptc furniture"],
-  },
-  {
-    brand: "PTC-Gold",
-    src: "/PTC-Gold.png",
-    alt: "PTC Gold logo",
-    aliases: ["ptc gold", "ptc-gold", "ptc gold furniture"],
-  },
-  {
-    brand: "ALTECH",
-    src: "/AL.png",
-    alt: "ALTECH logo",
-    aliases: ["altech"],
-  },
-];
+const defaultLogos: BrandLogo[] = [];
 
 let cachedLogos: Record<string, BrandLogo> = {};
 
@@ -37,7 +18,33 @@ function normalizeBrand(value: string): string {
 
 export async function loadLogosIntoCache() {
   try {
+    const count = await BrandLogoModel.countDocuments();
+    if (count === 0) {
+      console.log("==> Seeding default brand logos into database...");
+      await BrandLogoModel.insertMany([
+        {
+          brand: "PTC",
+          src: "/PTC.png",
+          alt: "PTC logo",
+          aliases: ["ptc", "ptc furniture"],
+        },
+        {
+          brand: "PTC-Gold",
+          src: "/PTC-Gold.png",
+          alt: "PTC Gold logo",
+          aliases: ["ptc gold", "ptc-gold", "ptc gold furniture"],
+        },
+        {
+          brand: "ALTECH",
+          src: "/AL.png",
+          alt: "ALTECH logo",
+          aliases: ["altech"],
+        },
+      ]);
+    }
+
     const docs = await BrandLogoModel.find().lean();
+    console.log(`==> [Cache Load] Loaded ${docs.length} brand logos from DB.`);
     const newCache: Record<string, BrandLogo> = {};
     for (const doc of docs) {
       newCache[normalizeBrand(doc.brand)] = {
@@ -100,22 +107,34 @@ export function getBrandLogos(): BrandLogo[] {
 export async function setBrandLogo(brand: string, logo: BrandLogo) {
   await connectToDatabase();
 
-  const targetBrand = brand.trim();
-  const normalized = normalizeBrand(targetBrand);
+  const targetBrand = logo.brand.trim();
+  const escapedBrand = targetBrand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  
+  const existing = await BrandLogoModel.findOne({
+    brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") },
+  });
 
-  await BrandLogoModel.findOneAndUpdate(
-    { brand: { $regex: new RegExp(`^${targetBrand}$`, "i") } },
-    {
-      $set: {
-        brand: logo.brand,
-        src: logo.src,
-        alt: logo.alt,
-        aliases: logo.aliases || [],
+  if (existing) {
+    await BrandLogoModel.updateOne(
+      { _id: existing._id },
+      {
+        $set: {
+          brand: logo.brand,
+          src: logo.src,
+          alt: logo.alt,
+          aliases: logo.aliases || [],
+        },
       },
-    },
-    { upsert: true, new: true },
-  );
+    );
+  } else {
+    await BrandLogoModel.create({
+      brand: logo.brand,
+      src: logo.src,
+      alt: logo.alt,
+      aliases: logo.aliases || [],
+    });
+  }
 
-  // Update memory cache
-  cachedLogos[normalized] = logo;
+  // Reload memory cache from database to ensure consistency
+  await loadLogosIntoCache();
 }

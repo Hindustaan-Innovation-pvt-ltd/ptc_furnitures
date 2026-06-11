@@ -81,27 +81,30 @@ export async function updateReviewStatus(
 ): Promise<ProductReview | null> {
   await connectToDatabase();
 
-  const doc = await ProductReviewModel.findOneAndUpdate(
+  const result = await ProductReviewModel.updateOne(
     { id },
     { $set: { status } },
-    { new: true },
-  ).lean();
+  );
 
-  if (!doc) {
+  if (result.matchedCount === 0) {
     return null;
   }
 
+  // Re-fetch the document to return accurate data (cheapest path after updateOne)
+  const updated = await ProductReviewModel.findOne({ id }).lean();
+  if (!updated) return null;
+
   return {
-    id: doc.id,
-    productId: doc.productId,
-    productName: doc.productName,
-    rating: doc.rating,
-    text: doc.text,
-    date: doc.date,
-    status: doc.status || "approved",
-    reviewerName: doc.reviewerName || "Anonymous",
-    reviewerLocation: doc.reviewerLocation || "",
-    source: doc.source || "storefront",
+    id: updated.id,
+    productId: updated.productId,
+    productName: updated.productName,
+    rating: updated.rating,
+    text: updated.text,
+    date: updated.date,
+    status: updated.status || "approved",
+    reviewerName: updated.reviewerName || "Anonymous",
+    reviewerLocation: updated.reviewerLocation || "",
+    source: updated.source || "storefront",
   };
 }
 
@@ -157,7 +160,7 @@ export async function updateGoogleConnection(data: {
   const conn = await GoogleConnectionModel.findOneAndUpdate(
     {},
     { $set: data },
-    { new: true, upsert: true }
+    { returnDocument: "after", upsert: true }
   ).lean();
   return conn;
 }

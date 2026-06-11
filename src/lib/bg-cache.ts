@@ -36,10 +36,10 @@ export async function setCachedBgVariant(
   derived: string,
 ): Promise<void> {
   await connectToDatabase();
-  await BgRemovedCacheModel.findOneAndUpdate(
+  await BgRemovedCacheModel.updateOne(
     { originalImage: original },
     { $set: { derivedImage: derived } },
-    { upsert: true, new: true },
+    { upsert: true },
   );
 }
 
@@ -48,9 +48,9 @@ export async function setCachedBgVariantByKey(
   derived: string,
 ): Promise<void> {
   await connectToDatabase();
-  await BgRemovedCacheModel.findOneAndUpdate(
+  await BgRemovedCacheModel.updateOne(
     { originalImage: cacheKey },
     { $set: { derivedImage: derived } },
-    { upsert: true, new: true },
+    { upsert: true },
   );
 }

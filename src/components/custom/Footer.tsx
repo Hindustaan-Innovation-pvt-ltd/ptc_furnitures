@@ -4,14 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const collections = [
-  "PTC GOLD",
-  "REX",
-  "ALTECH",
-  "ARIPLAST",
-  "HALLMARK",
-  "PANKAJ",
-];
 const company = [
   "About PTC",
   "Brochures & Catalogs",
@@ -30,6 +22,7 @@ const legal = [
 
 export default function Footer() {
   const [bankNames, setBankNames] = useState<string[]>([]);
+  const [collections, setCollections] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchBanks() {
@@ -51,7 +44,21 @@ export default function Footer() {
         console.error("Failed to load footer bank names:", err);
       }
     }
+    async function fetchBrands() {
+      try {
+        const res = await fetch("/api/brands");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.brands)) {
+            setCollections(data.brands);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load footer brands:", err);
+      }
+    }
     fetchBanks();
+    fetchBrands();
   }, []);
 
   return (
@@ -189,13 +196,12 @@ function FooterColumn({ title, links }: FooterColumnProps) {
     if (link === "Payment Details") return "/payment";
     if (link === "Privacy Policy") return "/privacy-policy";
     if (link === "Terms of Use") return "/terms-of-use";
-    if (link === "PTC GOLD") return "/collections?q=PTC%20GOLD";
-    if (link === "REX") return "/collections?q=REX";
-    if (link === "ALTECH") return "/collections?q=ALTECH";
-    if (link === "ARIPLAST") return "/collections?q=ARIPLAST";
-    if (link === "HALLMARK") return "/collections?q=HALLMARK";
-    if (link === "PANKAJ") return "/collections?q=PANKAJ";
-    return "#";
+    
+    if (company.includes(link) || legal.includes(link)) {
+      return "#";
+    }
+    
+    return `/collections?q=${encodeURIComponent(link)}`;
   };
 
   return (

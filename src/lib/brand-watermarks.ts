@@ -54,32 +54,47 @@ export async function setBrandWatermark(
 
   await connectToDatabase();
 
-  await BrandWatermarkModel.findOneAndUpdate(
-    { brand: { $regex: new RegExp(`^${normalized}$`, "i") } },
-    {
-      $set: {
-        brand: normalized,
-        url: watermark.url,
-        size: watermark.size || "medium",
-        opacity: watermark.opacity ?? 20,
-        position: watermark.position || "center",
-      },
-    },
-    { upsert: true, new: true },
-  );
+  const escapedBrand = normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const existing = await BrandWatermarkModel.findOne({
+    brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") },
+  });
 
-  // Update memory cache
-  cachedWatermarks[normalized] = watermark;
+  if (existing) {
+    await BrandWatermarkModel.updateOne(
+      { _id: existing._id },
+      {
+        $set: {
+          brand: normalized,
+          url: watermark.url,
+          size: watermark.size || "medium",
+          opacity: watermark.opacity ?? 20,
+          position: watermark.position || "center",
+        },
+      },
+    );
+  } else {
+    await BrandWatermarkModel.create({
+      brand: normalized,
+      url: watermark.url,
+      size: watermark.size || "medium",
+      opacity: watermark.opacity ?? 20,
+      position: watermark.position || "center",
+    });
+  }
+
+  // Reload memory cache from database to ensure consistency
+  await loadWatermarksIntoCache();
 }
 
 export async function removeBrandWatermark(brand: string): Promise<void> {
   const normalized = normalizeBrand(brand);
   await connectToDatabase();
 
+  const escapedBrand = normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   await BrandWatermarkModel.findOneAndDelete({
-    brand: { $regex: new RegExp(`^${normalized}$`, "i") },
+    brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") },
   });
 
-  // Remove from memory cache
-  delete cachedWatermarks[normalized];
+  // Reload memory cache from database to ensure consistency
+  await loadWatermarksIntoCache();
 }

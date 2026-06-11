@@ -220,11 +220,7 @@ export default function ProductCardWithHover({
         className="relative grid border border-slate-200/80 bg-white p-4 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300 rounded-2xl group cursor-pointer hover:-translate-y-1"
       >
         <div className="overflow-hidden rounded-xl aspect-square flex items-center justify-center bg-slate-50 relative">
-          {product.premium && (
-            <div className="absolute top-2 left-2 bg-amber-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm z-10 select-none">
-              Premium
-            </div>
-          )}
+
           {displayImages && displayImages.length > 1 ? (
             <Carousel
               setApi={setMainApi}
@@ -467,11 +463,7 @@ export default function ProductCardWithHover({
                   <h4 className="text-lg font-black leading-tight text-slate-950 truncate">
                     {product.name}
                   </h4>
-                  {product.premium && (
-                    <span className="bg-amber-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm select-none">
-                      Premium
-                    </span>
-                  )}
+
                 </div>
                 <span className="text-[10px] font-extrabold tracking-widest uppercase text-red-600 block mt-1">
                   {product.brand || "Exclusive"}

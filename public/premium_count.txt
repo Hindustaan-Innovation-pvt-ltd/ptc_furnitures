@@ -1,0 +1,30 @@
+Premium Products: 6
+Premium Chairs: 0
+All Chairs: 14
+Sample Premium: [
+  {
+    "id": "c0473ea8-796f-40c7-a9d8-12b03980abaa",
+    "name": "MOON",
+    "premium": true
+  },
+  {
+    "id": "8fc8db7d-e0ae-498f-ad15-a0992d60e1d8",
+    "name": "YUDO",
+    "premium": true
+  },
+  {
+    "id": "c19e2376-ecbf-468d-bca6-c34e31ff76f6",
+    "name": "ENOVA",
+    "premium": true
+  },
+  {
+    "id": "438a9cd9-acf9-48cb-98b2-a38c8fc1c75c",
+    "name": "MAYBACH",
+    "premium": true
+  },
+  {
+    "id": "934e849a-c320-44c2-8e2b-3c295345beba",
+    "name": "LEXUS",
+    "premium": true
+  }
+]

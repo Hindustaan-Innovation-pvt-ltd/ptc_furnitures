@@ -196,11 +196,15 @@ async function run() {
     }
 
     if (modified) {
-      product.images = newImages;
-      product.originalImages = newOriginalImages;
-      product.markModified("images");
-      product.markModified("originalImages");
-      await product.save();
+      await Product.updateOne(
+        { id: product.id },
+        {
+          $set: {
+            images: newImages,
+            originalImages: newOriginalImages,
+          },
+        }
+      );
       migratedProductsCount++;
       console.log(`  [SUCCESS] Product "${product.name || 'Unnamed'}" updated in DB.`);
     }

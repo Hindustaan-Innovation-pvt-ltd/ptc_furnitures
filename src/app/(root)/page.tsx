@@ -1,13 +1,12 @@
-import Image from "next/image";
-import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import HeroSection from "@/components/custom/HeroSection";
 import Products from "@/components/custom/products";
+import WhatsNew from "@/components/custom/WhatsNew";
 import Reviews from "@/components/custom/reviews";
-import { Button } from "@/components/ui/button";
+import { getBrandLogos, loadLogosIntoCache } from "@/lib/brand-logos";
 import { readBrands, readProducts } from "@/lib/products";
 
 export const unstable_instant = {
@@ -47,6 +46,8 @@ async function HomeProductsLoader({
   searchParams?: Promise<{ q?: string | string[] }>;
 }) {
   await connection();
+  await loadLogosIntoCache();
+  const brandLogos = getBrandLogos();
   const productsPromise = readProducts();
   const brandsPromise = readBrands();
 
@@ -58,12 +59,19 @@ async function HomeProductsLoader({
   const q = params?.q;
   const initialSearchTerm = Array.isArray(q) ? (q[0] ?? "") : (q ?? "");
 
+
+
   return (
-    <Products
-      initialProducts={initialProducts}
-      initialBrands={initialBrands}
-      initialSearchTerm={initialSearchTerm}
-      maxItems={9}
-    />
+    <>
+      <Products
+        initialProducts={initialProducts}
+        initialBrands={initialBrands}
+        initialSearchTerm={initialSearchTerm}
+        brandLogos={brandLogos}
+        maxItems={9}
+      />
+      <hr className="border-slate-200 dark:border-white/10" />
+      <WhatsNew products={initialProducts} />
+    </>
   );
 }

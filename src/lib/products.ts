@@ -40,14 +40,7 @@ export type ProductUpdateInput = ProductInput;
 
 export type Brand = string;
 
-const seedBrands: Brand[] = [
-  "PTC GOLD",
-  "REX",
-  "ALTECH",
-  "ARIPLAST",
-  "HALLMARK",
-  "PANKAJ",
-];
+const seedBrands: Brand[] = [];
 
 async function deleteStoredFileByURL(imagePath: string) {
   // Legacy GridFS path — delete binary data from MongoDB StoredFile collection
@@ -165,14 +158,23 @@ export async function readProducts(): Promise<Product[]> {
 export async function readBrands(): Promise<Brand[]> {
   try {
     await connectToDatabase();
-    const docs = await BrandModel.find().lean();
-    if (docs.length === 0) {
-      return seedBrands;
+    const count = await BrandModel.countDocuments();
+    if (count === 0) {
+      console.log("==> Seeding default brands into database...");
+      await BrandModel.insertMany([
+        { name: "PTC GOLD" },
+        { name: "REX" },
+        { name: "ALTECH" },
+        { name: "ARIPLAST" },
+        { name: "HALLMARK" },
+        { name: "PANKAJ" },
+      ]);
     }
+    const docs = await BrandModel.find().lean();
     return docs.map((doc: any) => doc.name);
   } catch (error) {
     console.error("Failed to read brands from database:", error);
-    return seedBrands;
+    return [];
   }
 }
 
@@ -185,8 +187,9 @@ export async function addBrand(name: string): Promise<Brand> {
 
   await connectToDatabase();
 
+  const escapedBrand = normalizedBrand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const existingBrand = await BrandModel.findOne({
-    name: { $regex: new RegExp(`^${normalizedBrand}$`, "i") },
+    name: { $regex: new RegExp(`^${escapedBrand}$`, "i") },
   });
 
   if (existingBrand) {
@@ -261,17 +264,23 @@ export async function updateProduct(
     await deleteStoredFiles(removedImages);
   }
 
-  const updatedDoc = await ProductModel.findOneAndUpdate(
+  // Use updateOne to avoid Mongoose 9's "No document found" error that
+  // occurs when lean() is chained on findOneAndUpdate for non-_id filters.
+  // The document's existence was already confirmed above via findOne.
+  const finalImages =
+    normalizedImages.length > 0 ? normalizedImages : (existingDoc.images as string[]);
+  const finalOriginalImages =
+    product.originalImages ||
+    (existingDoc.originalImages as string[] | undefined) ||
+    finalImages;
+
+  const result = await ProductModel.updateOne(
     { id: productId },
     {
       $set: {
         brand: product.brand.trim().replace(/\s+/g, " "),
-        images:
-          normalizedImages.length > 0 ? normalizedImages : existingDoc.images,
-        originalImages:
-          product.originalImages ||
-          existingDoc.originalImages ||
-          (normalizedImages.length > 0 ? normalizedImages : existingDoc.images),
+        images: finalImages,
+        originalImages: finalOriginalImages,
         name: product.name?.trim() || undefined,
         price: product.price?.trim() || undefined,
         material: product.material?.trim() || undefined,
@@ -281,26 +290,25 @@ export async function updateProduct(
         premium: !!product.premium,
       },
     },
-    { new: true },
-  ).lean();
+  );
 
-  if (!updatedDoc) {
+  if (result.matchedCount === 0) {
     return null;
   }
 
   return {
-    id: updatedDoc.id,
-    brand: updatedDoc.brand || "",
-    images: updatedDoc.images,
-    originalImages: updatedDoc.originalImages,
-    createdAt: updatedDoc.createdAt,
-    name: updatedDoc.name || undefined,
-    price: updatedDoc.price || undefined,
-    material: updatedDoc.material || undefined,
-    craftedBy: updatedDoc.craftedBy || undefined,
-    tag: updatedDoc.tag || undefined,
-    customFields: updatedDoc.customFields || [],
-    premium: !!updatedDoc.premium,
+    id: productId,
+    brand: product.brand.trim().replace(/\s+/g, " "),
+    images: finalImages,
+    originalImages: finalOriginalImages,
+    createdAt: existingDoc.createdAt as string,
+    name: product.name?.trim() || undefined,
+    price: product.price?.trim() || undefined,
+    material: product.material?.trim() || undefined,
+    craftedBy: product.craftedBy?.trim() || undefined,
+    tag: product.tag?.trim() || undefined,
+    customFields: product.customFields || [],
+    premium: !!product.premium,
   };
 }
 

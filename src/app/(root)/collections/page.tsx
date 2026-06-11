@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import ProductsCollections from "@/components/custom/products/collections";
+import { getBrandLogos, loadLogosIntoCache } from "@/lib/brand-logos";
 import { readBrands, readProducts } from "@/lib/products";
 
 export const unstable_instant = {
@@ -47,6 +48,8 @@ async function CollectionsLoader({
   searchParams?: Promise<{ q?: string | string[] }>;
 }) {
   await connection();
+  await loadLogosIntoCache();
+  const brandLogos = getBrandLogos();
   const productsPromise = readProducts();
   const brandsPromise = readBrands();
   const [initialProducts, initialBrands, params] = await Promise.all([
@@ -62,6 +65,7 @@ async function CollectionsLoader({
       initialProducts={initialProducts}
       initialBrands={initialBrands}
       initialSearchTerm={initialSearchTerm}
+      brandLogos={brandLogos}
     />
   );
 }

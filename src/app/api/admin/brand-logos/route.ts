@@ -9,6 +9,7 @@ import { Product } from "@/lib/db-models";
 import { rewatermarkImage } from "@/lib/image-processor";
 import { connectToDatabase } from "@/lib/mongodb";
 
+
 export async function POST(request: Request) {
   try {
     const form = await request.formData();
@@ -74,19 +75,31 @@ export async function POST(request: Request) {
           ? prod.originalImages
           : prod.images;
 
+      if (!Array.isArray(originalImages)) {
+        console.warn(`==> [Brand Logo Update] Skipping product ${prod.id || 'unknown'} - originalImages is not an array`);
+        continue;
+      }
+
       const newImages: string[] = [];
       for (const img of originalImages) {
         const rewatermarked = await rewatermarkImage(img, brand);
         newImages.push(rewatermarked);
       }
 
-      prod.images = newImages;
-      prod.originalImages = originalImages;
-      await prod.save();
+      await Product.updateOne(
+        { id: prod.id },
+        {
+          $set: {
+            images: newImages,
+            originalImages: originalImages,
+          },
+        }
+      );
     }
 
     return NextResponse.json({ brand, src: logo.src });
   } catch (error) {
+    console.error("==> [Brand Logo POST Error]:", error);
     const message =
       error instanceof Error ? error.message : "Unable to save brand logo.";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -91,26 +91,25 @@ export async function updateCatalog(
   if (input.brand !== undefined)
     updates.brand = input.brand.trim() || undefined;
 
-  const doc = await CatalogModel.findOneAndUpdate(
+  const result = await CatalogModel.updateOne(
     { id },
     { $set: updates },
-    { new: true },
-  ).lean();
+  );
 
-  if (!doc) {
+  if (result.matchedCount === 0) {
     return null;
   }
 
   return {
-    id: doc.id,
-    title: doc.title,
-    description: doc.description || undefined,
-    type: doc.type,
-    pdfUrl: doc.pdfUrl || undefined,
-    productIds: doc.productIds || [],
-    createdAt: doc.createdAt,
-    theme: doc.theme || "minimal",
-    brand: doc.brand || undefined,
+    id: existing.id,
+    title: updates.title ?? existing.title,
+    description: updates.description ?? existing.description ?? undefined,
+    type: updates.type ?? existing.type,
+    pdfUrl: updates.pdfUrl ?? existing.pdfUrl ?? undefined,
+    productIds: updates.productIds ?? existing.productIds ?? [],
+    createdAt: existing.createdAt,
+    theme: updates.theme ?? existing.theme ?? "minimal",
+    brand: updates.brand ?? existing.brand ?? undefined,
   };
 }
 

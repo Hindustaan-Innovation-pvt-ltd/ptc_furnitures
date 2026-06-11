@@ -84,9 +84,7 @@ export default function AdminProductsManager({
       if (product.material) formData.set("material", product.material);
       if (product.craftedBy) formData.set("craftedBy", product.craftedBy);
       if (product.tag) formData.set("tag", product.tag);
-      if (product.premium !== undefined) {
-        formData.set("premium", String(product.premium));
-      }
+
       if (product.customFields) {
         formData.set("customFields", JSON.stringify(product.customFields));
       }
@@ -381,11 +379,7 @@ function ProductCard({
               <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/20 dark:text-red-400">
                 {product.brand || "Unassigned"}
               </span>
-              {product.premium && (
-                <span className="inline-block rounded-full bg-amber-500/10 dark:bg-amber-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30">
-                  Premium
-                </span>
-              )}
+
             </div>
             <h3 className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100 truncate tracking-tight">
               {product.name || "Unnamed Product"}

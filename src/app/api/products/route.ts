@@ -302,6 +302,40 @@ export async function PUT(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    const body: unknown = await request.json();
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    }
+    const { id, premium } = body as Record<string, unknown>;
+    if (typeof id !== "string" || id.trim().length === 0) {
+      return NextResponse.json({ error: "Missing product id." }, { status: 400 });
+    }
+    if (typeof premium !== "boolean") {
+      return NextResponse.json({ error: "Missing or invalid 'premium' boolean." }, { status: 400 });
+    }
+
+    await connectToDatabase();
+
+    // Use updateOne instead of findOneAndUpdate to avoid Mongoose 9's
+    // "No document found" error when lean() is chained on a non-_id filter.
+    const result = await Product.updateOne(
+      { id: id.trim() },
+      { $set: { premium } },
+    );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ product: { id: id.trim(), premium } });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update premium status.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const requestUrl = new URL(request.url);

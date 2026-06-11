@@ -91,27 +91,26 @@ export async function updateLead(
   if (updates.whatsappMessage !== undefined)
     cleanUpdates.whatsappMessage = updates.whatsappMessage;
 
-  const doc = await DealerLeadModel.findOneAndUpdate(
+  const result = await DealerLeadModel.updateOne(
     { id },
     { $set: cleanUpdates },
-    { new: true },
-  ).lean();
+  );
 
-  if (!doc) {
+  if (result.matchedCount === 0) {
     return null;
   }
 
   return {
-    id: doc.id,
-    name: doc.name,
-    phone: doc.phone,
-    city: doc.city,
-    email: doc.email || undefined,
-    createdAt: doc.createdAt,
-    status: doc.status || "new",
-    whatsappStatus: doc.whatsappStatus || undefined,
-    whatsappSentAt: doc.whatsappSentAt || undefined,
-    whatsappMessage: doc.whatsappMessage || undefined,
+    id: existing.id,
+    name: cleanUpdates.name ?? existing.name,
+    phone: cleanUpdates.phone ?? existing.phone,
+    city: cleanUpdates.city ?? existing.city,
+    email: cleanUpdates.email ?? existing.email ?? undefined,
+    createdAt: existing.createdAt,
+    status: cleanUpdates.status ?? existing.status ?? "new",
+    whatsappStatus: cleanUpdates.whatsappStatus ?? existing.whatsappStatus ?? undefined,
+    whatsappSentAt: cleanUpdates.whatsappSentAt ?? existing.whatsappSentAt ?? undefined,
+    whatsappMessage: cleanUpdates.whatsappMessage ?? existing.whatsappMessage ?? undefined,
   };
 }
 
