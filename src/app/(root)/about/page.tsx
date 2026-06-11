@@ -1,9 +1,69 @@
 "use client"
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
-import StayInTouch from "@/components/custom/StayInTouch";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { motion } from "motion/react";
+import React, { useEffect, useState, useRef } from "react";
+
+function Counter({ value }: { value: string }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const elementRef = useRef<HTMLSpanElement>(null);
+
+  const numericPart = parseInt(value.replace(/[^0-9]/g, ""), 10) || 0;
+  const suffix = value.replace(/[0-9]/g, "");
+
+  useEffect(() => {
+    const el = elementRef.current;
+    if (!el || hasAnimated) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          setHasAnimated(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasAnimated]);
+
+  useEffect(() => {
+    if (!hasAnimated) return;
+
+    let startTimestamp: number | null = null;
+    const duration = 1800; // 1.8 seconds
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+      // easeOutQuad easing
+      const easeProgress = progress * (2 - progress);
+      setDisplayValue(Math.round(easeProgress * numericPart));
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+
+    window.requestAnimationFrame(step);
+  }, [hasAnimated, numericPart]);
+
+  return (
+    <span ref={elementRef} className="tabular-nums">
+      {displayValue.toLocaleString()}{suffix}
+    </span>
+  );
+}
 
 export default function page() {
   const { theme } = useTheme()
@@ -11,33 +71,46 @@ export default function page() {
     <div className="min-h-screen dark:bg-[#08090d]">
       <Navigation />
 
-      <header className="mx-auto max-w-7xl px-4 py-12 text-center sm:px-6 sm:py-16 lg:px-8">
-        <h1 className="text-4xl font-semibold sm:text-5xl lg:text-6xl">
-          Our Story.
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="mx-auto max-w-7xl px-4 py-12 text-center sm:px-6 sm:py-16 lg:px-8"
+      >
+        <h1 className="text-4xl font-semibold sm:text-5xl lg:text-8xl">
+          Our <span className="text-red-700">Story .</span>
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-sm text-slate-400 sm:text-base">
           Furniture crafted for considered living — built to endure, designed to
           inspire.
         </p>
-      </header>
+      </motion.header>
 
-      <section className="h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse mt-24 lg:grid lg:grid-cols-[1.1fr_0.9fr] ">
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse mt-24 lg:grid lg:grid-cols-[1.1fr_0.9fr] "
+      >
         <div className="flex w-full flex-1 flex-col">
           <div className="flex-1 space-y-6 bg-transparent p-6 sm:p-8 dark:bg-[#323232] lg:space-y-8 lg:p-10">
             <h2 className="max-w-xl text-3xl font-bold sm:text-4xl lg:mt-4 lg:text-6xl">
               Built on a Belief in <span className="text-red-700">Better</span>.
             </h2>
-            <p className="max-w-xl text-sm leading-6 sm:text-base">
-              Founded in Raipur with a passion for timeless craftsmanship and thoughtful living, we believe that the right furniture does more than fill a space—it shapes the way people live, connect, and create memories.
+            <p className="max-w-xl text-sm leading-10 sm:text-4xl">
+              We create workspaces that redefine
+              comfort and productivity with ergonomic,
+              stylish, and durable seating solutions.
             </p>
-            <p className="max-w-xl text-sm leading-6 sm:text-base">
-              We don't simply sell furniture—we curate it. Our team carefully selects pieces from skilled artisans, trusted manufacturers, and design houses across India, bringing together collections that combine comfort, durability, and enduring style. Every product is chosen with a focus on quality materials, functional design, and lasting value.
-            </p>
+            <p className="max-w-xl text-sm leading-10 sm:text-4xl">
+              Trusted by businesses and institutions
+              across Chhattisgarh and Orissa.            </p>
           </div>
           <div className="grid grid-cols-2 border-t border-slate-600 divide-x divide-y divide-slate-200 dark:bg-stone-900/90 dark:divide-slate-600 sm:grid-cols-4 sm:divide-y-0">
             {[
               {
-                years: "100+",
+                years: "300+",
                 title: "Excelent products",
               },
               {
@@ -45,12 +118,12 @@ export default function page() {
                 title: "Designer brands",
               },
               {
-                years: "6",
-                title: "Years established",
+                years: "1M",
+                title: "Customer Served",
               },
               {
-                years: "4",
-                title: "Cities served",
+                years: "3",
+                title: "States served",
               },
             ].map((item, index) => (
               <div
@@ -58,7 +131,7 @@ export default function page() {
                 className="flex w-full flex-col items-center justify-center px-4 py-6 text-center lg:py-12"
               >
                 <div className="text-sm font-bold dark:text-white sm:text-2xl lg:text-3xl">
-                  {item.years}
+                  <Counter value={item.years} />
                 </div>
                 <div className="mt-2 text-xs dark:text-gray-300 sm:text-sm">
                   {item.title}
@@ -111,10 +184,60 @@ export default function page() {
               </svg>
             )
           }
-
-
         </div>
-      </section>
+      </motion.section>
+
+      {/* Our Mission Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="w-full py-20 lg:py-28 border-b border-slate-200 dark:border-slate-800 relative overflow-hidden"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 items-center">
+          <div className="space-y-10 text-left lg:pr-12">
+            <div className="space-y-4">
+              <h2 className="text-4xl font-semibold text-[#1b3d2f] dark:text-slate-100 sm:text-5xl lg:text-7xl font-serif">
+                Our Mission
+              </h2>
+              {/* Custom Divider matching the image */}
+              <div className="flex items-center gap-4 py-2 max-w-50">
+                <div className="h-px bg-red-700 w-full" />
+                <div className="size-2 rounded-full bg-red-700 shrink-0" />
+                <div className="h-px bg-red-700 w-full" />
+              </div>
+            </div>
+
+            <div className="space-y-8 text-stone-700 dark:text-stone-300 text-lg sm:text-2xl lg:text-3xl font-light leading-relaxed">
+              <p>
+                We deliver <span className="text-red-700 font-semibold dark:text-red-800">affordable</span> seating solutions with a wide <span className="text-red-700 font-semibold dark:text-red-800">variety</span> of designs, tailored for <span className="text-red-700 font-semibold dark:text-red-800">bulk purchases</span> and modern workspace needs.
+              </p>
+              <p>
+                Our mission is to combine <span className="text-red-700 font-semibold dark:text-red-800">comfort</span>, <span className="text-red-700 font-semibold dark:text-red-800">quality</span>, and <span className="text-red-700 font-semibold dark:text-red-800">adaptability</span> with today's evolving workplace trends.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative flex justify-center lg:justify-end items-center h-full">
+            {/* Elegant glassmorphic backdrop for the chair */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-[#a57c52]/10 blur-3xl dark:bg-[#a57c52]/5" />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
+              className="relative z-10 w-full max-w-sm lg:max-w-md aspect-square flex items-center justify-center"
+            >
+              <img
+                src="/premium_office_chair.png"
+                alt="Premium seating solution"
+                className="w-full max-h-100 object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </motion.section>
 
       <section>
         <div className="px-4 sm:px-6 lg:px-8">
@@ -202,12 +325,18 @@ export default function page() {
                     "We partner with ateliers that have mastered their medium over decades. The furniture we carry is built to be repaired, not replaced.",
                 },
               ].map((item, index) => (
-                <div
+                <motion.div
                   key={`${item.title}-${index}`}
-                  className="border bg-white p-4 dark:border-white/10 dark:bg-white/6"
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.55, delay: index * 0.12, ease: "easeOut" }}
+                  className="border bg-white p-4 dark:border-white/10 dark:bg-white/6 hover:shadow-lg transition-shadow duration-300 rounded-lg group"
                 >
-                  <div className="mx-auto mb-4 flex h-52 w-full items-center justify-center bg-black/10 dark:bg-[#3B3B3B] sm:h-60 lg:h-80">
-                    {item.icon}
+                  <div className="mx-auto mb-4 flex h-52 w-full items-center justify-center bg-black/10 dark:bg-[#3B3B3B] sm:h-60 lg:h-80 overflow-hidden rounded-md">
+                    <div className="transition-transform duration-500 group-hover:scale-108">
+                      {item.icon}
+                    </div>
                   </div>
                   <div className="text-start">
                     <h4 className="mb-2 text-lg font-semibold">{item.title}</h4>
@@ -215,47 +344,12 @@ export default function page() {
                       {item.description}
                     </p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
         </div>
       </section>
-
-      <div className="max-w-7xl mx-auto px-4 py-24 text-center">
-        <span className="text-lg font-semibold text-slate-300">
-          Our Partners
-        </span>
-        <h1 className="text-3xl font-bold text-center mb-8">
-          Designer <span className="text-red-700">Studios</span> We Work With
-        </h1>
-        <div className="flex flex-wrap gap-3 justify-center">
-          {[
-            "Atelier Oslo",
-            "Forma Studio",
-            "Croft & Co.",
-            "Ravenna",
-            "Linden Works",
-            "Arc Design",
-            "Studio Bianco",
-            "Halm Collective",
-            "Norde",
-            "Opus Craft",
-          ].map((s) => (
-            <Button
-              variant="ghost"
-              size="sm"
-              key={s}
-              className="font-light capitalize"
-            >
-              {s}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <StayInTouch />
-
       <Footer />
     </div>
   );

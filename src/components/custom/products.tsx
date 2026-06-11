@@ -3,6 +3,7 @@
 import { sendGAEvent } from "@next/third-parties/google";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { motion } from "motion/react";
 import ProductCardWithHover from "@/components/custom/ProductCardWithHover";
 import { Button } from "@/components/ui/button";
 import {
@@ -112,34 +113,83 @@ export default function Products({
   return (
     <div className="border-t border-slate-200 pb-12 pt-4 transition-colors duration-300 dark:border-white/10">
       <div className="mx-auto mb-8 flex max-w-7xl items-center gap-4 px-4 py-4 text-slate-900 dark:text-slate-100 sm:px-6 lg:px-8">
-        <div className="w-full">
-          <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0">
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-              Brand
-            </span>
-            {["all", ...brandOptions].map((brand) => {
-              const label = brand === "all" ? "All Brands" : brand;
+          <div className="flex flex-col gap-4 w-full">
+            <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
+                Brand
+              </span>
+              {["all", ...brandOptions].map((brand) => {
+                const label = brand === "all" ? "All Brands" : brand;
+                const isSelected = filters.brand === brand;
 
-              return (
-                <Button
-                  key={label}
-                  variant={filters.brand === brand ? "default" : "outline"}
-                  size="sm"
-                  className="shrink-0 rounded-full text-xs"
-                  onClick={() => {
-                    updateFilter("brand", brand);
-                    sendGAEvent("event", "filter_brand", {
-                      brand_selected: brand,
-                      label,
-                    });
-                  }}
-                >
-                  {label}
-                </Button>
-              );
-            })}
+                return (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      updateFilter("brand", brand);
+                      sendGAEvent("event", "filter_brand", {
+                        brand_selected: brand,
+                        label,
+                      });
+                    }}
+                    className={`relative px-4 py-1.5 text-xs font-semibold rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none ${
+                      isSelected
+                        ? "text-white dark:text-slate-950"
+                        : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 hover:bg-slate-100/50 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    {isSelected && (
+                      <motion.span
+                        layoutId="activeBrand"
+                        className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0 border-t border-slate-100 dark:border-white/5 pt-3">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
+                Tier
+              </span>
+              {[
+                { value: "all", label: "All Items" },
+                { value: "premium", label: "Premium Only" },
+                { value: "non-premium", label: "Regular Only" },
+              ].map((option) => {
+                const isSelected = (filters.premiumStatus || "all") === option.value;
+
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      updateFilter("premiumStatus", option.value as any);
+                      sendGAEvent("event", "filter_premium_status", {
+                        status_selected: option.value,
+                      });
+                    }}
+                    className={`relative px-4 py-1.5 text-xs font-semibold rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none ${
+                      isSelected
+                        ? "text-white dark:text-slate-950"
+                        : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 hover:bg-slate-100/50 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    {isSelected && (
+                      <motion.span
+                        layoutId="activeTier"
+                        className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
       </div>
       <hr className="border-slate-200 dark:border-white/10" />
       <div className="mx-auto mt-8 grid max-w-7xl grid-cols-1 gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">

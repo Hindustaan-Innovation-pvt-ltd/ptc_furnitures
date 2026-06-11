@@ -41,6 +41,7 @@ export interface IProduct extends Document {
   craftedBy?: string;
   tag?: string;
   customFields?: IProductCustomField[];
+  premium?: boolean;
 }
 
 const ProductCustomFieldSchema = new Schema<IProductCustomField>(
@@ -63,6 +64,7 @@ const ProductSchema = new Schema<IProduct>({
   craftedBy: { type: String },
   tag: { type: String },
   customFields: { type: [ProductCustomFieldSchema], default: [] },
+  premium: { type: Boolean, default: false },
 });
 
 export const Product =

@@ -14,6 +14,7 @@ export type ProductFiltersState = {
   material: string;
   sort: ProductSortValue;
   search: string;
+  premiumStatus?: "all" | "premium" | "non-premium";
 };
 
 export type ProductPaginationState = {
@@ -116,6 +117,12 @@ export function filterAndSortProducts(
       filters.brand === "all" ||
       normalizeValue(product.brand) === normalizeValue(filters.brand);
 
+    const matchesPremium =
+      !filters.premiumStatus ||
+      filters.premiumStatus === "all" ||
+      (filters.premiumStatus === "premium" && product.premium === true) ||
+      (filters.premiumStatus === "non-premium" && !product.premium);
+
     let matchesSearch = true;
     if (searchQuery.length > 0) {
       const productSearchIndex = buildSearchIndex(product);
@@ -129,7 +136,7 @@ export function filterAndSortProducts(
       }
     }
 
-    return matchesBrand && matchesSearch;
+    return matchesBrand && matchesPremium && matchesSearch;
   });
 
   // Always sort oldest -> newest (ascending by createdAt)
@@ -146,7 +153,8 @@ export function hasActiveProductFilters(filters: ProductFiltersState) {
     filters.category !== "all" ||
     filters.material !== "all" ||
     filters.sort !== "featured" ||
-    filters.search.trim() !== ""
+    filters.search.trim() !== "" ||
+    (filters.premiumStatus && filters.premiumStatus !== "all")
   );
 }
 

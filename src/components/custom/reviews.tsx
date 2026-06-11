@@ -57,6 +57,19 @@ export default function Reviews() {
   const [api, setApi] = React.useState<CarouselApi>();
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [scrollSnaps, setScrollSnaps] = React.useState<number[]>([]);
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!api || isHovered || scrollSnaps.length <= 1) return;
+
+    const interval = setInterval(() => {
+      if (api.canScrollNext()) {
+        api.scrollNext();
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [api, isHovered, scrollSnaps]);
 
   React.useEffect(() => {
     async function fetchGoogleReviews() {
@@ -141,7 +154,11 @@ export default function Reviews() {
         What Our <span className="text-red-800 dark:text-red-600">Customers</span> Say
       </h2>
 
-      <div className="relative px-4 sm:px-12 mt-10">
+      <div
+        className="relative px-4 sm:px-12 mt-10"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <Carousel
           setApi={setApi}
           opts={{
@@ -237,11 +254,10 @@ export default function Reviews() {
               key={idx}
               type="button"
               onClick={() => api?.scrollTo(idx)}
-              className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                currentIndex === idx
-                  ? "bg-red-700 dark:bg-red-500 scale-120 w-4"
-                  : "bg-slate-400 dark:bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-400"
-              }`}
+              className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${currentIndex === idx
+                ? "bg-red-700 dark:bg-red-500 scale-120 w-4"
+                : "bg-slate-400 dark:bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-400"
+                }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
           ))}

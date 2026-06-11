@@ -57,28 +57,18 @@ async function storeProductImage(
     // 1. Process background removal (feathered)
     const bgRemoved = await removeWhiteBackground(fileBuffer);
 
-    // 2. Add brand watermark
-    const watermarked = await compositeBrandWatermark(bgRemoved, brand);
-
-    // Save as WebP for ~60% smaller file size vs PNG — loads much faster in browser
+    // Save as WebP for smaller file size — loads much faster in browser
     const filename = `${uniqueId}.webp`;
-    const originalFilename = `${uniqueId}_original.webp`;
-
     const filePath = path.join(uploadDir, filename);
-    const originalFilePath = path.join(uploadDir, originalFilename);
 
-    // Write WebP at quality 90 — visually lossless but half the PNG size
     const { default: sharp } = await import("sharp");
-    await sharp(watermarked)
-      .webp({ quality: 90, lossless: false })
-      .toFile(filePath);
     await sharp(bgRemoved)
       .webp({ quality: 92, lossless: false })
-      .toFile(originalFilePath);
+      .toFile(filePath);
 
     return {
       watermarked: `/upload/${filename}`,
-      unwatermarked: `/upload/${originalFilename}`,
+      unwatermarked: `/upload/${filename}`,
     };
   } catch (_err) {
     // Fallback: save raw file if sharp processing fails
@@ -105,6 +95,7 @@ type ParsedProductRequest = {
     craftedBy?: string;
     tag?: string;
     customFields?: Array<{ label: string; value: string }>;
+    premium?: boolean;
   };
   id?: string;
 };
@@ -221,6 +212,7 @@ async function parseProductRequest(
         craftedBy: getOptionalStringField(formData, "craftedBy"),
         tag: getOptionalStringField(formData, "tag"),
         customFields: parsedCustomFields,
+        premium: formData.get("premium") === "true",
       },
     };
   }
@@ -281,33 +273,15 @@ export async function PUT(request: Request) {
     const existingProduct = await Product.findOne({ id });
 
     if (existingProduct) {
-      if (existingProduct.brand !== product.brand) {
-        console.log(
-          `==> Product ${id} brand changed from "${existingProduct.brand}" to "${product.brand}". Re-applying watermarks...`,
-        );
+      // Keep existing original images and images aligned (both pointing to the clean images)
+      const originalImagesToUse =
+        existingProduct.originalImages &&
+        existingProduct.originalImages.length > 0
+          ? existingProduct.originalImages
+          : existingProduct.images;
 
-        const originalImagesToUse =
-          existingProduct.originalImages &&
-          existingProduct.originalImages.length > 0
-            ? existingProduct.originalImages
-            : existingProduct.images;
-
-        const newImages: string[] = [];
-        for (const img of originalImagesToUse) {
-          const rewatermarked = await rewatermarkImage(img, product.brand);
-          newImages.push(rewatermarked);
-        }
-
-        product.images = newImages;
-        product.originalImages = originalImagesToUse;
-      } else {
-        // Keep existing original images pristine in DB
-        product.originalImages =
-          existingProduct.originalImages &&
-          existingProduct.originalImages.length > 0
-            ? existingProduct.originalImages
-            : existingProduct.images;
-      }
+      product.originalImages = originalImagesToUse;
+      product.images = originalImagesToUse;
     }
 
     const savedProduct = await updateProduct(id, product);

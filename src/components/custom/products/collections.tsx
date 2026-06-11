@@ -114,28 +114,53 @@ export default function ProductsCollections({
   return (
     <div className="border-t border-slate-200 py-4 transition-colors duration-300 dark:border-white/10">
       <div className="mx-auto mb-8 flex max-w-7xl items-center gap-4 px-4 py-4 text-slate-900 dark:text-slate-100 sm:px-6 lg:px-8">
-        <div className="w-full">
-          <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0">
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-              Brand
-            </span>
-            {["all", ...brandOptions].map((brand) => {
-              const label = brand === "all" ? "All Brands" : brand;
+          <div className="flex flex-col gap-4 w-full">
+            <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
+                Brand
+              </span>
+              {["all", ...brandOptions].map((brand) => {
+                const label = brand === "all" ? "All Brands" : brand;
 
-              return (
+                return (
+                  <Button
+                    key={label}
+                    variant={filters.brand === brand ? "default" : "outline"}
+                    size="sm"
+                    className="shrink-0 rounded-full text-xs"
+                    onClick={() => updateFilter("brand", brand)}
+                  >
+                    {label}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0 border-t border-slate-100 dark:border-white/5 pt-3">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
+                Tier
+              </span>
+              {[
+                { value: "all", label: "All Items" },
+                { value: "premium", label: "Premium Only" },
+                { value: "non-premium", label: "Regular Only" },
+              ].map((option) => (
                 <Button
-                  key={label}
-                  variant={filters.brand === brand ? "default" : "outline"}
+                  key={option.value}
+                  variant={
+                    (filters.premiumStatus || "all") === option.value
+                      ? "default"
+                      : "outline"
+                  }
                   size="sm"
                   className="shrink-0 rounded-full text-xs"
-                  onClick={() => updateFilter("brand", brand)}
+                  onClick={() => updateFilter("premiumStatus", option.value as any)}
                 >
-                  {label}
+                  {option.label}
                 </Button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
       </div>
       <hr className="border-slate-200 dark:border-white/10" />
       <div className="mx-auto mt-8 grid max-w-7xl grid-cols-1 gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">

@@ -6,7 +6,6 @@ import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import QrCodeDownloader from "@/components/custom/QrCodeDownloader";
 import ScrollToBank from "@/components/custom/ScrollToBank";
-import StayInTouch from "@/components/custom/StayInTouch";
 import { BankingDetailsModel } from "@/lib/db-models";
 import { connectToDatabase } from "@/lib/mongodb";
 
@@ -170,8 +169,6 @@ export default async function PaymentPage({
         `,
         }}
       />
-
-      <StayInTouch />
       <Footer />
     </section>
   );

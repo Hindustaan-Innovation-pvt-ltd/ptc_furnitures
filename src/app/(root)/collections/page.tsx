@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import ProductsCollections from "@/components/custom/products/collections";
-import StayInTouch from "@/components/custom/StayInTouch";
 import { readBrands, readProducts } from "@/lib/products";
 
 export const unstable_instant = {
@@ -37,7 +36,6 @@ export default async function page({
       >
         <CollectionsLoader searchParams={searchParams} />
       </Suspense>
-      <StayInTouch />
       <Footer />
     </section>
   );

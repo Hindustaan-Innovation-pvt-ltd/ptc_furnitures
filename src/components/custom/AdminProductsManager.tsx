@@ -84,6 +84,9 @@ export default function AdminProductsManager({
       if (product.material) formData.set("material", product.material);
       if (product.craftedBy) formData.set("craftedBy", product.craftedBy);
       if (product.tag) formData.set("tag", product.tag);
+      if (product.premium !== undefined) {
+        formData.set("premium", String(product.premium));
+      }
       if (product.customFields) {
         formData.set("customFields", JSON.stringify(product.customFields));
       }
@@ -359,6 +362,11 @@ function ProductCard({
   onDragStart,
   onDragEnd,
 }: ProductCardProps) {
+  const displayImages =
+    product.originalImages && product.originalImages.length > 0
+      ? product.originalImages
+      : product.images;
+
   return (
     <article
       draggable
@@ -369,15 +377,22 @@ function ProductCard({
       <div className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2 dark:border-white/5">
           <div className="min-w-0">
-            <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/20 dark:text-red-400">
-              {product.brand || "Unassigned"}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/20 dark:text-red-400">
+                {product.brand || "Unassigned"}
+              </span>
+              {product.premium && (
+                <span className="inline-block rounded-full bg-amber-500/10 dark:bg-amber-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30">
+                  Premium
+                </span>
+              )}
+            </div>
             <h3 className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100 truncate tracking-tight">
               {product.name || "Unnamed Product"}
             </h3>
             <p className="text-[10px] text-slate-400 mt-0.5">
-              {product.images.length} image
-              {product.images.length === 1 ? "" : "s"} stored
+              {displayImages.length} image
+              {displayImages.length === 1 ? "" : "s"} stored
             </p>
           </div>
           <div className="flex gap-1 shrink-0">
@@ -407,9 +422,9 @@ function ProductCard({
 
         {/* Product Image Stage */}
         <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-50 border border-slate-100 dark:bg-white/5 dark:border-white/5 select-none">
-          {product.images.length > 0 ? (
+          {displayImages.length > 0 ? (
             <div className="flex flex-row gap-2 w-full h-full overflow-x-auto pb-1 snap-x scrollbar-none scroll-smooth">
-              {product.images.map((image, index) => (
+              {displayImages.map((image, index) => (
                 <div
                   key={`${product.id}-${image}-${index}`}
                   className="relative h-full w-full aspect-video shrink-0 snap-start"
@@ -423,7 +438,7 @@ function ProductCard({
                   />
                   <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
                     <span className="rounded-full bg-black/40 px-2 py-0.5 backdrop-blur-sm">
-                      {index + 1}/{product.images.length}
+                      {index + 1}/{displayImages.length}
                     </span>
                   </div>
                 </div>

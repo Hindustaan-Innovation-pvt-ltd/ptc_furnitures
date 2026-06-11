@@ -15,6 +15,7 @@ export type Product = {
   tag?: string;
   customFields?: ProductCustomField[];
   updatedAt?: string;
+  premium?: boolean;
 };
 
 export type ProductCustomField = {
@@ -32,6 +33,7 @@ export type ProductInput = {
   craftedBy?: string;
   tag?: string;
   customFields?: ProductCustomField[];
+  premium?: boolean;
 };
 
 export type ProductUpdateInput = ProductInput;
@@ -152,6 +154,7 @@ export async function readProducts(): Promise<Product[]> {
       craftedBy: doc.craftedBy || undefined,
       tag: doc.tag || undefined,
       customFields: doc.customFields || [],
+      premium: !!doc.premium,
     }));
   } catch (error) {
     console.error("Failed to read products from database:", error);
@@ -215,6 +218,7 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     craftedBy: product.craftedBy?.trim() || undefined,
     tag: product.tag?.trim() || undefined,
     customFields: product.customFields || [],
+    premium: !!product.premium,
   });
 
   return {
@@ -229,6 +233,7 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     craftedBy: doc.craftedBy || undefined,
     tag: doc.tag || undefined,
     customFields: doc.customFields || [],
+    premium: !!doc.premium,
   };
 }
 
@@ -273,6 +278,7 @@ export async function updateProduct(
         craftedBy: product.craftedBy?.trim() || undefined,
         tag: product.tag?.trim() || undefined,
         customFields: product.customFields || [],
+        premium: !!product.premium,
       },
     },
     { new: true },
@@ -294,6 +300,7 @@ export async function updateProduct(
     craftedBy: updatedDoc.craftedBy || undefined,
     tag: updatedDoc.tag || undefined,
     customFields: updatedDoc.customFields || [],
+    premium: !!updatedDoc.premium,
   };
 }
 
@@ -328,5 +335,6 @@ export async function deleteProduct(
     craftedBy: doc.craftedBy || undefined,
     tag: doc.tag || undefined,
     customFields: doc.customFields || [],
+    premium: !!doc.premium,
   };
 }

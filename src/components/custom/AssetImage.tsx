@@ -36,7 +36,7 @@ export default function AssetImage({
   fallbackSrc = "/product-placeholder.svg",
   // Kept for backward-compat — unused, processing baked in at upload time
   removeBackground: _removeBackground,
-  brand: _brand,
+  brand,
   className,
   fill,
   style,
@@ -67,6 +67,18 @@ export default function AssetImage({
           onError?.(event);
         }}
       />
+      {brand && !errorOccurred && (
+        <span className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
+          <img
+            src={`/api/brand-logo?brand=${encodeURIComponent(brand)}`}
+            alt="Watermark placeholder"
+            className="w-1/4 h-1/4 max-w-[80px] max-h-[80px] object-contain opacity-35 select-none"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        </span>
+      )}
     </span>
   );
 }
