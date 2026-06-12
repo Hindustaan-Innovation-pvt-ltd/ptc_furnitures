@@ -157,7 +157,7 @@ export default function page() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse mt-24 lg:grid lg:grid-cols-[1.1fr_0.9fr] "
+        className="h-auto lg:h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse mt-24 lg:grid lg:grid-cols-[1.1fr_0.9fr] "
       >
         <div className="flex w-full flex-1 flex-col">
           <div className="flex-1 space-y-6 bg-transparent p-6 sm:p-8 dark:bg-[#323232] lg:space-y-8 lg:p-10">
@@ -248,7 +248,7 @@ export default function page() {
                 className="w-full flex flex-col items-center text-center"
               >
                 {/* Floating Chair Image Wrapper */}
-                <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-square flex items-center justify-center mb-6">
+                <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-square flex items-center justify-center mb-6 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-white/10 rounded-2xl overflow-hidden p-6 sm:p-8">
                   {/* Subtle blur background reflection */}
                   <div className="absolute inset-2 rounded-full bg-slate-200/40 dark:bg-slate-800/20 blur-2xl pointer-events-none" />
                   <motion.img
