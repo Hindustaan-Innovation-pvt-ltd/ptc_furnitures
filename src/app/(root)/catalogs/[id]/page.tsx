@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
-import StayInTouch from "@/components/custom/StayInTouch";
+// import StayInTouch from "@/components/custom/StayInTouch";
 import { readCatalogs } from "@/lib/catalogs";
 import { readProducts } from "@/lib/products";
 
@@ -37,7 +37,7 @@ function CatalogDetailsPlaceholder() {
         </div>
       </div>
       <div>
-        <StayInTouch />
+        {/* <StayInTouch /> */}
         <Footer />
       </div>
     </div>
@@ -495,7 +495,7 @@ async function CatalogDetailsLoader({
       </div>
 
       <div className="no-print">
-        <StayInTouch />
+        {/* <StayInTouch /> */}
         <Footer />
       </div>
     </section>
