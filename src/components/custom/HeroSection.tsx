@@ -81,7 +81,7 @@ export default function HeroSection() {
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-wrap items-center justify-start sm:justify-center gap-x-4 sm:gap-x-6 gap-y-3 text-4xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05]"
           >
-            <span>THE MASTERS</span>
+            <span className="font-semibold">THE MASTERS</span>
             <div className="relative inline-flex rounded-full overflow-hidden aspect-[2.1/1] w-[20vw] min-w-25 max-w-50 border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900">
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.img
@@ -109,8 +109,8 @@ export default function HeroSection() {
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05] text-left sm:text-center"
           >
-            <span>OF </span>
-            <span className="text-[#b30d17] dark:text-red-500">WORKSPACE</span>
+            <span className="font-semibold">OF </span>
+            <span className="text-[#b30d17] dark:text-red-500 font-black">WORKSPACE</span>
           </motion.div>
 
           {/* Row 3: [Pill-Image-2] DESIGN (slides from Bottom) */}
@@ -138,7 +138,7 @@ export default function HeroSection() {
                 />
               </AnimatePresence>
             </div>
-            <span>DESIGN</span>
+            <span className="font-semibold">DESIGN</span>
           </motion.div>
         </h1>
       </div>
