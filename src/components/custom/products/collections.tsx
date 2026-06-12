@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { motion } from "motion/react";
+import { sendGAEvent } from "@next/third-parties/google";
 import ProductCardWithHover from "@/components/custom/ProductCardWithHover";
 import { Button } from "@/components/ui/button";
 import {
@@ -119,9 +121,9 @@ export default function ProductsCollections({
     <div className="border-t border-slate-200 py-4 transition-colors duration-300 dark:border-white/10">
       <div className="mx-auto mb-8 flex max-w-7xl items-center gap-4 px-4 py-4 text-slate-900 dark:text-slate-100 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 w-full">
-            <div className="flex items-center gap-3 pb-2 flex-wrap sm:pb-0">
+            <div className="flex items-center gap-2 sm:gap-4 pb-2 flex-wrap sm:pb-0">
               <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
-                Brand
+                Brands
               </span>
               {["all", ...brandOptions].map((brand) => {
                 const label = brand === "all" ? "All Brands" : brand;
@@ -136,34 +138,61 @@ export default function ProductsCollections({
                 );
 
                 return (
-                  <Button
+                  <button
                     key={label}
-                    variant={isSelected ? "default" : "outline"}
-                    size="sm"
-                    className="shrink-0 rounded-full text-xs flex items-center gap-2 select-none"
-                    onClick={() => updateFilter("brand", brand)}
+                    title={label}
+                    onClick={() => {
+                      updateFilter("brand", brand);
+                      sendGAEvent("event", "filter_brand", {
+                        brand_selected: brand,
+                        label,
+                      });
+                    }}
+                    className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
+                      isSelected
+                        ? "text-white dark:text-slate-950"
+                        : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
+                    }`}
                   >
-                    {brand === "all" ? (
-                      <svg className="size-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                      </svg>
-                    ) : logo?.src ? (
-                      <span className="inline-flex size-5 shrink-0 items-center justify-center rounded bg-white p-0.5 border border-slate-200/55 overflow-hidden">
-                        <img
-                          src={logo.src}
-                          alt={logo.alt || brand}
-                          className="h-full w-full object-contain"
-                        />
-                      </span>
-                    ) : (
-                      <span className={`inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${
-                        isSelected ? "bg-white/20 text-white dark:bg-black/20 dark:text-slate-200" : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-350"
-                      }`}>
-                        {brand.substring(0, 2).toUpperCase()}
-                      </span>
+                    {isSelected && (
+                      <motion.span
+                        layoutId="activeBrand"
+                        className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
                     )}
-                    <span>{label}</span>
-                  </Button>
+                    <span className="relative z-10 flex items-center justify-center">
+                      {brand === "all" ? (
+                        <span className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full border ${
+                          isSelected 
+                            ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent" 
+                            : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
+                        }`}>
+                          <svg className="size-4 sm:size-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                          </svg>
+                        </span>
+                      ) : logo?.src ? (
+                        <span className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full bg-white p-1 sm:p-1.5 border overflow-hidden ${
+                          isSelected ? "border-transparent" : "border-slate-200 dark:border-white/10"
+                        }`}>
+                          <img
+                            src={logo.src}
+                            alt={logo.alt || brand}
+                            className="h-full w-full object-contain"
+                          />
+                        </span>
+                      ) : (
+                        <span className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full text-[9px] sm:text-xs font-bold tracking-widest border ${
+                          isSelected 
+                            ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent" 
+                            : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
+                        }`}>
+                          {brand.substring(0, 2).toUpperCase()}
+                        </span>
+                      )}
+                    </span>
+                  </button>
                 );
               })}
             </div>
