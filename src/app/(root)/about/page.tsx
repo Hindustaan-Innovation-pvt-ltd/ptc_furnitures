@@ -71,43 +71,36 @@ const premiumChairs = [
     name: "AL - 106",
     image: "/upload/1d699330-8531-434e-980a-42869e05f1ae_original.webp",
     brand: "ALTECH",
-    desc: "Ergonomic medium-back office chair with high-performance mesh back for optimal comfort."
   },
   {
     name: "PTC GOLD-631",
     image: "/upload/d57a5f22-b303-42cc-8ea6-512c2c2c4c38_original.webp",
     brand: "PTC",
-    desc: "Premium high-back leather executive chair with dynamic lumbar support and multi-angle lock."
   },
   {
     name: "AL - 233",
     image: "/upload/02c6e70d-df56-4b76-8bb1-376b66724707_original.webp",
-    brand: "ALTECH",
-    desc: "Luxury executive chair featuring synchronized tilt mechanism and adaptive ergonomic frame."
+    brand: "ALTECH"
   },
   {
     name: "AL - 57",
     image: "/upload/2ebafe10-4dd6-4564-8ce9-ed328ceb4bc0_original.webp",
     brand: "ALTECH",
-    desc: "Sleek conference-style executive chair with premium cushioning and contoured backrest."
   },
   {
     name: "AL - 60",
     image: "/upload/3ec2b248-76c0-4226-b055-b7f39f1fbba5_original.webp",
     brand: "ALTECH",
-    desc: "Professional ergonomic tasks chair with breathable mesh and height-adjustable armrests."
   },
   {
     name: "AL - 105",
     image: "/upload/9b90e95c-26a2-42f9-b402-6f501dd01037_original.webp",
     brand: "ALTECH",
-    desc: "Contemporary visitor and boardroom chair with advanced ventilation and elegant frame."
   },
   {
     name: "PO - 322 Luxury",
     image: "/upload/9e5c705e-78e7-49d6-bb25-b5063cb9fee2.webp",
     brand: "PTC",
-    desc: "Ultra-premium executive seating with hand-stitched detailing and polished aluminum hardware."
   }
 ];
 
@@ -144,9 +137,9 @@ export default function page() {
         className="mx-auto max-w-7xl px-4 py-12 text-center sm:px-6 sm:py-16 lg:px-8"
       >
         <h1 className="text-4xl font-semibold sm:text-5xl lg:text-8xl">
-          Our <span className="text-red-700">Story .</span>
+          Our <span className="text-red-700">Story</span>.
         </h1>
-        <p className="mx-auto mt-4 max-w-lg text-sm text-slate-400 sm:text-base">
+        <p className="mx-auto mt-4 max-w-lg text-sm text-slate-400 sm:text-xl">
           Furniture crafted for considered living — built to endure, designed to
           inspire.
         </p>
@@ -157,19 +150,19 @@ export default function page() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="h-auto lg:h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse mt-24 lg:grid lg:grid-cols-[1.1fr_0.9fr] "
+        className="h-auto lg:h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse mt-12 lg:grid lg:grid-cols-[1.1fr_0.9fr] "
       >
         <div className="flex w-full flex-1 flex-col">
           <div className="flex-1 space-y-6 bg-transparent p-6 sm:p-8 dark:bg-[#323232] lg:space-y-8 lg:p-10">
             <h2 className="max-w-xl text-3xl font-bold sm:text-4xl lg:mt-4 lg:text-6xl">
               Built on a Belief in <span className="text-red-700">Better</span>.
             </h2>
-            <p className="max-w-xl text-sm leading-10 sm:text-4xl">
+            <p className="max-w-xl text-sm leading-10 sm:text-2xl">
               We create workspaces that redefine
               comfort and productivity with ergonomic,
               stylish, and durable seating solutions.
             </p>
-            <p className="max-w-xl text-sm leading-10 sm:text-4xl">
+            <p className="max-w-xl text-sm leading-10 sm:text-2xl">
               Trusted by businesses and institutions
               across Chhattisgarh and Orissa.            </p>
           </div>
@@ -271,9 +264,6 @@ export default function page() {
                 <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
                   {premiumChairs[activeChairIndex].name}
                 </h3>
-                <p className="max-w-md text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed px-4">
-                  {premiumChairs[activeChairIndex].desc}
-                </p>
               </motion.div>
             </AnimatePresence>
           </div>
@@ -300,8 +290,8 @@ export default function page() {
                     setActiveChairIndex(idx);
                   }}
                   className={`h-2 rounded-full transition-all duration-300 ${idx === activeChairIndex
-                      ? "w-6 bg-red-600 dark:bg-red-500"
-                      : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
+                    ? "w-6 bg-red-600 dark:bg-red-500"
+                    : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
                     }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
@@ -327,48 +317,48 @@ export default function page() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="w-full py-20 lg:py-28 border-b border-slate-200 dark:border-slate-800 relative overflow-hidden"
+        className="w-full py-16 sm:py-24 lg:py-32 border-b border-slate-200 dark:border-slate-800 relative overflow-hidden"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 items-center">
-          <div className="space-y-10 text-left lg:pr-12">
-            <div className="space-y-4">
-              <h2 className="text-4xl font-semibold text-[#1b3d2f] dark:text-slate-100 sm:text-5xl lg:text-7xl font-serif">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <div className="relative flex justify-center items-center h-full">
+            {/* Elegant glassmorphic backdrop for the chair */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-72 sm:h-72 rounded-full bg-[#a57c52]/10 blur-3xl dark:bg-[#a57c52]/5" />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
+              className="relative z-10 w-full max-w-[280px] sm:max-w-sm lg:max-w-md aspect-square flex items-center justify-center"
+            >
+              <img
+                src="/mission.png"
+                alt="Premium seating solution"
+                className="w-full h-full object-contain filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_15px_30px_rgba(0,0,0,0.3)]"
+              />
+            </motion.div>
+          </div>
+
+          <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
+            <div className="space-y-3 lg:space-y-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-[#1b3d2f] dark:text-slate-100">
                 Our Mission
               </h2>
               {/* Custom Divider matching the image */}
-              <div className="flex items-center gap-4 py-2 max-w-50">
+              <div className="flex items-center gap-4 py-2 mx-auto lg:mx-0 max-w-[150px]">
                 <div className="h-px bg-red-700 w-full" />
                 <div className="size-2 rounded-full bg-red-700 shrink-0" />
                 <div className="h-px bg-red-700 w-full" />
               </div>
             </div>
 
-            <div className="space-y-8 text-stone-700 dark:text-stone-300 text-lg sm:text-2xl lg:text-3xl font-light leading-relaxed">
+            <div className="space-y-6 text-stone-600 dark:text-stone-300 text-base sm:text-lg lg:text-xl font-light leading-relaxed">
               <p>
-                We deliver <span className="text-red-700 font-semibold dark:text-red-800">affordable</span> seating solutions with a wide <span className="text-red-700 font-semibold dark:text-red-800">variety</span> of designs, tailored for <span className="text-red-700 font-semibold dark:text-red-800">bulk purchases</span> and modern workspace needs.
+                We deliver <span className="text-red-700 font-semibold dark:text-red-400">affordable</span> seating solutions with a wide <span className="text-red-700 font-semibold dark:text-red-400">variety</span> of designs, tailored for <span className="text-red-700 font-semibold dark:text-red-400">bulk purchases</span> and modern workspace needs.
               </p>
               <p>
-                Our mission is to combine <span className="text-red-700 font-semibold dark:text-red-800">comfort</span>, <span className="text-red-700 font-semibold dark:text-red-800">quality</span>, and <span className="text-red-700 font-semibold dark:text-red-800">adaptability</span> with today's evolving workplace trends.
+                Our mission is to combine <span className="text-red-700 font-semibold dark:text-red-400">comfort</span>, <span className="text-red-700 font-semibold dark:text-red-400">quality</span>, and <span className="text-red-700 font-semibold dark:text-red-400">adaptability</span> with today's evolving workplace trends.
               </p>
             </div>
-          </div>
-
-          <div className="relative flex justify-center lg:justify-end items-center h-full">
-            {/* Elegant glassmorphic backdrop for the chair */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-[#a57c52]/10 blur-3xl dark:bg-[#a57c52]/5" />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2, type: "spring" }}
-              className="relative z-10 w-full max-w-sm lg:max-w-md aspect-square flex items-center justify-center"
-            >
-              <img
-                src="/mission.png"
-                alt="Premium seating solution"
-                className="w-full h-full object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
-              />
-            </motion.div>
           </div>
         </div>
       </motion.section>
@@ -426,7 +416,7 @@ export default function page() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.15 }}
                   transition={{ duration: 0.55, delay: index * 0.12, ease: "easeOut" }}
-                  className="border bg-white p-4 dark:border-white/10 dark:bg-white/6 hover:shadow-lg transition-shadow duration-300 rounded-lg group"
+                  className="border bg-white p-6 dark:border-white/10 dark:bg-white/6 hover:shadow-lg transition-shadow duration-300 rounded-lg group"
                 >
                   <div className="mx-auto mb-4 flex h-52 w-full items-center justify-center bg-slate-50 dark:bg-slate-900/40 sm:h-60 lg:h-80 overflow-hidden rounded-md">
                     <div className="transition-transform duration-500 group-hover:scale-108">
@@ -435,7 +425,7 @@ export default function page() {
                   </div>
                   <div className="text-start">
                     <h4 className="mb-2 text-lg font-semibold">{item.title}</h4>
-                    <p className="text-xs text-stone-400 lg:text-sm">
+                    <p className="text-xs text-stone-400 lg:text-lg">
                       {item.description}
                     </p>
                   </div>
