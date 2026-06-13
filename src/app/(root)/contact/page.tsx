@@ -46,13 +46,13 @@ export default function ContactPage() {
                 <div className="font-semibold text-slate-900 dark:text-slate-100">
                   Address
                 </div>
-                <div>Pankaj Traders M.G. Road Raipur (C.G).</div>
+                <div>Rishab Complex, B-14, MG Rd, Moudhapara, Raipur, Chhattisgarh 492001</div>
               </div>
               <div>
                 <div className="font-semibold text-slate-900 dark:text-slate-100">
                   Customer care
                 </div>
-                <div>Mon–Sat, 10am–8pm IST</div>
+                <div>Mon–Sat, 11:30am–7:00pm IST</div>
               </div>
             </div>
           </aside>
