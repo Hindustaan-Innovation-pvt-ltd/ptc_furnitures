@@ -134,7 +134,7 @@ export default function HeroSection() {
                     x: { type: "spring", stiffness: 220, damping: 28 },
                     opacity: { duration: 0.25 }
                   }}
-                  className="absolute inset-0 h-full object-cover object-center w-96"
+                  className="absolute inset-0 h-full object-cover object-center w-full"
                 />
               </AnimatePresence>
             </div>
