@@ -168,7 +168,7 @@ export default function WhatsNew({ products }: WhatsNewProps) {
               className="grid grid-cols-1 lg:grid-cols-2 min-h-120"
             >
               {/* LEFT — Product Image */}
-              <div className="relative flex items-center justify-center bg-[#f5f4f0] dark:bg-black/30 p-10 lg:p-14 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-white/5 min-h-64 group">
+              <div className="relative flex items-center justify-center bg-white p-10 lg:p-14 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-white/5 min-h-64 group">
                 {/* Corner accents */}
                 <div className="absolute top-5 left-5 w-5 h-5 border-t-2 border-l-2 border-red-700/30 group-hover:border-red-700 transition-colors duration-500" />
                 <div className="absolute top-5 right-5 w-5 h-5 border-t-2 border-r-2 border-red-700/30 group-hover:border-red-700 transition-colors duration-500" />
@@ -204,7 +204,7 @@ export default function WhatsNew({ products }: WhatsNewProps) {
                 </div>
 
                 {/* Slide counter */}
-                <div className="absolute bottom-5 right-6 text-xs text-slate-400 dark:text-slate-600 tabular-nums font-medium select-none">
+                <div className="absolute bottom-10 right-10 text-xs text-slate-400 dark:text-slate-600 tabular-nums font-medium select-none">
                   {activeIndex + 1} / {count}
                 </div>
               </div>
