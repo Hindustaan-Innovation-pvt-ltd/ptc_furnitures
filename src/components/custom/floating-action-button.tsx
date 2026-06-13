@@ -10,7 +10,7 @@ export default function FloatingActionButton() {
       <Button
         size="icon"
         variant="ghost"
-        className="text-white rounded-full shadow-lg animate-pulse"
+        className="text-white rounded-full shadow-lg"
         onClick={() => {
           sendGAEvent("event", "whatsapp_click", {
             phone_number: "+91 7880002245",
