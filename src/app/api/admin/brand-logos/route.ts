@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     await fs.writeFile(filePath, webpBuffer);
     const logoSrc = `/upload/${filename}`;
 
-    const logo = getBrandLogo(brand) ?? {
+    const logo = (await getBrandLogo(brand)) ?? {
       brand,
       src: logoSrc,
       alt: `${brand} logo`,
@@ -64,7 +64,10 @@ export async function POST(request: Request) {
     await setBrandLogo(brand, logo);
 
     // Re-watermark all products belonging to this brand instantly using their pristine originalImages!
-    const productsToUpdate = await Product.find({ brand });
+    const escapedBrand = brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const productsToUpdate = await Product.find({
+      brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") },
+    });
     console.log(
       `==> [Brand Logo Update] Re-applying new watermark for brand "${brand}" onto ${productsToUpdate.length} products...`,
     );

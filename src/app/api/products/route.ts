@@ -57,18 +57,27 @@ async function storeProductImage(
     // 1. Process background removal (feathered)
     const bgRemoved = await removeWhiteBackground(fileBuffer);
 
+    // 2. Add brand watermark
+    const watermarked = await compositeBrandWatermark(bgRemoved, brand);
+
     // Save as WebP for smaller file size — loads much faster in browser
     const filename = `${uniqueId}.webp`;
+    const origFilename = `${uniqueId}_original.webp`;
     const filePath = path.join(uploadDir, filename);
+    const origFilePath = path.join(uploadDir, origFilename);
 
     const { default: sharp } = await import("sharp");
+    await sharp(watermarked)
+      .webp({ quality: 90, lossless: false })
+      .toFile(filePath);
+
     await sharp(bgRemoved)
       .webp({ quality: 92, lossless: false })
-      .toFile(filePath);
+      .toFile(origFilePath);
 
     return {
       watermarked: `/upload/${filename}`,
-      unwatermarked: `/upload/${filename}`,
+      unwatermarked: `/upload/${origFilename}`,
     };
   } catch (_err) {
     // Fallback: save raw file if sharp processing fails
@@ -308,30 +317,63 @@ export async function PATCH(request: Request) {
     if (!body || typeof body !== "object") {
       return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     }
-    const { id, premium } = body as Record<string, unknown>;
+
+    const bodyObj = body as Record<string, unknown>;
+
+    // Handle batch reordering of products
+    if ("reorder" in bodyObj && Array.isArray(bodyObj.reorder)) {
+      const reorderIds = bodyObj.reorder as string[];
+      await connectToDatabase();
+
+      const bulkOps = reorderIds.map((id, index) => ({
+        updateOne: {
+          filter: { id },
+          update: { $set: { position: index } },
+        },
+      }));
+
+      await Product.bulkWrite(bulkOps);
+      return NextResponse.json({ success: true, message: "Positions reordered successfully." });
+    }
+
+    const { id, premium, position } = bodyObj;
     if (typeof id !== "string" || id.trim().length === 0) {
       return NextResponse.json({ error: "Missing product id." }, { status: 400 });
-    }
-    if (typeof premium !== "boolean") {
-      return NextResponse.json({ error: "Missing or invalid 'premium' boolean." }, { status: 400 });
     }
 
     await connectToDatabase();
 
-    // Use updateOne instead of findOneAndUpdate to avoid Mongoose 9's
-    // "No document found" error when lean() is chained on a non-_id filter.
+    const updateFields: any = {};
+    if (premium !== undefined) {
+      if (typeof premium !== "boolean") {
+        return NextResponse.json({ error: "Invalid 'premium' value." }, { status: 400 });
+      }
+      updateFields.premium = premium;
+    }
+    if (position !== undefined) {
+      if (typeof position !== "number") {
+        return NextResponse.json({ error: "Invalid 'position' value." }, { status: 400 });
+      }
+      updateFields.position = position;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return NextResponse.json({ error: "No fields to update." }, { status: 400 });
+    }
+
     const result = await Product.updateOne(
       { id: id.trim() },
-      { $set: { premium } },
+      { $set: updateFields },
     );
 
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Product not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ product: { id: id.trim(), premium } });
+    return NextResponse.json({ product: { id: id.trim(), ...updateFields } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update premium status.";
+    console.error("PATCH /api/products error:", error);
+    const message = error instanceof Error ? error.message : "Failed to update product status.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

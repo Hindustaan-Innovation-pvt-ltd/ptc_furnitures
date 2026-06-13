@@ -239,7 +239,7 @@ export default function ProductCardWithHover({
                       alt={`${product.name ?? product.brand ?? ""} - Image ${index + 1}`}
                       width={300}
                       height={300}
-                      className="size-full object-contain transition-transform duration-500 hover:scale-105"
+                      className="size-full p-4 object-contain transition-transform duration-500 hover:scale-105"
                     />
                   </CarouselItem>
                 ))}
@@ -281,7 +281,7 @@ export default function ProductCardWithHover({
               width={300}
               height={300}
               priority={priority}
-              className="size-80 object-contain transition-transform duration-500 hover:scale-105"
+              className="size-full p-4 object-contain transition-transform duration-500 hover:scale-105"
             />
           )}
           <div className="absolute top-2 right-2 bg-slate-900/80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-xs">
@@ -370,7 +370,7 @@ export default function ProductCardWithHover({
                             alt="Dialog Preview"
                             width={300}
                             height={300}
-                            className="size-full object-contain max-h-72"
+                            className="size-full p-4 object-contain"
                           />
                         </CarouselItem>
                       ))}
@@ -405,7 +405,7 @@ export default function ProductCardWithHover({
                     alt="Dialog Preview"
                     width={300}
                     height={300}
-                    className="size-full object-contain max-h-72"
+                    className="size-full p-4 object-contain max-h-72"
                   />
                 )
               ) : (
@@ -422,7 +422,7 @@ export default function ProductCardWithHover({
                           alt="Grid preview"
                           width={100}
                           height={100}
-                          className="size-full object-contain"
+                          className="size-full p-2 object-contain"
                         />
                         <TooltipProvider>
                           <Tooltip>

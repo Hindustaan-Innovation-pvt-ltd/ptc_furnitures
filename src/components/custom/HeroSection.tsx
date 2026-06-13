@@ -58,31 +58,31 @@ export default function HeroSection() {
 
   return (
     <main className="pt-8 sm:pt-12 lg:pt-16 px-4 sm:px-6 md:px-8 xl:px-0 max-w-5xl mx-auto overflow-hidden">
-      <div className="relative w-full px-6 sm:px-8 lg:px-12 py-16 sm:py-20 md:py-24">
+      <div className="relative w-full px-3 sm:px-8 lg:px-12 py-12 sm:py-20 md:py-24">
         {/* Accent Borders animating with scale & fade */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut", delay: 0.6 }}
-          className="absolute top-0 left-0 w-[35%] h-[65%] border-t border-l border-red-400 dark:border-red-900 rounded-tl-[36px] sm:rounded-tl-[48px] pointer-events-none" 
+          className="absolute top-0 left-0 w-[35%] h-[65%] border-t border-l border-red-400 dark:border-red-900 rounded-tl-[36px] sm:rounded-tl-[48px] pointer-events-none"
         />
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut", delay: 0.6 }}
-          className="absolute bottom-0 right-0 w-[35%] h-[65%] border-b border-r border-red-400 dark:border-red-900 rounded-br-[36px] sm:rounded-br-[48px] pointer-events-none" 
+          className="absolute bottom-0 right-0 w-[35%] h-[65%] border-b border-r border-red-400 dark:border-red-900 rounded-br-[36px] sm:rounded-br-[48px] pointer-events-none"
         />
 
-        <h1 className="flex flex-col items-start sm:items-center justify-start sm:justify-center gap-4 sm:gap-6 md:gap-8 font-sans font-black text-slate-950 dark:text-white select-none tracking-tight">
+        <h1 className="flex flex-col items-center justify-center gap-4 sm:gap-6 md:gap-8 font-sans font-black text-slate-950 dark:text-white select-none tracking-tight">
           {/* Row 1: THE MASTERS [Pill-Image-1] (slides from Left) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -80 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-wrap items-center justify-start sm:justify-center gap-x-4 sm:gap-x-6 gap-y-3 text-4xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05]"
+            className="flex items-center justify-center gap-x-2.5 sm:gap-x-6 text-3xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05] whitespace-nowrap"
           >
             <span className="font-semibold">THE MASTERS</span>
-            <div className="relative inline-flex rounded-full overflow-hidden aspect-[2.1/1] w-[20vw] min-w-25 max-w-50 border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900">
+            <div className="relative inline-flex rounded-full overflow-hidden aspect-[2.1/1] w-28 sm:w-[130px] md:w-[170px] lg:w-[220px] xl:w-[250px] border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900 shrink-0">
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.img
                   key={carouselImages1[index1]}
@@ -103,24 +103,24 @@ export default function HeroSection() {
           </motion.div>
 
           {/* Row 2: OF WORKSPACE (slides from Right) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 80 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05] text-left sm:text-center"
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05] text-center whitespace-nowrap"
           >
             <span className="font-semibold">OF </span>
             <span className="text-[#b30d17] dark:text-red-500 font-black">WORKSPACE</span>
           </motion.div>
 
           {/* Row 3: [Pill-Image-2] DESIGN (slides from Bottom) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-            className="flex flex-wrap items-center justify-start sm:justify-center gap-x-4 sm:gap-x-6 gap-y-3 text-4xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05]"
+            className="flex items-center justify-center gap-x-2.5 sm:gap-x-6 text-3xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05] whitespace-nowrap"
           >
-            <div className="relative inline-flex rounded-[24px] sm:rounded-[36px] md:rounded-[48px] lg:rounded-[66px] overflow-hidden aspect-[2.6/1] w-[26vw] min-w-32.5 max-w-96 border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900">
+            <div className="relative inline-flex rounded-full overflow-hidden aspect-[2.6/1] w-44 sm:w-[160px] md:w-[220px] lg:w-[280px] xl:w-100 border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900 shrink-0">
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.img
                   key={carouselImages2[index2]}
@@ -134,7 +134,7 @@ export default function HeroSection() {
                     x: { type: "spring", stiffness: 220, damping: 28 },
                     opacity: { duration: 0.25 }
                   }}
-                  className="absolute inset-0 w-full h-full object-cover object-center w-96"
+                  className="absolute inset-0 h-full object-cover object-center w-96"
                 />
               </AnimatePresence>
             </div>

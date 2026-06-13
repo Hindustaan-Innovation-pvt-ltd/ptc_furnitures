@@ -429,7 +429,7 @@ export default function AdminProductsCatalog({
                       src={product.images[0]}
                       alt={product.name || "Product image"}
                       fill
-                      className="object-cover"
+                      className="object-contain p-3"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">

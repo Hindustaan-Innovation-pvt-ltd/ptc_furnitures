@@ -16,6 +16,7 @@ export type Product = {
   customFields?: ProductCustomField[];
   updatedAt?: string;
   premium?: boolean;
+  position?: number;
 };
 
 export type ProductCustomField = {
@@ -34,6 +35,7 @@ export type ProductInput = {
   tag?: string;
   customFields?: ProductCustomField[];
   premium?: boolean;
+  position?: number;
 };
 
 export type ProductUpdateInput = ProductInput;
@@ -134,7 +136,7 @@ export function isBrandInput(value: unknown): value is { name: string } {
 export async function readProducts(): Promise<Product[]> {
   try {
     await connectToDatabase();
-    const docs = await ProductModel.find().sort({ createdAt: -1 }).lean();
+    const docs = await ProductModel.find().sort({ position: 1, createdAt: -1 }).lean();
     return docs.map((doc: any) => ({
       id: doc.id,
       brand: doc.brand || "",
@@ -148,6 +150,7 @@ export async function readProducts(): Promise<Product[]> {
       tag: doc.tag || undefined,
       customFields: doc.customFields || [],
       premium: !!doc.premium,
+      position: doc.position ?? 0,
     }));
   } catch (error) {
     console.error("Failed to read products from database:", error);
@@ -202,13 +205,13 @@ export async function addBrand(name: string): Promise<Brand> {
 
 export async function addProduct(product: ProductInput): Promise<Product> {
   await connectToDatabase();
-
+ 
   const normalizedImages = product.images
     .map((image) => image.trim())
     .filter((image) => image.length > 0);
-
+ 
   const newId = randomUUID();
-
+ 
   const doc = await ProductModel.create({
     id: newId,
     brand: product.brand.trim().replace(/\s+/g, " "),
@@ -222,8 +225,9 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     tag: product.tag?.trim() || undefined,
     customFields: product.customFields || [],
     premium: !!product.premium,
+    position: product.position ?? 0,
   });
-
+ 
   return {
     id: doc.id,
     brand: doc.brand || "",
@@ -237,6 +241,7 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     tag: doc.tag || undefined,
     customFields: doc.customFields || [],
     premium: !!doc.premium,
+    position: doc.position ?? 0,
   };
 }
 
@@ -274,22 +279,26 @@ export async function updateProduct(
     (existingDoc.originalImages as string[] | undefined) ||
     finalImages;
 
+  const setFields: any = {
+    brand: product.brand.trim().replace(/\s+/g, " "),
+    images: finalImages,
+    originalImages: finalOriginalImages,
+    name: product.name?.trim() || undefined,
+    price: product.price?.trim() || undefined,
+    material: product.material?.trim() || undefined,
+    craftedBy: product.craftedBy?.trim() || undefined,
+    tag: product.tag?.trim() || undefined,
+    customFields: product.customFields || [],
+    premium: !!product.premium,
+  };
+
+  if (product.position !== undefined) {
+    setFields.position = product.position;
+  }
+
   const result = await ProductModel.updateOne(
     { id: productId },
-    {
-      $set: {
-        brand: product.brand.trim().replace(/\s+/g, " "),
-        images: finalImages,
-        originalImages: finalOriginalImages,
-        name: product.name?.trim() || undefined,
-        price: product.price?.trim() || undefined,
-        material: product.material?.trim() || undefined,
-        craftedBy: product.craftedBy?.trim() || undefined,
-        tag: product.tag?.trim() || undefined,
-        customFields: product.customFields || [],
-        premium: !!product.premium,
-      },
-    },
+    { $set: setFields },
   );
 
   if (result.matchedCount === 0) {
@@ -309,6 +318,7 @@ export async function updateProduct(
     tag: product.tag?.trim() || undefined,
     customFields: product.customFields || [],
     premium: !!product.premium,
+    position: product.position !== undefined ? product.position : (existingDoc.position ?? 0),
   };
 }
 
@@ -344,5 +354,6 @@ export async function deleteProduct(
     tag: doc.tag || undefined,
     customFields: doc.customFields || [],
     premium: !!doc.premium,
+    position: doc.position ?? 0,
   };
 }

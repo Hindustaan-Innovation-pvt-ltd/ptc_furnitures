@@ -132,8 +132,13 @@ export function filterAndSortProducts(
     return matchesBrand && matchesSearch;
   });
 
-  // Sort newest-first.
+  // Sort by custom position first, then newest-first.
   return filteredProducts.slice().sort((left, right) => {
+    const posA = left.position ?? 0;
+    const posB = right.position ?? 0;
+    if (posA !== posB) {
+      return posA - posB;
+    }
     return (
       new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
     );

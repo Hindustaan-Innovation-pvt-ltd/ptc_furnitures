@@ -47,7 +47,7 @@ async function HomeProductsLoader({
 }) {
   await connection();
   await loadLogosIntoCache();
-  const brandLogos = getBrandLogos();
+  const brandLogos = await getBrandLogos();
   const productsPromise = readProducts();
   const brandsPromise = readBrands();
 

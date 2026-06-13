@@ -140,7 +140,7 @@ export default function WhatsNew({ products }: WhatsNewProps) {
           <span className="text-xs font-semibold tracking-[0.25em] text-red-700 dark:text-red-400 uppercase block">
             Custom Catalog
           </span>
-          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl font-serif">
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
             What&apos;s <span className="text-red-700 font-serif">New</span>.
           </h2>
           <div className="flex items-center gap-4 py-1 max-w-50 mx-auto">
@@ -176,7 +176,7 @@ export default function WhatsNew({ products }: WhatsNewProps) {
                 <div className="absolute bottom-5 right-5 w-5 h-5 border-b-2 border-r-2 border-red-700/30 group-hover:border-red-700 transition-colors duration-500" />
 
                 {/* Badge */}
-                <div className="absolute top-6 left-6 z-10">
+                <div className="absolute top-8 left-8 z-10">
                   {activeProduct.premium ? (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold tracking-wider uppercase bg-amber-600 text-white dark:bg-amber-950 dark:text-amber-300 rounded-full shadow-sm">
                       <Star className="size-3 fill-white dark:fill-amber-300" />
@@ -199,7 +199,7 @@ export default function WhatsNew({ products }: WhatsNewProps) {
                     alt={activeProduct.name || "On-order Product"}
                     fill
                     brand={activeProduct.brand}
-                    className="object-contain"
+                    className="object-contain p-4"
                   />
                 </div>
 

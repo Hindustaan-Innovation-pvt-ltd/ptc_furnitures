@@ -52,11 +52,11 @@ export async function compositeBrandWatermark(
   imageBuffer: Buffer,
   brand: string,
 ): Promise<Buffer> {
-  let logo = getBrandLogo(brand);
+  let logo = await getBrandLogo(brand);
 
   // Fallback to PTC logo as default watermark
   if (!logo) {
-    logo = getBrandLogo("PTC");
+    logo = await getBrandLogo("PTC");
   }
 
   if (!logo) {
@@ -167,15 +167,17 @@ export async function rewatermarkImage(
     const uploadDir = path.join(process.cwd(), "public", "upload");
     await fs.mkdir(uploadDir, { recursive: true });
 
-    if (source.startsWith("data:")) {
-      const parts = source.split(",");
+    const cleanSource = source.split("?")[0];
+
+    if (cleanSource.startsWith("data:")) {
+      const parts = cleanSource.split(",");
       imageBuffer = Buffer.from(parts[1], "base64");
-    } else if (source.startsWith("/")) {
+    } else if (cleanSource.startsWith("/")) {
       try {
         const filePath = path.join(
           process.cwd(),
           "public",
-          source.replace(/^\//, ""),
+          cleanSource.replace(/^\//, ""),
         );
         imageBuffer = await fs.readFile(filePath);
         isLocalUpload = true;
@@ -188,7 +190,7 @@ export async function rewatermarkImage(
       }
     } else {
       // It is a remote URL or base64 data URI from MongoDB — fetch it
-      const res = await fetch(source);
+      const res = await fetch(cleanSource);
       if (res.ok) {
         imageBuffer = Buffer.from(await res.arrayBuffer());
       }
@@ -242,7 +244,7 @@ export async function rewatermarkImage(
       await sharp(watermarked)
         .webp({ quality: 90, lossless: false })
         .toFile(filePath);
-      return `/upload/${filename}`;
+      return `/upload/${filename}?v=${Date.now()}`;
     } else {
       const uniqueId = crypto.randomUUID();
       const filename = `${uniqueId}.webp`;
@@ -255,7 +257,7 @@ export async function rewatermarkImage(
         .webp({ quality: 92, lossless: false })
         .toFile(path.join(uploadDir, origFilename));
 
-      return `/upload/${filename}`;
+      return `/upload/${filename}?v=${Date.now()}`;
     }
   } catch (err: any) {
     console.error("Failed to rewatermark image:", err.message);
