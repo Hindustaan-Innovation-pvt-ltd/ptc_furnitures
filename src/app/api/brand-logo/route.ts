@@ -13,9 +13,9 @@ export async function GET(request: Request) {
     await connectToDatabase();
     await loadLogosIntoCache();
     
-    let logo = getBrandLogo(brand);
+    let logo = await getBrandLogo(brand);
     if (!logo) {
-      logo = getBrandLogo("PTC");
+      logo = await getBrandLogo("PTC");
     }
     
     if (!logo) {

@@ -10,8 +10,6 @@ export type BrandLogo = {
 
 const defaultLogos: BrandLogo[] = [];
 
-let cachedLogos: Record<string, BrandLogo> = {};
-
 function normalizeBrand(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
@@ -42,66 +40,53 @@ export async function loadLogosIntoCache() {
         },
       ]);
     }
-
-    const docs = await BrandLogoModel.find().lean();
-    console.log(`==> [Cache Load] Loaded ${docs.length} brand logos from DB.`);
-    const newCache: Record<string, BrandLogo> = {};
-    for (const doc of docs) {
-      newCache[normalizeBrand(doc.brand)] = {
-        brand: doc.brand,
-        src: doc.src,
-        alt: doc.alt,
-        aliases: doc.aliases || [],
-      };
-    }
-    cachedLogos = newCache;
   } catch (err) {
-    console.error("Failed to load dynamic logos into cache:", err);
+    console.error("Failed to seed default logos:", err);
   }
 }
 
-export function getBrandLogo(brand: string): BrandLogo | null {
+export async function getBrandLogo(brand: string): Promise<BrandLogo | null> {
+  await connectToDatabase();
+  await loadLogosIntoCache();
+  
   const normalized = normalizeBrand(brand);
+  const escapedBrand = normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  // 1. Check memory cache populated from DB
-  const dynamicEntry = Object.values(cachedLogos).find(
-    (entry) =>
-      normalizeBrand(entry.brand) === normalized ||
-      entry.aliases.some((alias) => normalizeBrand(alias) === normalized),
-  );
+  const doc = await BrandLogoModel.findOne({
+    $or: [
+      { brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") } },
+      { aliases: { $regex: new RegExp(`^${escapedBrand}$`, "i") } }
+    ]
+  }).lean();
 
-  if (dynamicEntry) {
-    return dynamicEntry;
+  if (doc) {
+    return {
+      brand: doc.brand,
+      src: doc.src,
+      alt: doc.alt,
+      aliases: doc.aliases || [],
+    };
   }
 
-  // 2. Fall back to defaults
-  return (
-    defaultLogos.find(
-      (entry) =>
-        normalizeBrand(entry.brand) === normalized ||
-        entry.aliases.some((alias) => normalizeBrand(alias) === normalized),
-    ) ?? null
-  );
+  return null;
 }
 
-export function getBrandLogoSrc(brand: string): string | null {
-  return getBrandLogo(brand)?.src ?? null;
+export async function getBrandLogoSrc(brand: string): Promise<string | null> {
+  const logo = await getBrandLogo(brand);
+  return logo?.src ?? null;
 }
 
-export function getBrandLogos(): BrandLogo[] {
-  const mergedMap = new Map<string, BrandLogo>();
+export async function getBrandLogos(): Promise<BrandLogo[]> {
+  await connectToDatabase();
+  await loadLogosIntoCache();
 
-  // Add default logos
-  for (const logo of defaultLogos) {
-    mergedMap.set(normalizeBrand(logo.brand), logo);
-  }
-
-  // Override or add dynamic logos from database cache
-  for (const logo of Object.values(cachedLogos)) {
-    mergedMap.set(normalizeBrand(logo.brand), logo);
-  }
-
-  return Array.from(mergedMap.values());
+  const docs = await BrandLogoModel.find().lean();
+  return docs.map((doc: any) => ({
+    brand: doc.brand,
+    src: doc.src,
+    alt: doc.alt,
+    aliases: doc.aliases || [],
+  }));
 }
 
 export async function setBrandLogo(brand: string, logo: BrandLogo) {
@@ -134,7 +119,4 @@ export async function setBrandLogo(brand: string, logo: BrandLogo) {
       aliases: logo.aliases || [],
     });
   }
-
-  // Reload memory cache from database to ensure consistency
-  await loadLogosIntoCache();
 }

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getBrandLogo, getBrandLogoSrc } from "@/lib/brand-logos";
+import { getBrandLogos } from "@/lib/brand-logos";
 import type { Product } from "@/lib/products";
 
 type BrandSummary = {
@@ -42,60 +42,72 @@ function getBrandSummary(
   });
 }
 
-export default function AdminBrandGrid({
+export default async function AdminBrandGrid({
   brands,
   products,
 }: AdminBrandGridProps) {
+  const brandLogos = await getBrandLogos();
   const summaries = getBrandSummary(brands, products);
+
+  const getLogo = (brandName: string) => {
+    const norm = brandName.trim().replace(/\s+/g, " ").toLowerCase();
+    return brandLogos.find(
+      (entry) =>
+        entry.brand.trim().replace(/\s+/g, " ").toLowerCase() === norm ||
+        entry.aliases.some(
+          (alias) => alias.trim().replace(/\s+/g, " ").toLowerCase() === norm,
+        ),
+    );
+  };
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {summaries.map((summary) => (
-        <Card
-          key={summary.brand}
-          className="group border-slate-200 transition-transform duration-200 hover:-translate-y-1 hover:border-red-200 hover:shadow-lg dark:border-white/10 dark:hover:border-red-900/60"
-        >
-          <Link
-            href={`/admin/brands/${encodeURIComponent(summary.brand)}`}
-            className="flex h-full flex-col"
+      {summaries.map((summary) => {
+        const logo = getLogo(summary.brand);
+        return (
+          <Card
+            key={summary.brand}
+            className="group border-slate-200 transition-transform duration-200 hover:-translate-y-1 hover:border-red-200 hover:shadow-lg dark:border-white/10 dark:hover:border-red-900/60"
           >
-            <CardHeader className="border-b border-slate-200 p-4 sm:p-6 dark:border-white/10">
-              <CardDescription>Brand</CardDescription>
-              <div className="mt-3 flex items-center gap-3">
-                {getBrandLogoSrc(summary.brand) ? (
-                  <span className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-white/5">
-                    <Image
-                      src={getBrandLogoSrc(summary.brand) ?? ""}
-                      alt={
-                        getBrandLogo(summary.brand)?.alt ??
-                        `${summary.brand} logo`
-                      }
-                      width={80}
-                      height={80}
-                      className="h-auto w-full object-contain"
-                      unoptimized
-                    />
-                  </span>
-                ) : null}
-                <CardTitle className="text-xl sm:text-2xl">
-                  {summary.brand}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-1 flex-col gap-2 p-4 pt-4 sm:p-6 sm:pt-4">
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                {summary.batches} batch{summary.batches === 1 ? "" : "es"}
-              </p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {summary.images} uploaded image{summary.images === 1 ? "" : "s"}
-              </p>
-            </CardContent>
-            <CardFooter className="border-t border-slate-200 p-4 text-sm font-medium text-red-700 dark:border-white/10 dark:text-red-300 sm:p-6">
-              Open brand workspace
-            </CardFooter>
-          </Link>
-        </Card>
-      ))}
+            <Link
+              href={`/admin/brands/${encodeURIComponent(summary.brand)}`}
+              className="flex h-full flex-col"
+            >
+              <CardHeader className="border-b border-slate-200 p-4 sm:p-6 dark:border-white/10">
+                <CardDescription>Brand</CardDescription>
+                <div className="mt-3 flex items-center gap-3">
+                  {logo?.src ? (
+                    <span className="flex size-14 items-center justify-center rounded-2xl border border-slate-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-white/5">
+                      <Image
+                        src={logo.src}
+                        alt={logo.alt || `${summary.brand} logo`}
+                        width={80}
+                        height={80}
+                        className="h-auto w-full object-contain"
+                        unoptimized
+                      />
+                    </span>
+                  ) : null}
+                  <CardTitle className="text-xl sm:text-2xl">
+                    {summary.brand}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col gap-2 p-4 pt-4 sm:p-6 sm:pt-4">
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {summary.batches} batch{summary.batches === 1 ? "" : "es"}
+                </p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {summary.images} uploaded image{summary.images === 1 ? "" : "s"}
+                </p>
+              </CardContent>
+              <CardFooter className="border-t border-slate-200 p-4 text-sm font-medium text-red-700 dark:border-white/10 dark:text-red-300 sm:p-6">
+                Open brand workspace
+              </CardFooter>
+            </Link>
+          </Card>
+        );
+      })}
 
       <Card className="group border-dashed border-slate-300 bg-transparent transition-transform duration-200 hover:-translate-y-1 hover:border-red-300 dark:border-white/15 dark:hover:border-red-900/60">
         <Link href="/admin/brands/new" className="flex h-full flex-col">

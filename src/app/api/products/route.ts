@@ -57,18 +57,27 @@ async function storeProductImage(
     // 1. Process background removal (feathered)
     const bgRemoved = await removeWhiteBackground(fileBuffer);
 
+    // 2. Add brand watermark
+    const watermarked = await compositeBrandWatermark(bgRemoved, brand);
+
     // Save as WebP for smaller file size — loads much faster in browser
     const filename = `${uniqueId}.webp`;
+    const origFilename = `${uniqueId}_original.webp`;
     const filePath = path.join(uploadDir, filename);
+    const origFilePath = path.join(uploadDir, origFilename);
 
     const { default: sharp } = await import("sharp");
+    await sharp(watermarked)
+      .webp({ quality: 90, lossless: false })
+      .toFile(filePath);
+
     await sharp(bgRemoved)
       .webp({ quality: 92, lossless: false })
-      .toFile(filePath);
+      .toFile(origFilePath);
 
     return {
       watermarked: `/upload/${filename}`,
-      unwatermarked: `/upload/${filename}`,
+      unwatermarked: `/upload/${origFilename}`,
     };
   } catch (_err) {
     // Fallback: save raw file if sharp processing fails

@@ -12,7 +12,10 @@ import { Product } from "@/lib/db-models";
 import { rewatermarkImage } from "@/lib/image-processor";
 
 async function syncBrandProducts(brand: string) {
-  const productsToUpdate = await Product.find({ brand });
+  const escapedBrand = brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const productsToUpdate = await Product.find({
+    brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") },
+  });
   console.log(
     `==> [Brand Watermark Update] Re-applying new watermark configuration for brand "${brand}" onto ${productsToUpdate.length} products...`,
   );

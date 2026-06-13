@@ -49,7 +49,7 @@ async function CollectionsLoader({
 }) {
   await connection();
   await loadLogosIntoCache();
-  const brandLogos = getBrandLogos();
+  const brandLogos = await getBrandLogos();
   const productsPromise = readProducts();
   const brandsPromise = readBrands();
   const [initialProducts, initialBrands, params] = await Promise.all([
