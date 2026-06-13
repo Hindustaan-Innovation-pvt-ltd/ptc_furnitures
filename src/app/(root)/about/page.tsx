@@ -241,7 +241,7 @@ export default function page() {
                 className="w-full flex flex-col items-center text-center"
               >
                 {/* Floating Chair Image Wrapper */}
-                <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-square flex items-center justify-center mb-6 rounded-2xl overflow-hidden p-6 sm:p-8">
+                <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-square flex items-center justify-center mb-6 rounded-2xl overflow-hidden p-6 sm:p-8 dark:bg-white transition-colors duration-300">
                   {/* Subtle blur background reflection */}
                   <div className="absolute inset-2 rounded-full blur-2xl pointer-events-none" />
                   <motion.img
