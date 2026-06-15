@@ -505,23 +505,9 @@ export default function AdminCommandCenter() {
 
   return (
     <>
-      {/* Floating Trigger Quick Actions Button */}
-      <div className="fixed bottom-6 left-6 z-40 select-none">
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 rounded-full px-5 py-6 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white shadow-xl shadow-red-600/10 font-bold border border-red-500/20 transition-all hover:scale-105"
-        >
-          <Sparkles size={16} className="animate-pulse" />
-          <span>Quick Actions</span>
-          <kbd className="hidden sm:inline-flex items-center gap-1 rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-medium text-white/80">
-            Ctrl K
-          </kbd>
-        </Button>
-      </div>
-
       {/* Main Dialog Modal Wrapper */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-[#101216] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl">
+        <DialogContent className="w-[720px] h-[85vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-[#101216] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl">
           <DialogHeader className="px-6 pt-5 pb-3 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-[#0c0d10]">
             <div className="flex items-center justify-between">
               <div>
@@ -554,11 +540,10 @@ export default function AdminCommandCenter() {
                     if (tab.id !== "product") setEditingProduct(null);
                     if (tab.id !== "banking") resetBankForm();
                   }}
-                  className={`px-4 py-2 text-xs font-bold transition-all duration-200 border-b-2 ${
-                    activeTab === tab.id
+                  className={`px-4 py-2 text-xs font-bold transition-all duration-200 border-b-2 ${activeTab === tab.id
                       ? "border-red-600 text-red-600 dark:border-red-400 dark:text-red-400"
                       : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                  }`}
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -642,11 +627,10 @@ export default function AdminCommandCenter() {
                                     onClick={() =>
                                       togglePremium(p.id, !!p.premium)
                                     }
-                                    className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border transition-all ${
-                                      p.premium
+                                    className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border transition-all ${p.premium
                                         ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
                                         : "bg-slate-100 text-slate-400 dark:bg-white/5 border-transparent hover:text-slate-600 dark:hover:text-slate-300"
-                                    }`}
+                                      }`}
                                   >
                                     {p.premium ? "⭐ Premium" : "Make Premium"}
                                   </button>
@@ -828,11 +812,10 @@ export default function AdminCommandCenter() {
                                       ★ {rev.rating}/5
                                     </span>
                                     <span
-                                      className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
-                                        rev.status === "approved"
+                                      className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${rev.status === "approved"
                                           ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400"
                                           : "bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400"
-                                      }`}
+                                        }`}
                                     >
                                       {rev.status || "pending"}
                                     </span>
@@ -852,11 +835,10 @@ export default function AdminCommandCenter() {
                                         rev.status,
                                       )
                                     }
-                                    className={`p-1.5 rounded-lg border transition-all ${
-                                      rev.status === "approved"
+                                    className={`p-1.5 rounded-lg border transition-all ${rev.status === "approved"
                                         ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
                                         : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                                    }`}
+                                      }`}
                                     title={
                                       rev.status === "approved"
                                         ? "Reject review"
@@ -896,11 +878,10 @@ export default function AdminCommandCenter() {
                                   <p className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                                     <span>{lead.name}</span>
                                     <span
-                                      className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
-                                        lead.status === "resolved"
+                                      className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${lead.status === "resolved"
                                           ? "bg-slate-100 text-slate-500 dark:bg-white/5"
                                           : "bg-red-100 text-red-700 dark:bg-red-950/20 dark:text-red-400"
-                                      }`}
+                                        }`}
                                     >
                                       {lead.status}
                                     </span>
@@ -918,11 +899,10 @@ export default function AdminCommandCenter() {
                                         lead.status,
                                       )
                                     }
-                                    className={`p-1.5 rounded-lg border transition-all ${
-                                      lead.status === "resolved"
+                                    className={`p-1.5 rounded-lg border transition-all ${lead.status === "resolved"
                                         ? "bg-red-500/10 text-red-600 border-red-500/20"
                                         : "bg-slate-100 text-slate-600 dark:bg-white/5 border-transparent"
-                                    }`}
+                                      }`}
                                     title={
                                       lead.status === "resolved"
                                         ? "Mark Active"
@@ -1126,22 +1106,20 @@ export default function AdminCommandCenter() {
                         <button
                           type="button"
                           onClick={() => setCatalogType("custom")}
-                          className={`flex-1 py-2.5 px-4 rounded-xl border text-xs font-bold transition-all duration-200 ${
-                            catalogType === "custom"
+                          className={`flex-1 py-2.5 px-4 rounded-xl border text-xs font-bold transition-all duration-200 ${catalogType === "custom"
                               ? "border-red-500 bg-red-50/50 text-red-700 dark:border-red-500 dark:bg-red-950/20 dark:text-red-400"
                               : "border-slate-200 bg-transparent text-slate-500 dark:border-white/5 dark:text-slate-400"
-                          }`}
+                            }`}
                         >
                           Digital Product Curation
                         </button>
                         <button
                           type="button"
                           onClick={() => setCatalogType("pdf")}
-                          className={`flex-1 py-2.5 px-4 rounded-xl border text-xs font-bold transition-all duration-200 ${
-                            catalogType === "pdf"
+                          className={`flex-1 py-2.5 px-4 rounded-xl border text-xs font-bold transition-all duration-200 ${catalogType === "pdf"
                               ? "border-red-500 bg-red-50/50 text-red-700 dark:border-red-500 dark:bg-red-950/20 dark:text-red-400"
                               : "border-slate-200 bg-transparent text-slate-500 dark:border-white/5 dark:text-slate-400"
-                          }`}
+                            }`}
                         >
                           PDF File Upload
                         </button>
