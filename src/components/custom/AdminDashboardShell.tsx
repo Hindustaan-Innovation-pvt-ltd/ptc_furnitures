@@ -448,7 +448,7 @@ export default function AdminDashboardShell({
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  signOut({ callbackUrl: "/" });
+                  signOut({ callbackUrl: `${window.location.origin}/` });
                 }}
                 className="flex w-full items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all text-left border-none cursor-pointer"
               >
