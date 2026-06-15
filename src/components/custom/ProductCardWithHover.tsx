@@ -70,6 +70,7 @@ export default function ProductCardWithHover({
   product,
   priority = false,
 }: ProductCardWithHoverProps) {
+  const baseProductId = product.id.split("-img-")[0];
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [reviews, setReviews] = React.useState<Review[]>([]);
   const [newRating, setNewRating] = React.useState(5);
@@ -101,7 +102,7 @@ export default function ProductCardWithHover({
   React.useEffect(() => {
     async function fetchReviews() {
       try {
-        const res = await fetch(`/api/reviews?productId=${product.id}`);
+        const res = await fetch(`/api/reviews?productId=${baseProductId}`);
         const data = await res.json();
         if (data.success && Array.isArray(data.reviews)) {
           setReviews(data.reviews);
@@ -111,7 +112,7 @@ export default function ProductCardWithHover({
       }
     }
     fetchReviews();
-  }, [product.id]);
+  }, [baseProductId]);
 
   const averageRating =
     reviews.length > 0
@@ -131,7 +132,7 @@ export default function ProductCardWithHover({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          productId: product.id,
+          productId: baseProductId,
           productName: product.name || product.brand || "Exclusive PTC Item",
           rating: newRating,
           text: newText.trim(),
@@ -144,7 +145,7 @@ export default function ProductCardWithHover({
         setNewText("");
         setNewRating(5);
         sendGAEvent("event", "review_submit", {
-          product_id: product.id,
+          product_id: baseProductId,
           product_name: product.name ?? product.brand ?? "unknown",
           brand: product.brand,
           rating: newRating,
@@ -160,7 +161,7 @@ export default function ProductCardWithHover({
     index: number | null = null,
   ) {
     sendGAEvent("event", "image_download", {
-      product_id: product.id,
+      product_id: baseProductId,
       product_name: product.name ?? product.brand ?? "unknown",
       brand: product.brand,
       image_index: index ?? 0,
@@ -180,7 +181,7 @@ export default function ProductCardWithHover({
           setDialogOpen(open);
           if (open) {
             sendGAEvent("event", "product_view", {
-              product_id: product.id,
+              product_id: baseProductId,
               product_name: product.name ?? product.brand ?? "unknown",
               brand: product.brand,
               image_count: displayImages.length,
@@ -193,7 +194,7 @@ export default function ProductCardWithHover({
           onClick={() => {
             setDialogOpen(true);
             sendGAEvent("event", "product_click", {
-              product_id: product.id,
+              product_id: baseProductId,
               product_name: product.name ?? product.brand ?? "unknown",
               brand: product.brand,
             });

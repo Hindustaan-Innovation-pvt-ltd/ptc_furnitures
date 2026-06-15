@@ -21,7 +21,8 @@ import {
   type ProductFiltersState,
   paginateProducts,
 } from "@/lib/product-filters";
-import type { Product } from "@/lib/products";
+import { type Product } from "@/lib/products";
+import { expandLegacyProducts } from "@/lib/product-utils";
 
 type ProductsCollectionsProps = {
   initialProducts: Product[];
@@ -53,7 +54,9 @@ export default function ProductsCollections({
   initialSearchTerm,
   brandLogos,
 }: ProductsCollectionsProps) {
-  const [products, _setProducts] = React.useState<Product[]>(initialProducts);
+  const [products, _setProducts] = React.useState<Product[]>(() =>
+    expandLegacyProducts(initialProducts),
+  );
   const [brands, _setBrands] = React.useState<string[]>(initialBrands);
   const [filters, setFilters] = React.useState<ProductFiltersState>({
     ...initialFilters,

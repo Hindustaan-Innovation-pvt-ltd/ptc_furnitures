@@ -43,6 +43,10 @@ export interface IProduct extends Document {
   customFields?: IProductCustomField[];
   premium?: boolean;
   position?: number;
+  frontImage?: string;
+  backImage?: string;
+  originalFrontImage?: string;
+  originalBackImage?: string;
 }
 
 const ProductCustomFieldSchema = new Schema<IProductCustomField>(
@@ -67,6 +71,10 @@ const ProductSchema = new Schema<IProduct>({
   customFields: { type: [ProductCustomFieldSchema], default: [] },
   premium: { type: Boolean, default: false },
   position: { type: Number, default: 0 },
+  frontImage: { type: String },
+  backImage: { type: String },
+  originalFrontImage: { type: String },
+  originalBackImage: { type: String },
 });
 
 export const Product =

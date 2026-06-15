@@ -109,6 +109,10 @@ type ParsedProductRequest = {
     tag?: string;
     customFields?: Array<{ label: string; value: string }>;
     premium?: boolean;
+    frontImage?: string;
+    backImage?: string;
+    originalFrontImage?: string;
+    originalBackImage?: string;
   };
   id?: string;
 };
@@ -135,50 +139,85 @@ async function parseProductRequest(
       );
     const brand = getStringField(formData, "brand");
 
-    let uploadedImages: Array<{ watermarked: string; unwatermarked: string }> =
-      [];
-    if (imageEntries.length > 0) {
-      uploadedImages = await Promise.all(
-        imageEntries.map((file) => storeProductImage(file, brand)),
-      );
+    const frontImageFile = formData.get("frontImage");
+    const backImageFile = formData.get("backImage");
+
+    let frontImage = getOptionalStringField(formData, "existingFrontImage");
+    let originalFrontImage = getOptionalStringField(formData, "existingOriginalFrontImage");
+    let backImage = getOptionalStringField(formData, "existingBackImage");
+    let originalBackImage = getOptionalStringField(formData, "existingOriginalBackImage");
+
+    if (frontImageFile instanceof File && frontImageFile.size > 0) {
+      const stored = await storeProductImage(frontImageFile, brand);
+      frontImage = stored.watermarked;
+      originalFrontImage = stored.unwatermarked;
+    }
+
+    if (backImageFile instanceof File && backImageFile.size > 0) {
+      const stored = await storeProductImage(backImageFile, brand);
+      backImage = stored.watermarked;
+      originalBackImage = stored.unwatermarked;
     }
 
     let finalImages: string[] = [];
     let finalOriginalImages: string[] = [];
 
-    if (uploadedImages.length > 0) {
-      finalImages = uploadedImages.map((img) => img.watermarked);
-      finalOriginalImages = uploadedImages.map((img) => img.unwatermarked);
-    } else {
-      let fallbackImages: unknown = [];
-      if (existingImages) {
-        try {
-          fallbackImages = JSON.parse(existingImages) as unknown;
-        } catch {
-          fallbackImages = [];
-        }
-      }
-      finalImages = Array.isArray(fallbackImages)
-        ? fallbackImages.filter(
-            (value): value is string => typeof value === "string",
-          )
-        : [];
+    if (frontImage) {
+      finalImages.push(frontImage);
+    }
+    if (backImage) {
+      finalImages.push(backImage);
+    }
+    if (originalFrontImage) {
+      finalOriginalImages.push(originalFrontImage);
+    }
+    if (originalBackImage) {
+      finalOriginalImages.push(originalBackImage);
+    }
 
-      let fallbackOriginalImages: unknown = [];
-      if (existingOriginalImages) {
-        try {
-          fallbackOriginalImages = JSON.parse(
-            existingOriginalImages,
-          ) as unknown;
-        } catch {
-          fallbackOriginalImages = [];
-        }
+    // Fallback to legacy multiple images list if frontImage is not provided
+    if (finalImages.length === 0) {
+      let uploadedImages: Array<{ watermarked: string; unwatermarked: string }> = [];
+      if (imageEntries.length > 0) {
+        uploadedImages = await Promise.all(
+          imageEntries.map((file) => storeProductImage(file, brand)),
+        );
       }
-      finalOriginalImages = Array.isArray(fallbackOriginalImages)
-        ? fallbackOriginalImages.filter(
-            (value): value is string => typeof value === "string",
-          )
-        : [];
+
+      if (uploadedImages.length > 0) {
+        finalImages = uploadedImages.map((img) => img.watermarked);
+        finalOriginalImages = uploadedImages.map((img) => img.unwatermarked);
+      } else {
+        let fallbackImages: unknown = [];
+        if (existingImages) {
+          try {
+            fallbackImages = JSON.parse(existingImages) as unknown;
+          } catch {
+            fallbackImages = [];
+          }
+        }
+        finalImages = Array.isArray(fallbackImages)
+          ? fallbackImages.filter(
+              (value): value is string => typeof value === "string",
+            )
+          : [];
+
+        let fallbackOriginalImages: unknown = [];
+        if (existingOriginalImages) {
+          try {
+            fallbackOriginalImages = JSON.parse(
+              existingOriginalImages,
+            ) as unknown;
+          } catch {
+            fallbackOriginalImages = [];
+          }
+        }
+        finalOriginalImages = Array.isArray(fallbackOriginalImages)
+          ? fallbackOriginalImages.filter(
+              (value): value is string => typeof value === "string",
+            )
+          : [];
+      }
     }
 
     let parsedCustomFields: Array<{ label: string; value: string }> = [];
@@ -226,6 +265,10 @@ async function parseProductRequest(
         tag: getOptionalStringField(formData, "tag"),
         customFields: parsedCustomFields,
         premium: formData.get("premium") === "true",
+        frontImage: frontImage || undefined,
+        backImage: backImage || undefined,
+        originalFrontImage: originalFrontImage || undefined,
+        originalBackImage: originalBackImage || undefined,
       },
     };
   }

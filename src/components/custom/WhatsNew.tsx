@@ -13,7 +13,8 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import AssetImage from "@/components/custom/AssetImage";
 import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
 import { Button } from "@/components/ui/button";
-import type { Product } from "@/lib/products";
+import { type Product } from "@/lib/products";
+import { expandLegacyProducts } from "@/lib/product-utils";
 
 type WhatsNewProps = {
   products: Product[];
@@ -21,7 +22,8 @@ type WhatsNewProps = {
 
 const SLIDE_DURATION = 6000; // ms auto-advance
 
-export default function WhatsNew({ products }: WhatsNewProps) {
+export default function WhatsNew({ products: rawProducts }: WhatsNewProps) {
+  const products = React.useMemo(() => expandLegacyProducts(rawProducts), [rawProducts]);
   const premiumProducts = React.useMemo(() => {
     const premium = products.filter((p) => p.premium);
 

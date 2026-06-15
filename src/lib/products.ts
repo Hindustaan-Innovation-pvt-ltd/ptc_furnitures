@@ -23,6 +23,10 @@ export type Product = {
   updatedAt?: string;
   premium?: boolean;
   position?: number;
+  frontImage?: string;
+  backImage?: string;
+  originalFrontImage?: string;
+  originalBackImage?: string;
 };
 
 export type ProductCustomField = {
@@ -42,6 +46,10 @@ export type ProductInput = {
   customFields?: ProductCustomField[];
   premium?: boolean;
   position?: number;
+  frontImage?: string;
+  backImage?: string;
+  originalFrontImage?: string;
+  originalBackImage?: string;
 };
 
 export type ProductUpdateInput = ProductInput;
@@ -162,6 +170,10 @@ export async function readProducts(): Promise<Product[]> {
       customFields: doc.customFields || [],
       premium: !!doc.premium,
       position: doc.position ?? 0,
+      frontImage: doc.frontImage || undefined,
+      backImage: doc.backImage || undefined,
+      originalFrontImage: doc.originalFrontImage || undefined,
+      originalBackImage: doc.originalBackImage || undefined,
     }));
   } catch (error) {
     console.error("Failed to read products from database:", error);
@@ -305,6 +317,10 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     customFields: product.customFields || [],
     premium: !!product.premium,
     position: product.position ?? 0,
+    frontImage: product.frontImage || undefined,
+    backImage: product.backImage || undefined,
+    originalFrontImage: product.originalFrontImage || undefined,
+    originalBackImage: product.originalBackImage || undefined,
   });
 
   return {
@@ -321,6 +337,10 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     customFields: doc.customFields || [],
     premium: !!doc.premium,
     position: doc.position ?? 0,
+    frontImage: doc.frontImage || undefined,
+    backImage: doc.backImage || undefined,
+    originalFrontImage: doc.originalFrontImage || undefined,
+    originalBackImage: doc.originalBackImage || undefined,
   };
 }
 
@@ -371,6 +391,10 @@ export async function updateProduct(
     tag: product.tag?.trim() || undefined,
     customFields: product.customFields || [],
     premium: !!product.premium,
+    frontImage: product.frontImage || undefined,
+    backImage: product.backImage || undefined,
+    originalFrontImage: product.originalFrontImage || undefined,
+    originalBackImage: product.originalBackImage || undefined,
   };
 
   if (product.position !== undefined) {
@@ -403,6 +427,10 @@ export async function updateProduct(
       product.position !== undefined
         ? product.position
         : (existingDoc.position ?? 0),
+    frontImage: product.frontImage || undefined,
+    backImage: product.backImage || undefined,
+    originalFrontImage: product.originalFrontImage || undefined,
+    originalBackImage: product.originalBackImage || undefined,
   };
 }
 
@@ -436,5 +464,9 @@ export async function deleteProduct(
     customFields: doc.customFields || [],
     premium: !!doc.premium,
     position: doc.position ?? 0,
+    frontImage: doc.frontImage || undefined,
+    backImage: doc.backImage || undefined,
+    originalFrontImage: doc.originalFrontImage || undefined,
+    originalBackImage: doc.originalBackImage || undefined,
   };
 }
