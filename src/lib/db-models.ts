@@ -47,6 +47,8 @@ export interface IProduct extends Document {
   backImage?: string;
   originalFrontImage?: string;
   originalBackImage?: string;
+  color?: string;
+  premiumDescription?: string;
 }
 
 const ProductCustomFieldSchema = new Schema<IProductCustomField>(
@@ -75,6 +77,8 @@ const ProductSchema = new Schema<IProduct>({
   backImage: { type: String },
   originalFrontImage: { type: String },
   originalBackImage: { type: String },
+  color: { type: String },
+  premiumDescription: { type: String },
 });
 
 export const Product =

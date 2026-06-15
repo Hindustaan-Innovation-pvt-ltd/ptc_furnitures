@@ -27,6 +27,8 @@ export type Product = {
   backImage?: string;
   originalFrontImage?: string;
   originalBackImage?: string;
+  color?: string;
+  premiumDescription?: string;
 };
 
 export type ProductCustomField = {
@@ -50,6 +52,8 @@ export type ProductInput = {
   backImage?: string;
   originalFrontImage?: string;
   originalBackImage?: string;
+  color?: string;
+  premiumDescription?: string;
 };
 
 export type ProductUpdateInput = ProductInput;
@@ -174,6 +178,8 @@ export async function readProducts(): Promise<Product[]> {
       backImage: doc.backImage || undefined,
       originalFrontImage: doc.originalFrontImage || undefined,
       originalBackImage: doc.originalBackImage || undefined,
+      color: doc.color || undefined,
+      premiumDescription: doc.premiumDescription || undefined,
     }));
   } catch (error) {
     console.error("Failed to read products from database:", error);
@@ -321,6 +327,8 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     backImage: product.backImage || undefined,
     originalFrontImage: product.originalFrontImage || undefined,
     originalBackImage: product.originalBackImage || undefined,
+    color: product.color?.trim() || undefined,
+    premiumDescription: product.premiumDescription?.trim() || undefined,
   });
 
   return {
@@ -341,6 +349,8 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     backImage: doc.backImage || undefined,
     originalFrontImage: doc.originalFrontImage || undefined,
     originalBackImage: doc.originalBackImage || undefined,
+    color: doc.color || undefined,
+    premiumDescription: doc.premiumDescription || undefined,
   };
 }
 
@@ -395,6 +405,8 @@ export async function updateProduct(
     backImage: product.backImage || undefined,
     originalFrontImage: product.originalFrontImage || undefined,
     originalBackImage: product.originalBackImage || undefined,
+    color: product.color?.trim() || undefined,
+    premiumDescription: product.premiumDescription?.trim() || undefined,
   };
 
   if (product.position !== undefined) {
@@ -431,6 +443,8 @@ export async function updateProduct(
     backImage: product.backImage || undefined,
     originalFrontImage: product.originalFrontImage || undefined,
     originalBackImage: product.originalBackImage || undefined,
+    color: product.color?.trim() || undefined,
+    premiumDescription: product.premiumDescription?.trim() || undefined,
   };
 }
 
@@ -468,5 +482,7 @@ export async function deleteProduct(
     backImage: doc.backImage || undefined,
     originalFrontImage: doc.originalFrontImage || undefined,
     originalBackImage: doc.originalBackImage || undefined,
+    color: doc.color || undefined,
+    premiumDescription: doc.premiumDescription || undefined,
   };
 }

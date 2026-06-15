@@ -38,6 +38,77 @@ export default function AdminBrandsManager({
   const [editValue, setEditValue] = useState("");
   const [deletingBrand, setDeletingBrand] = useState<string | null>(null);
 
+  // Migration states
+  const [migrating, setMigrating] = useState(false);
+  const [migrationResult, setMigrationResult] = useState<{
+    success: boolean;
+    totalCount: number;
+    migratedCount: number;
+    colorDetectedCount: number;
+  } | null>(null);
+  const [migrationError, setMigrationError] = useState<string | null>(null);
+
+  // Pruning states
+  const [pruning, setPruning] = useState(false);
+  const [pruningResult, setPruningResult] = useState<{
+    success: boolean;
+    totalFiles: number;
+    deletedCount: number;
+    spaceSavedBytes: number;
+  } | null>(null);
+  const [pruningError, setPruningError] = useState<string | null>(null);
+
+  async function runPrune() {
+    setPruning(true);
+    setPruningResult(null);
+    setPruningError(null);
+    try {
+      const response = await fetch("/api/admin/prune-images", {
+        method: "POST",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to prune images");
+      }
+      setPruningResult(data);
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (err) {
+      setPruningError(
+        err instanceof Error ? err.message : "Something went wrong during cleanup"
+      );
+    } finally {
+      setPruning(false);
+    }
+  }
+
+
+  async function runMigration() {
+    setMigrating(true);
+    setMigrationResult(null);
+    setMigrationError(null);
+    try {
+      const response = await fetch("/api/admin/migrate-products", {
+        method: "POST",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to migrate products");
+      }
+      setMigrationResult(data);
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (err) {
+      setMigrationError(
+        err instanceof Error ? err.message : "Something went wrong during migration"
+      );
+    } finally {
+      setMigrating(false);
+    }
+  }
+
   const getLogo = (brandName: string) => {
     const norm = brandName.trim().replace(/\s+/g, " ").toLowerCase();
     return (
@@ -418,6 +489,111 @@ export default function AdminBrandsManager({
           ) : null}
         </form>
       </div>
+
+      {/* Data Migration and Utilities */}
+      <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-red-700 dark:text-red-300">
+              Database Migration & Legacy Support
+            </p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Automatically convert legacy product photos (Front/Back) into the new multi-image gallery structure, and auto-detect color variants based on product names.
+            </p>
+          </div>
+          <Button
+            onClick={runMigration}
+            disabled={migrating}
+            className="rounded-full px-6 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-semibold shadow-md flex items-center gap-2"
+          >
+            {migrating ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Migrating...
+              </>
+            ) : (
+              "Migrate Legacy Products"
+            )}
+          </Button>
+        </div>
+
+        {migrationResult && (
+          <div className="mt-3 p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 text-xs flex flex-col gap-1.5 animate-fadeIn">
+            <p className="font-bold flex items-center gap-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+              Migration Completed Successfully!
+            </p>
+            <ul className="list-disc pl-4 space-y-0.5">
+              <li>Total products evaluated: <strong>{migrationResult.totalCount}</strong></li>
+              <li>Legacy image structures updated: <strong>{migrationResult.migratedCount}</strong></li>
+              <li>Color variants auto-detected from names: <strong>{migrationResult.colorDetectedCount}</strong></li>
+            </ul>
+          </div>
+        )}
+
+        {migrationError && (
+          <div className="mt-3 p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-red-600 dark:text-red-400 text-xs">
+            <p className="font-semibold">Migration Error:</p>
+            <p className="mt-1">{migrationError}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Image Library Cleanup & Pruning */}
+      <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-red-700 dark:text-red-300">
+              Image Library Cleanup & Pruning
+            </p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Scan the upload directory (<code>public/upload</code>) for orphaned images that are no longer referenced in the database by any products, brand logos, or watermarks. This will safely permanently delete them to free up disk space.
+            </p>
+          </div>
+          <Button
+            onClick={runPrune}
+            disabled={pruning}
+            className="rounded-full px-6 bg-red-750 hover:bg-red-800 text-white dark:bg-red-800 dark:hover:bg-red-900 font-semibold shadow-md flex items-center gap-2"
+          >
+            {pruning ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Cleaning...
+              </>
+            ) : (
+              "Clean & Prune Images"
+            )}
+          </Button>
+        </div>
+
+        {pruningResult && (
+          <div className="mt-3 p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 text-xs flex flex-col gap-1.5 animate-fadeIn">
+            <p className="font-bold flex items-center gap-1">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+              Cleanup Completed Successfully!
+            </p>
+            <ul className="list-disc pl-4 space-y-0.5">
+              <li>Total upload files scanned: <strong>{pruningResult.totalFiles}</strong></li>
+              <li>Orphaned image files deleted: <strong>{pruningResult.deletedCount}</strong></li>
+              <li>Disk space reclaimed: <strong>{(pruningResult.spaceSavedBytes / (1024 * 1024)).toFixed(2)} MB</strong></li>
+            </ul>
+          </div>
+        )}
+
+        {pruningError && (
+          <div className="mt-3 p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-red-600 dark:text-red-400 text-xs">
+            <p className="font-semibold">Cleanup Error:</p>
+            <p className="mt-1">{pruningError}</p>
+          </div>
+        )}
+      </div>
+
 
       <div className="min-h-5 text-sm">
         {errorMessage ? (

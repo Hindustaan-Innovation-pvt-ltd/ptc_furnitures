@@ -18,6 +18,15 @@ type EditableCustomField = ProductCustomField & {
   id: string;
 };
 
+type GalleryItem = {
+  id: string;
+  type: "existing" | "new";
+  watermarkedUrl?: string;
+  originalUrl?: string;
+  file?: File;
+  preview?: string;
+};
+
 type ProductFormState = {
   brand: string;
   name: string;
@@ -26,6 +35,8 @@ type ProductFormState = {
   craftedBy: string;
   tag: string;
   premium: boolean;
+  color: string;
+  premiumDescription: string;
 };
 
 type AdminProductFormProps = {
@@ -50,6 +61,8 @@ function getInitialState(
         craftedBy: product.craftedBy ?? "",
         tag: product.tag ?? "",
         premium: !!product.premium,
+        color: product.color ?? "",
+        premiumDescription: product.premiumDescription ?? "",
       }
     : {
         brand: initialBrand ?? "PTC GOLD",
@@ -59,7 +72,25 @@ function getInitialState(
         craftedBy: "",
         tag: "",
         premium: false,
+        color: "",
+        premiumDescription: "",
       };
+}
+
+function buildGalleryFromProduct(product?: Product | null): GalleryItem[] {
+  if (!product) return [];
+  const items: GalleryItem[] = [];
+  const images = product.images || [];
+  const originals = product.originalImages || [];
+  for (let i = 0; i < images.length; i++) {
+    items.push({
+      id: `existing-${i}-${Date.now()}`,
+      type: "existing",
+      watermarkedUrl: images[i],
+      originalUrl: originals[i] || images[i],
+    });
+  }
+  return items;
 }
 
 function getInitialCustomFields(
@@ -94,11 +125,10 @@ export default function AdminProductForm({
   const [customFields, setCustomFields] = useState<EditableCustomField[]>(() =>
     getInitialCustomFields(product),
   );
-  const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
-  const [backImageFile, setBackImageFile] = useState<File | null>(null);
-
-  const [frontImagePreview, setFrontImagePreview] = useState<string | null>(null);
-  const [backImagePreview, setBackImagePreview] = useState<string | null>(null);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() =>
+    buildGalleryFromProduct(product),
+  );
+  const [draggedGalleryIdx, setDraggedGalleryIdx] = useState<number | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -106,37 +136,20 @@ export default function AdminProductForm({
   useEffect(() => {
     setFormState(getInitialState(product, initialBrand));
     setCustomFields(getInitialCustomFields(product));
-    setFrontImageFile(null);
-    setBackImageFile(null);
-    setFrontImagePreview(product ? (product.frontImage || product.images?.[0] || null) : null);
-    setBackImagePreview(product ? (product.backImage || product.images?.[1] || null) : null);
+    setGalleryItems(buildGalleryFromProduct(product));
   }, [product, initialBrand]);
 
+  // Cleanup blob URLs for new gallery items
   useEffect(() => {
-    let previewUrl: string | null = null;
-    if (frontImageFile) {
-      previewUrl = URL.createObjectURL(frontImageFile);
-      setFrontImagePreview(previewUrl);
-    }
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      for (const item of galleryItems) {
+        if (item.preview) URL.revokeObjectURL(item.preview);
+      }
     };
-  }, [frontImageFile]);
-
-  useEffect(() => {
-    let previewUrl: string | null = null;
-    if (backImageFile) {
-      previewUrl = URL.createObjectURL(backImageFile);
-      setBackImagePreview(previewUrl);
-    }
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [backImageFile]);
+  }, []);
 
   const canSubmit =
-    formState.name.trim().length > 0 &&
-    (frontImageFile !== null || frontImagePreview !== null);
+    formState.name.trim().length > 0 && galleryItems.length > 0;
 
   const normalizedCustomFields = customFields
     .map((field) => ({
@@ -160,51 +173,32 @@ export default function AdminProductForm({
     if (formState.tag) formData.set("tag", formState.tag);
     formData.set("premium", String(formState.premium));
     formData.set("customFields", JSON.stringify(normalizedCustomFields));
+    if (formState.color) formData.set("color", formState.color);
+    if (formState.premiumDescription) formData.set("premiumDescription", formState.premiumDescription);
 
-    if (product) {
-      formData.set("id", product.id);
+    if (product) formData.set("id", product.id);
 
-      // Front Image Logic
-      if (frontImageFile) {
-        formData.append("frontImage", frontImageFile);
-      } else if (frontImagePreview) {
-        if (product.frontImage) {
-          formData.set("existingFrontImage", product.frontImage);
-          if (product.originalFrontImage) {
-            formData.set("existingOriginalFrontImage", product.originalFrontImage);
-          }
-        } else if (product.images?.[0]) {
-          formData.set("existingFrontImage", product.images[0]);
-          if (product.originalImages?.[0]) {
-            formData.set("existingOriginalFrontImage", product.originalImages[0]);
-          }
-        }
-      }
+    // Build gallery order and file data
+    const existingGallery: Array<{ url: string; originalUrl: string }> = [];
+    const orderArray: string[] = [];
+    let newFileIndex = 0;
 
-      // Back Image Logic
-      if (backImageFile) {
-        formData.append("backImage", backImageFile);
-      } else if (backImagePreview) {
-        if (product.backImage) {
-          formData.set("existingBackImage", product.backImage);
-          if (product.originalBackImage) {
-            formData.set("existingOriginalBackImage", product.originalBackImage);
-          }
-        } else if (product.images?.[1]) {
-          formData.set("existingBackImage", product.images[1]);
-          if (product.originalImages?.[1]) {
-            formData.set("existingOriginalBackImage", product.originalImages[1]);
-          }
-        }
-      }
-    } else {
-      if (frontImageFile) {
-        formData.append("frontImage", frontImageFile);
-      }
-      if (backImageFile) {
-        formData.append("backImage", backImageFile);
+    for (const item of galleryItems) {
+      if (item.type === "existing" && item.watermarkedUrl) {
+        orderArray.push(`existing:${existingGallery.length}`);
+        existingGallery.push({
+          url: item.watermarkedUrl,
+          originalUrl: item.originalUrl || item.watermarkedUrl,
+        });
+      } else if (item.type === "new" && item.file) {
+        orderArray.push(`new:${newFileIndex}`);
+        formData.append("galleryImage", item.file);
+        newFileIndex++;
       }
     }
+
+    formData.set("galleryImageOrder", JSON.stringify(orderArray));
+    formData.set("existingGalleryImages", JSON.stringify(existingGallery));
 
     const response = await fetch("/api/products", {
       method: product ? "PUT" : "POST",
@@ -223,10 +217,7 @@ export default function AdminProductForm({
 
     setFormState(getInitialState(null, initialBrand));
     setCustomFields([]);
-    setFrontImageFile(null);
-    setBackImageFile(null);
-    setFrontImagePreview(null);
-    setBackImagePreview(null);
+    setGalleryItems([]);
     formElement.reset();
     setSuccessMessage(product ? "Product updated successfully." : "Product saved successfully.");
 
@@ -238,13 +229,44 @@ export default function AdminProductForm({
   function handleCancelEdit() {
     setFormState(getInitialState(null, initialBrand));
     setCustomFields(getInitialCustomFields(null));
-    setFrontImageFile(null);
-    setBackImageFile(null);
-    setFrontImagePreview(product ? (product.frontImage || product.images?.[0] || null) : null);
-    setBackImagePreview(product ? (product.backImage || product.images?.[1] || null) : null);
+    for (const item of galleryItems) {
+      if (item.preview) URL.revokeObjectURL(item.preview);
+    }
+    setGalleryItems(buildGalleryFromProduct(null));
     setErrorMessage(null);
     setSuccessMessage(null);
     onCancelEdit?.();
+  }
+
+  function handleAddGalleryFiles(files: FileList | null) {
+    if (!files) return;
+    const newItems: GalleryItem[] = Array.from(files).map((file) => ({
+      id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      type: "new",
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setGalleryItems((current) => [...current, ...newItems]);
+  }
+
+  function handleRemoveGalleryItem(id: string) {
+    setGalleryItems((current) => {
+      const itemToRemove = current.find((item) => item.id === id);
+      if (itemToRemove?.preview) {
+        URL.revokeObjectURL(itemToRemove.preview);
+      }
+      return current.filter((item) => item.id !== id);
+    });
+  }
+
+  function moveGalleryItem(fromIndex: number, toIndex: number) {
+    if (toIndex < 0 || toIndex >= galleryItems.length) return;
+    setGalleryItems((current) => {
+      const copy = [...current];
+      const [moved] = copy.splice(fromIndex, 1);
+      copy.splice(toIndex, 0, moved);
+      return copy;
+    });
   }
 
   function updateCustomField(
@@ -285,7 +307,7 @@ export default function AdminProductForm({
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300">
-            {frontImageFile || backImageFile ? "New uploads pending" : "Images active"}
+            {galleryItems.some(item => item.type === "new") ? "New uploads pending" : "Images active"}
           </span>
           {product ? (
             <Button
@@ -389,6 +411,21 @@ export default function AdminProductForm({
                 />
               </div>
 
+              <div className="grid gap-2">
+                <Label htmlFor="color">Color / Finish (Optional)</Label>
+                <Input
+                  id="color"
+                  value={formState.color}
+                  onChange={(event) =>
+                    setFormState((current) => ({
+                      ...current,
+                      color: event.target.value,
+                    }))
+                  }
+                  placeholder="e.g. Beige, Walnut, Dark Grey"
+                />
+              </div>
+
               <div className="grid gap-2 sm:col-span-2 lg:col-span-3">
                 <Label htmlFor="tag">Custom Description / Tag (Optional)</Label>
                 <Input
@@ -404,25 +441,47 @@ export default function AdminProductForm({
                 />
               </div>
 
-              <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50/30 p-3.5 dark:border-amber-900/30 dark:bg-amber-950/10 sm:col-span-2 lg:col-span-3">
-                <input
-                  type="checkbox"
-                  id="premium"
-                  checked={formState.premium}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      premium: event.target.checked,
-                    }))
-                  }
-                  className="rounded border-amber-300 text-amber-600 focus:ring-amber-500 size-4 shrink-0 cursor-pointer"
-                />
-                <Label
-                  htmlFor="premium"
-                  className="text-xs font-bold text-amber-800 dark:text-amber-455 cursor-pointer flex items-center gap-1.5 select-none"
-                >
-                  ⭐ Featured Premium Selection (places at top of catalogs & home slider)
-                </Label>
+              <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50/30 p-4 dark:border-amber-900/30 dark:bg-amber-950/10 sm:col-span-2 lg:col-span-3 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="premium"
+                    checked={formState.premium}
+                    onChange={(event) =>
+                      setFormState((current) => ({
+                        ...current,
+                        premium: event.target.checked,
+                      }))
+                    }
+                    className="rounded border-amber-300 text-amber-600 focus:ring-amber-500 size-4 shrink-0 cursor-pointer"
+                  />
+                  <Label
+                    htmlFor="premium"
+                    className="text-xs font-bold text-amber-800 dark:text-amber-455 cursor-pointer flex items-center gap-1.5 select-none"
+                  >
+                    ⭐ Featured Premium Selection (places at top of catalogs & home slider)
+                  </Label>
+                </div>
+                {formState.premium && (
+                  <div className="grid gap-1.5 mt-2 animate-fade-in">
+                    <Label htmlFor="premiumDescription" className="text-xs font-semibold text-amber-900 dark:text-amber-300">
+                      Premium Description / Detailed Specs
+                    </Label>
+                    <textarea
+                      id="premiumDescription"
+                      rows={4}
+                      value={formState.premiumDescription}
+                      onChange={(event) =>
+                        setFormState((current) => ({
+                          ...current,
+                          premiumDescription: event.target.value,
+                        }))
+                      }
+                      placeholder="Specify premium details (e.g. Custom fabric choices, premium foam grade, luxury wood treatments...)"
+                      className="w-full rounded-xl border border-amber-200 dark:border-amber-900/50 bg-white/80 dark:bg-[#16181f] p-3 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-900 dark:text-slate-100"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -509,200 +568,158 @@ export default function AdminProductForm({
           </section>
         </div>
 
-        <section className="grid gap-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5 sm:grid-cols-2">
-          {/* Front Image Section */}
+        <section className="grid gap-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5 lg:col-span-1">
           <div className="flex flex-col gap-4">
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Front Image
+                Product Image Gallery
               </p>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                The primary image shown in listings and catalogs (Required).
+                Add multiple images of this furniture item. Drag and drop thumbnails or use arrow buttons to manually sort. The first image will be the primary cover image.
               </p>
             </div>
 
-            <Input
-              id="frontImage"
-              type="file"
-              name="frontImage"
-              accept="image/*"
-              className="sr-only"
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                const file = event.target.files?.[0] || null;
-                if (file) setFrontImageFile(file);
-              }}
-            />
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full rounded-full"
+            {/* Drop/Upload Area */}
+            <div
               onClick={() => {
-                const input = document.getElementById("frontImage");
-                if (input instanceof HTMLInputElement) {
-                  input.click();
-                }
+                const input = document.getElementById("gallery-upload");
+                if (input instanceof HTMLInputElement) input.click();
               }}
+              className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white dark:border-white/10 dark:bg-[#0f1116] p-6 text-center cursor-pointer hover:border-slate-400 dark:hover:border-white/20 transition-colors"
             >
-              Choose Front Image
-            </Button>
-
-            {frontImagePreview ? (
-              <div className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0f1116] aspect-square flex items-center justify-center">
-                <Image
-                  unoptimized
-                  src={frontImagePreview}
-                  alt="Front image preview"
-                  width={400}
-                  height={300}
-                  className="max-h-60 w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.01]"
-                />
-                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/60 p-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
-                  <span>Front View</span>
-                  {frontImageFile && (
-                    <span className="text-emerald-400 font-bold">New Upload</span>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex aspect-square flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center dark:border-white/10 dark:bg-[#0f1116]">
-                <div className="flex size-10 items-center justify-center rounded-full bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M4 16.5 8.2 12.3c.7-.7 1.8-.7 2.5 0l3.5 3.5 2.7-2.7c.7-.7 1.8-.7 2.5 0L20 14.2"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <rect
-                      x="3.5"
-                      y="3.5"
-                      width="17"
-                      height="17"
-                      rx="3.5"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                    />
-                  </svg>
-                </div>
-                <p className="mt-2 text-xs font-medium text-slate-900 dark:text-slate-100">
-                  No Front Image
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Back Image Section */}
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  Back Image
-                </p>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  Optional back/secondary view of the product.
-                </p>
-              </div>
-              {backImagePreview && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-7 rounded-full text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25"
-                  onClick={() => {
-                    setBackImageFile(null);
-                    setBackImagePreview(null);
-                  }}
+              <input
+                id="gallery-upload"
+                type="file"
+                multiple
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => handleAddGalleryFiles(e.target.files)}
+              />
+              <div className="flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
                 >
-                  Clear
-                </Button>
-              )}
+                  <path
+                    d="M12 4V20M4 12H20"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+              <p className="mt-2 text-xs font-semibold text-slate-900 dark:text-slate-100">
+                Upload images
+              </p>
+              <p className="mt-1 text-[11px] text-slate-400">
+                PNG, JPG, WEBP up to 5MB
+              </p>
             </div>
 
-            <Input
-              id="backImage"
-              type="file"
-              name="backImage"
-              accept="image/*"
-              className="sr-only"
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                const file = event.target.files?.[0] || null;
-                if (file) setBackImageFile(file);
-              }}
-            />
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full rounded-full"
-              onClick={() => {
-                const input = document.getElementById("backImage");
-                if (input instanceof HTMLInputElement) {
-                  input.click();
-                }
-              }}
-            >
-              Choose Back Image
-            </Button>
-
-            {backImagePreview ? (
-              <div className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0f1116] aspect-square flex items-center justify-center">
-                <Image
-                  unoptimized
-                  src={backImagePreview}
-                  alt="Back image preview"
-                  width={400}
-                  height={300}
-                  className="max-h-60 w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.01]"
-                />
-                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/60 p-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
-                  <span>Back View</span>
-                  {backImageFile && (
-                    <span className="text-emerald-400 font-bold">New Upload</span>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex aspect-square flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center dark:border-white/10 dark:bg-[#0f1116]">
-                <div className="flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M4 16.5 8.2 12.3c.7-.7 1.8-.7 2.5 0l3.5 3.5 2.7-2.7c.7-.7 1.8-.7 2.5 0L20 14.2"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+            {/* Gallery Grid */}
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              {galleryItems.map((item, index) => (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/plain", index.toString());
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    const fromStr = e.dataTransfer.getData("text/plain");
+                    if (fromStr !== "") {
+                      const fromIndex = parseInt(fromStr, 10);
+                      moveGalleryItem(fromIndex, index);
+                    }
+                  }}
+                  className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0f1116] aspect-square flex flex-col justify-between cursor-grab active:cursor-grabbing hover:shadow-md transition-all duration-200"
+                >
+                  {/* Image Display */}
+                  <div className="relative flex-1 flex items-center justify-center p-2">
+                    <Image
+                      unoptimized
+                      src={item.preview || item.watermarkedUrl || "/product-placeholder.svg"}
+                      alt={`Gallery item ${index + 1}`}
+                      width={200}
+                      height={200}
+                      className="max-h-28 w-full object-contain transition-transform duration-300 group-hover:scale-105"
                     />
-                    <rect
-                      x="3.5"
-                      y="3.5"
-                      width="17"
-                      height="17"
-                      rx="3.5"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                    />
-                  </svg>
+
+                    {/* Cover Badge */}
+                    {index === 0 && (
+                      <span className="absolute top-2 left-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                        Cover
+                      </span>
+                    )}
+
+                    {/* New Upload Badge */}
+                    {item.type === "new" && (
+                      <span className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                        New
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Footer Bar with Controls */}
+                  <div className="flex items-center justify-between border-t border-slate-100 dark:border-white/5 bg-slate-50/80 dark:bg-white/5 px-2 py-1">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                      Position {index + 1}
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      {/* Move Left / Up */}
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => moveGalleryItem(index, index - 1)}
+                        className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent"
+                        title="Move Earlier"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M15 19L8 12L15 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+
+                      {/* Move Right / Down */}
+                      <button
+                        type="button"
+                        disabled={index === galleryItems.length - 1}
+                        onClick={() => moveGalleryItem(index, index + 1)}
+                        className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent"
+                        title="Move Later"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+
+                      {/* Remove Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGalleryItem(item.id)}
+                        className="p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        title="Remove Image"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M19 7L5 7M10 11V17M14 11V17M16 3H8C6.89543 3 6 3.89543 6 5V7H18V5C18 3.89543 17.1046 3 16 3ZM17 7V19C17 20.1046 16.1046 21 15 21H9C7.89543 21 7 20.1046 7 19V7H17Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  No Back Image
-                </p>
-              </div>
-            )}
+              ))}
+
+              {galleryItems.length === 0 && (
+                <div className="col-span-2 flex flex-col items-center justify-center p-8 border border-dashed border-slate-350 dark:border-white/10 rounded-xl bg-white/50 dark:bg-[#0f1116]/50">
+                  <p className="text-xs text-slate-400">No images added yet. Click upload to start.</p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </div>

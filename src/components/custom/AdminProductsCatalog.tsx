@@ -44,6 +44,7 @@ export default function AdminProductsCatalog({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrandFilter, setSelectedBrandFilter] = useState("ALL");
   const [assignmentFilter, setAssignmentFilter] = useState("ALL");
+  const [selectedColorFilter, setSelectedColorFilter] = useState("ALL");
   const [deletingProductId, setDeletingProductId] = useState<string | null>(
     null,
   );
@@ -70,6 +71,17 @@ export default function AdminProductsCatalog({
       keepPreviousData: true,
     },
   );
+
+  const availableColors = useMemo(() => {
+    const colors = new Set<string>();
+    cachedProducts.forEach((p) => {
+      if (p.color && p.color.trim()) {
+        colors.add(p.color.trim());
+      }
+    });
+    return Array.from(colors).sort();
+  }, [cachedProducts]);
+
 
   async function updateProductBrand(product: Product, targetBrand: string) {
     try {
@@ -316,8 +328,11 @@ export default function AdminProductsCatalog({
       const brandMatch = product.brand
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
+      const colorTextMatch = product.color
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ?? false;
       const queryMatch =
-        searchTerm.trim() === "" || nameMatch || idMatch || brandMatch;
+        searchTerm.trim() === "" || nameMatch || idMatch || brandMatch || colorTextMatch;
 
       // 2. Brand Dropdown Filter
       const brandFilterMatch =
@@ -332,9 +347,14 @@ export default function AdminProductsCatalog({
         (assignmentFilter === "UNASSIGNED" &&
           (product.brand || "").trim() === "");
 
-      return queryMatch && brandFilterMatch && statusMatch;
+      // 4. Color Filter
+      const colorFilterMatch =
+        selectedColorFilter === "ALL" ||
+        (product.color && product.color.trim().toLowerCase() === selectedColorFilter.toLowerCase());
+
+      return queryMatch && brandFilterMatch && statusMatch && colorFilterMatch;
     });
-  }, [cachedProducts, searchTerm, selectedBrandFilter, assignmentFilter]);
+  }, [cachedProducts, searchTerm, selectedBrandFilter, assignmentFilter, selectedColorFilter]);
 
   return (
     <div className="grid gap-8">
@@ -560,7 +580,7 @@ export default function AdminProductsCatalog({
       )}
 
       {/* Filtering Actions Panel */}
-      <section className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-xs dark:border-white/5 dark:bg-[#111318] grid gap-4 md:grid-cols-[1.5fr_1fr_1fr_auto] items-end select-none">
+      <section className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-xs dark:border-white/5 dark:bg-[#111318] grid gap-4 md:grid-cols-[1.2fr_0.9fr_0.9fr_0.9fr_auto] items-end select-none">
         {/* Input Search */}
         <div className="grid gap-2">
           <Label
@@ -573,7 +593,7 @@ export default function AdminProductsCatalog({
             id="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by name, brand, or id..."
+            placeholder="Search name, brand, color, or id..."
             className="h-9 rounded-lg"
             disabled={isReorderMode}
           />
@@ -597,6 +617,30 @@ export default function AdminProductsCatalog({
               {brands.map((b) => (
                 <SelectItem key={b} value={b}>
                   {b}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Color Filter Selector */}
+        <div className="grid gap-2">
+          <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Filter by Color
+          </Label>
+          <Select
+            value={selectedColorFilter}
+            onValueChange={setSelectedColorFilter}
+            disabled={isReorderMode}
+          >
+            <SelectTrigger className="w-full h-9 rounded-lg text-xs">
+              <SelectValue placeholder="All Colors" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Colors</SelectItem>
+              {availableColors.map((color) => (
+                <SelectItem key={color} value={color}>
+                  {color}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -633,6 +677,7 @@ export default function AdminProductsCatalog({
           onClick={() => {
             setSearchTerm("");
             setSelectedBrandFilter("ALL");
+            setSelectedColorFilter("ALL");
             setAssignmentFilter("ALL");
           }}
         >
@@ -959,6 +1004,11 @@ export default function AdminProductsCatalog({
                             ⭐ Premium
                           </span>
                         )}
+                        {product.color && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 text-[9px] font-bold text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-white/10">
+                            🎨 {product.color}
+                          </span>
+                        )}
                       </div>
                       <h3 className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100 truncate tracking-tight">
                         {product.name || "Unnamed Product"}
@@ -982,13 +1032,20 @@ export default function AdminProductsCatalog({
                   {/* Product ImageStage */}
                   <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-50 border border-slate-100 dark:bg-white/5 dark:border-white/5">
                     {product.images.length > 0 ? (
-                      <AssetImage
-                        brand={product.brand}
-                        src={product.images[0]}
-                        alt={product.name || "Product image"}
-                        fill
-                        className="object-contain p-2"
-                      />
+                      <>
+                        <AssetImage
+                          brand={product.brand}
+                          src={product.images[0]}
+                          alt={product.name || "Product image"}
+                          fill
+                          className="object-contain p-2"
+                        />
+                        {product.images.length > 1 && (
+                          <span className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-xs text-white text-[9px] font-bold px-2 py-0.5 rounded-full z-10">
+                            {product.images.length} Photos
+                          </span>
+                        )}
+                      </>
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
                         No image assets uploaded
@@ -1011,6 +1068,15 @@ export default function AdminProductsCatalog({
                       ) : null}
                     </div>
                   ) : null}
+
+                  {product.premium && product.premiumDescription && (
+                    <div className="rounded-xl border border-amber-100 bg-amber-50/20 dark:border-amber-950/25 dark:border-amber-900/30 p-2.5 text-[11px] text-slate-600 dark:text-slate-300">
+                      <span className="font-bold text-[9px] uppercase tracking-wider text-amber-700 dark:text-amber-400 block mb-0.5">
+                        ⭐ Premium description
+                      </span>
+                      <p className="line-clamp-2 leading-relaxed italic">{product.premiumDescription}</p>
+                    </div>
+                  )}
 
                   {/* Brand Selector Dropdown */}
                   {!isReorderMode && (

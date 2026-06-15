@@ -113,6 +113,8 @@ type ParsedProductRequest = {
     backImage?: string;
     originalFrontImage?: string;
     originalBackImage?: string;
+    color?: string;
+    premiumDescription?: string;
   };
   id?: string;
 };
@@ -139,84 +141,122 @@ async function parseProductRequest(
       );
     const brand = getStringField(formData, "brand");
 
-    const frontImageFile = formData.get("frontImage");
-    const backImageFile = formData.get("backImage");
-
-    let frontImage = getOptionalStringField(formData, "existingFrontImage");
-    let originalFrontImage = getOptionalStringField(formData, "existingOriginalFrontImage");
-    let backImage = getOptionalStringField(formData, "existingBackImage");
-    let originalBackImage = getOptionalStringField(formData, "existingOriginalBackImage");
-
-    if (frontImageFile instanceof File && frontImageFile.size > 0) {
-      const stored = await storeProductImage(frontImageFile, brand);
-      frontImage = stored.watermarked;
-      originalFrontImage = stored.unwatermarked;
-    }
-
-    if (backImageFile instanceof File && backImageFile.size > 0) {
-      const stored = await storeProductImage(backImageFile, brand);
-      backImage = stored.watermarked;
-      originalBackImage = stored.unwatermarked;
-    }
+    // ── Gallery-based image handling ──────────────────────────────
+    const galleryImageOrder = getOptionalStringField(formData, "galleryImageOrder");
+    const existingGalleryImagesRaw = getOptionalStringField(formData, "existingGalleryImages");
 
     let finalImages: string[] = [];
     let finalOriginalImages: string[] = [];
+    let frontImage: string | undefined;
+    let originalFrontImage: string | undefined;
+    let backImage: string | undefined;
+    let originalBackImage: string | undefined;
 
-    if (frontImage) {
-      finalImages.push(frontImage);
-    }
-    if (backImage) {
-      finalImages.push(backImage);
-    }
-    if (originalFrontImage) {
-      finalOriginalImages.push(originalFrontImage);
-    }
-    if (originalBackImage) {
-      finalOriginalImages.push(originalBackImage);
-    }
+    if (galleryImageOrder) {
+      // New gallery-based upload flow
+      let orderArray: string[] = [];
+      try { orderArray = JSON.parse(galleryImageOrder) as string[]; } catch { orderArray = []; }
 
-    // Fallback to legacy multiple images list if frontImage is not provided
-    if (finalImages.length === 0) {
-      let uploadedImages: Array<{ watermarked: string; unwatermarked: string }> = [];
-      if (imageEntries.length > 0) {
-        uploadedImages = await Promise.all(
-          imageEntries.map((file) => storeProductImage(file, brand)),
-        );
+      let existingGallery: Array<{ url: string; originalUrl: string }> = [];
+      if (existingGalleryImagesRaw) {
+        try { existingGallery = JSON.parse(existingGalleryImagesRaw); } catch { existingGallery = []; }
       }
 
-      if (uploadedImages.length > 0) {
-        finalImages = uploadedImages.map((img) => img.watermarked);
-        finalOriginalImages = uploadedImages.map((img) => img.unwatermarked);
-      } else {
-        let fallbackImages: unknown = [];
-        if (existingImages) {
-          try {
-            fallbackImages = JSON.parse(existingImages) as unknown;
-          } catch {
-            fallbackImages = [];
-          }
-        }
-        finalImages = Array.isArray(fallbackImages)
-          ? fallbackImages.filter(
-              (value): value is string => typeof value === "string",
-            )
-          : [];
+      const newGalleryFiles = formData.getAll("galleryImage").filter(
+        (value): value is File => value instanceof File && value.size > 0,
+      );
 
-        let fallbackOriginalImages: unknown = [];
-        if (existingOriginalImages) {
-          try {
-            fallbackOriginalImages = JSON.parse(
-              existingOriginalImages,
-            ) as unknown;
-          } catch {
-            fallbackOriginalImages = [];
-          }
+      // Process all new files
+      const processedNewImages = await Promise.all(
+        newGalleryFiles.map((file) => storeProductImage(file, brand)),
+      );
+
+      // Construct final arrays following order
+      for (const entry of orderArray) {
+        const [type, indexStr] = entry.split(":");
+        const index = parseInt(indexStr);
+        if (type === "existing" && existingGallery[index]) {
+          finalImages.push(existingGallery[index].url);
+          finalOriginalImages.push(existingGallery[index].originalUrl);
+        } else if (type === "new" && processedNewImages[index]) {
+          finalImages.push(processedNewImages[index].watermarked);
+          finalOriginalImages.push(processedNewImages[index].unwatermarked);
         }
-        finalOriginalImages = Array.isArray(fallbackOriginalImages)
-          ? fallbackOriginalImages.filter(
-              (value): value is string => typeof value === "string",
-            )
-          : [];
+      }
+
+      // Set front/back for backward compatibility
+      frontImage = finalImages[0];
+      originalFrontImage = finalOriginalImages[0];
+      backImage = finalImages[1];
+      originalBackImage = finalOriginalImages[1];
+    } else {
+      // Legacy front/back image flow
+      const frontImageFile = formData.get("frontImage");
+      const backImageFile = formData.get("backImage");
+
+      frontImage = getOptionalStringField(formData, "existingFrontImage");
+      originalFrontImage = getOptionalStringField(formData, "existingOriginalFrontImage");
+      backImage = getOptionalStringField(formData, "existingBackImage");
+      originalBackImage = getOptionalStringField(formData, "existingOriginalBackImage");
+
+      if (frontImageFile instanceof File && frontImageFile.size > 0) {
+        const stored = await storeProductImage(frontImageFile, brand);
+        frontImage = stored.watermarked;
+        originalFrontImage = stored.unwatermarked;
+      }
+
+      if (backImageFile instanceof File && backImageFile.size > 0) {
+        const stored = await storeProductImage(backImageFile, brand);
+        backImage = stored.watermarked;
+        originalBackImage = stored.unwatermarked;
+      }
+
+      if (frontImage) finalImages.push(frontImage);
+      if (backImage) finalImages.push(backImage);
+      if (originalFrontImage) finalOriginalImages.push(originalFrontImage);
+      if (originalBackImage) finalOriginalImages.push(originalBackImage);
+
+      // Fallback to legacy multiple images list
+      if (finalImages.length === 0) {
+        const imageEntries = formData.getAll("images").filter(
+          (value): value is File => value instanceof File && value.size > 0,
+        );
+
+        let uploadedImages: Array<{ watermarked: string; unwatermarked: string }> = [];
+        if (imageEntries.length > 0) {
+          uploadedImages = await Promise.all(
+            imageEntries.map((file) => storeProductImage(file, brand)),
+          );
+        }
+
+        if (uploadedImages.length > 0) {
+          finalImages = uploadedImages.map((img) => img.watermarked);
+          finalOriginalImages = uploadedImages.map((img) => img.unwatermarked);
+        } else {
+          const existingImages = getOptionalStringField(formData, "existingImages");
+          const existingOriginalImages = getOptionalStringField(formData, "existingOriginalImages");
+
+          let fallbackImages: unknown = [];
+          if (existingImages) {
+            try { fallbackImages = JSON.parse(existingImages) as unknown; } catch { fallbackImages = []; }
+          }
+          finalImages = Array.isArray(fallbackImages)
+            ? fallbackImages.filter((value): value is string => typeof value === "string")
+            : [];
+
+          let fallbackOriginalImages: unknown = [];
+          if (existingOriginalImages) {
+            try { fallbackOriginalImages = JSON.parse(existingOriginalImages) as unknown; } catch { fallbackOriginalImages = []; }
+          }
+          finalOriginalImages = Array.isArray(fallbackOriginalImages)
+            ? fallbackOriginalImages.filter((value): value is string => typeof value === "string")
+            : [];
+        }
+
+        frontImage = finalImages[0];
+        originalFrontImage = finalOriginalImages[0];
+        backImage = finalImages[1];
+        originalBackImage = finalOriginalImages[1];
       }
     }
 
@@ -269,6 +309,8 @@ async function parseProductRequest(
         backImage: backImage || undefined,
         originalFrontImage: originalFrontImage || undefined,
         originalBackImage: originalBackImage || undefined,
+        color: getOptionalStringField(formData, "color"),
+        premiumDescription: getOptionalStringField(formData, "premiumDescription"),
       },
     };
   }
@@ -389,7 +431,7 @@ export async function PATCH(request: Request) {
       });
     }
 
-    const { id, premium, position } = bodyObj;
+    const { id, premium, position, color, premiumDescription } = bodyObj;
     if (typeof id !== "string" || id.trim().length === 0) {
       return NextResponse.json(
         { error: "Missing product id." },
@@ -417,6 +459,24 @@ export async function PATCH(request: Request) {
         );
       }
       updateFields.position = position;
+    }
+    if (color !== undefined) {
+      if (typeof color !== "string") {
+        return NextResponse.json(
+          { error: "Invalid 'color' value." },
+          { status: 400 },
+        );
+      }
+      updateFields.color = color.trim() || undefined;
+    }
+    if (premiumDescription !== undefined) {
+      if (typeof premiumDescription !== "string") {
+        return NextResponse.json(
+          { error: "Invalid 'premiumDescription' value." },
+          { status: 400 },
+        );
+      }
+      updateFields.premiumDescription = premiumDescription.trim() || undefined;
     }
 
     if (Object.keys(updateFields).length === 0) {
