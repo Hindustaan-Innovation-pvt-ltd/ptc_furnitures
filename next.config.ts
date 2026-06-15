@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
       {
         pathname: "/uploads/**",
       },
+      {
+        pathname: "/*",
+      },
     ],
     // Images in /upload/ are already processed WebP files — no need to restrict formats
     formats: ["image/webp"],
