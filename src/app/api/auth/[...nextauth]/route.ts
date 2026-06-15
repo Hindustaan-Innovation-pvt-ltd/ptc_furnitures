@@ -53,7 +53,8 @@ const handler = NextAuth({
       try {
         const { headers } = await import("next/headers");
         const headersList = await headers();
-        const host = headersList.get("x-forwarded-host") || headersList.get("host");
+        const host =
+          headersList.get("x-forwarded-host") || headersList.get("host");
         const proto = headersList.get("x-forwarded-proto") || "https";
 
         if (host) {
