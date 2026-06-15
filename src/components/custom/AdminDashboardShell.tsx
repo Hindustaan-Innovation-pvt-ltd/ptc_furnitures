@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { type ReactNode, useState } from "react";
+import AdminCommandCenter from "./AdminCommandCenter";
 
 type AdminDashboardShellProps = {
   children: ReactNode;
@@ -480,6 +481,7 @@ export default function AdminDashboardShell({
           {children}
         </main>
       </div>
+      <AdminCommandCenter />
     </div>
   );
 }
