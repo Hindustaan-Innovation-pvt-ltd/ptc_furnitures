@@ -76,7 +76,7 @@ export default function HeroSection() {
             className="flex items-center justify-center gap-x-2.5 sm:gap-x-6 text-3xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05] whitespace-nowrap"
           >
             <span className="font-semibold">THE MASTERS</span>
-            <div className="relative inline-flex rounded-full overflow-hidden aspect-[2.1/1] w-28 sm:w-[130px] md:w-[170px] lg:w-[220px] xl:w-[250px] border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900 shrink-0">
+            <div className="relative inline-flex rounded-full overflow-hidden aspect-[2.1/1] w-38 sm:w-[130px] md:w-[170px] lg:w-[220px] xl:w-[250px] border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900 shrink-0">
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.img
                   key={carouselImages1[index1]}
@@ -120,7 +120,7 @@ export default function HeroSection() {
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
             className="flex items-center justify-center gap-x-2.5 sm:gap-x-6 text-3xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05] whitespace-nowrap"
           >
-            <div className="relative inline-flex rounded-full overflow-hidden aspect-[2.6/1] w-44 sm:w-[160px] md:w-[220px] lg:w-[280px] xl:w-100 border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900 shrink-0">
+            <div className="relative inline-flex rounded-full overflow-hidden aspect-[2.6/1] w-52 sm:w-[160px] md:w-[220px] lg:w-[280px] xl:w-100 border border-slate-200/60 dark:border-white/10 shadow-lg bg-slate-100 dark:bg-slate-900 shrink-0">
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.img
                   key={carouselImages2[index2]}
