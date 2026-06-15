@@ -142,7 +142,7 @@ export default function TermsOfUsePage() {
           These Terms of Use shall be governed by and construed in accordance
           with the laws of India. Any legal action or dispute arising under
           these terms shall be subject to the exclusive jurisdiction of the
-          courts located in Mumbai, Maharashtra, India.
+          courts located in Raipur, Chhattisgarh, India.
         </p>
       ),
     },
@@ -196,7 +196,7 @@ export default function TermsOfUsePage() {
             For questions or requests regarding these Terms of Service, please
             write to us at{" "}
             <span className="font-bold text-red-600 dark:text-red-400 select-all">
-              support@ptcfurniture.com
+              pankajtradingco.14@gmail.com
             </span>
             .
           </div>

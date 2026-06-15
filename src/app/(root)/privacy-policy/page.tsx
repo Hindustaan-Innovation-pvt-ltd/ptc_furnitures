@@ -176,15 +176,15 @@ export default function PrivacyPolicyPage() {
             <div className="grid gap-4 sm:grid-cols-3 text-xs text-slate-500 dark:text-slate-400">
               <div className="flex items-center gap-2">
                 <Mail className="size-3.5 text-slate-400" />
-                <span>privacy@ptcfurniture.com</span>
+                <span>pankajtradingco.14@gmail.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="size-3.5 text-slate-400" />
-                <span>+91 92945 12259</span>
+                <span>+91 78800 02245</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="size-3.5 text-slate-400" />
-                <span>Mumbai, India</span>
+                <span>Raipur, India</span>
               </div>
             </div>
           </div>
