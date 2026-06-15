@@ -49,6 +49,42 @@ const handler = NextAuth({
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      try {
+        const { headers } = await import("next/headers");
+        const headersList = await headers();
+        const host = headersList.get("x-forwarded-host") || headersList.get("host");
+        const proto = headersList.get("x-forwarded-proto") || "https";
+
+        if (host) {
+          const detectedBaseUrl = `${proto}://${host}`;
+          if (url.startsWith("/")) {
+            return `${detectedBaseUrl}${url}`;
+          }
+          const urlObj = new URL(url);
+          if (
+            urlObj.host === host ||
+            urlObj.hostname.endsWith("ptcfurnitures.com") ||
+            urlObj.hostname === "localhost"
+          ) {
+            return url;
+          }
+        }
+      } catch (error) {
+        console.error("Error detecting host in redirect callback:", error);
+      }
+
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      try {
+        const urlObj = new URL(url);
+        if (urlObj.origin === baseUrl) {
+          return url;
+        }
+      } catch (_) {}
+      return baseUrl;
+    },
   },
 });
 
