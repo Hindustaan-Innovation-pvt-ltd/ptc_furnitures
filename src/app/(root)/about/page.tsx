@@ -159,7 +159,7 @@ export default function page() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="h-auto lg:h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col-reverse mt-12 lg:grid lg:grid-cols-[1.1fr_0.9fr] "
+        className="h-auto lg:h-200 border-t border-b border-slate-200 dark:border-slate-600 flex flex-col mt-12 lg:grid lg:grid-cols-[1.1fr_0.9fr] "
       >
         <div className="flex w-full flex-1 flex-col">
           <div className="flex-1 space-y-6 bg-transparent p-6 sm:p-8 dark:bg-[#323232] lg:space-y-8 lg:p-10">
@@ -298,11 +298,10 @@ export default function page() {
                     setActiveDirection(idx > activeChairIndex ? 1 : -1);
                     setActiveChairIndex(idx);
                   }}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    idx === activeChairIndex
-                      ? "w-6 bg-red-600 dark:bg-red-500"
-                      : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
-                  }`}
+                  className={`h-2 rounded-full transition-all duration-300 ${idx === activeChairIndex
+                    ? "w-6 bg-red-600 dark:bg-red-500"
+                    : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
+                    }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
@@ -354,32 +353,16 @@ export default function page() {
             <div className="space-y-6 text-stone-600 dark:text-stone-300 text-base sm:text-lg lg:text-xl font-light leading-relaxed">
               <p>
                 We deliver{" "}
-                <span className="text-red-700 font-semibold dark:text-red-400">
-                  affordable
-                </span>{" "}
-                seating solutions with a wide{" "}
-                <span className="text-red-700 font-semibold dark:text-red-400">
-                  variety
-                </span>{" "}
-                of designs, tailored for{" "}
-                <span className="text-red-700 font-semibold dark:text-red-400">
-                  bulk purchases
-                </span>{" "}
+                affordable
+                seating solutions with a wide
+                variety
+                of designs, tailored for
+                bulk purchases
                 and modern workspace needs.
               </p>
               <p>
-                Our mission is to combine{" "}
-                <span className="text-red-700 font-semibold dark:text-red-400">
-                  comfort
-                </span>
-                ,{" "}
-                <span className="text-red-700 font-semibold dark:text-red-400">
-                  quality
-                </span>
-                , and{" "}
-                <span className="text-red-700 font-semibold dark:text-red-400">
-                  adaptability
-                </span>{" "}
+                Our mission is to combine
+                comfort, quality, and adaptability
                 with today's evolving workplace trends.
               </p>
             </div>

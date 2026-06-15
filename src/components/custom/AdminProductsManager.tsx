@@ -1,11 +1,7 @@
 "use client";
 
-<<<<<<< HEAD
-import { useEffect, useMemo, useState } from "react";
-=======
 import { motion } from "motion/react";
-import { useMemo, useState } from "react";
->>>>>>> 0f35dab (refactor: optimize image assets and update core components for workspace management and product catalog handling)
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import AdminProductForm from "@/components/custom/AdminProductForm";
 import AssetImage from "@/components/custom/AssetImage";
@@ -272,7 +268,7 @@ export default function AdminProductsManager({
         );
       }
       if (product.name) formData.set("name", product.name);
-      if (product.price) formData.set("price", product.price);
+      formData.set("price", "");
       if (product.material) formData.set("material", product.material);
       if (product.craftedBy) formData.set("craftedBy", product.craftedBy);
       if (product.tag) formData.set("tag", product.tag);
@@ -545,15 +541,6 @@ export default function AdminProductsManager({
           </div>
         </div>
         {isReorderMode && (
-<<<<<<< HEAD
-          <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 dark:border-amber-500/10 flex items-center gap-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-amber-600 dark:text-amber-400 shrink-0">
-              <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <p className="text-xs text-amber-800 dark:text-amber-400 font-medium">
-              Drag and drop any product card below to rearrange its position. Click <strong>&quot;Save Order&quot;</strong> in the header to persist changes.
-            </p>
-=======
           <div className="mt-4 grid gap-6 lg:grid-cols-3">
             {/* Rearrange Control Panel */}
             <div className="lg:col-span-1 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/5 dark:bg-[#15171e]/50 backdrop-blur-md flex flex-col gap-4">
@@ -636,7 +623,7 @@ export default function AdminProductsManager({
                           {p.name || "Unnamed Product"}
                         </p>
                         <p className="text-[10px] text-slate-400 truncate">
-                          {p.price ? `${p.price}` : "No price"}
+                          {p.material || p.tag || "No details"}
                         </p>
                       </div>
 
@@ -730,27 +717,9 @@ export default function AdminProductsManager({
                 >
                   Alphabetical A-Z
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const sorted = [...orderedProducts].sort((a, b) => {
-                      const priceA =
-                        parseFloat((a.price || "").replace(/[^0-9.]/g, "")) ||
-                        0;
-                      const priceB =
-                        parseFloat((b.price || "").replace(/[^0-9.]/g, "")) ||
-                        0;
-                      return priceA - priceB;
-                    });
-                    setOrderedProducts(sorted);
-                  }}
-                  className="px-3 py-1.5 text-xs rounded-xl bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer border border-slate-200 dark:border-white/5 transition-colors shadow-xs"
-                >
-                  Price: Low to High
-                </button>
+
               </div>
             </div>
->>>>>>> 0f35dab (refactor: optimize image assets and update core components for workspace management and product catalog handling)
           </div>
         )}
 
@@ -820,6 +789,10 @@ export default function AdminProductsManager({
                   onSortDragOver={handleSortDragOver}
                   onSortDragEnd={handleSortDragEnd}
                   isDragged={draggedIndex === index}
+                  isFirst={index === 0}
+                  isLast={index === orderedProducts.length - 1}
+                  onMoveUp={(idx) => handleSwapIndices(idx, idx - 1)}
+                  onMoveDown={(idx) => handleSwapIndices(idx, idx + 1)}
                 />
               ))
             : thisBrandProducts.map((product) => (
@@ -856,6 +829,10 @@ type ProductCardProps = {
   onSortDragOver?: (e: React.DragEvent, index: number) => void;
   onSortDragEnd?: () => void;
   isDragged?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
+  onMoveUp?: (index: number) => void;
+  onMoveDown?: (index: number) => void;
 };
 
 function ProductCard({
@@ -873,6 +850,10 @@ function ProductCard({
   onSortDragOver,
   onSortDragEnd,
   isDragged = false,
+  isFirst = false,
+  isLast = false,
+  onMoveUp,
+  onMoveDown,
 }: ProductCardProps) {
   const displayImages =
     product.originalImages && product.originalImages.length > 0
@@ -949,14 +930,6 @@ function ProductCard({
             <div className="flex items-center gap-1.5 flex-wrap">
               {isReorderMode ? (
                 <div className="flex items-center gap-1">
-<<<<<<< HEAD
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-950/40 px-2.5 py-1 text-[10px] font-bold text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-900/30 transition-colors">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 opacity-80 animate-pulse">
-                      <path d="M8 6h2v2H8V6zm0 4h2v2H8v-2zm0 4h2v2H8v-2zm0 4h2v2H8v-2zm6-12h2v2h-2V6zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z" fill="currentColor"/>
-                    </svg>
-                    Pos #{index! + 1}
-                  </span>
-=======
                   <span className="drag-grip inline-flex items-center gap-1.5 rounded-full bg-red-100 hover:bg-red-200 dark:bg-red-950/40 dark:hover:bg-red-950/60 px-2.5 py-1 text-[10px] font-bold text-red-700 dark:text-red-400 cursor-grab active:cursor-grabbing border border-red-200/50 dark:border-red-900/30 transition-colors">
                     <svg
                       width="10"
@@ -992,7 +965,6 @@ function ProductCard({
                   >
                     ▼
                   </button>
->>>>>>> 0f35dab (refactor: optimize image assets and update core components for workspace management and product catalog handling)
                 </div>
               ) : (
                 <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/20 dark:text-red-400">
@@ -1067,16 +1039,10 @@ function ProductCard({
         </div>
 
         {/* Metadata Details Tag Badges */}
-        {product.price ||
-        product.material ||
+        {product.material ||
         product.tag ||
         (product.customFields && product.customFields.length > 0) ? (
           <div className="flex flex-wrap gap-1.5 min-h-5.5">
-            {product.price ? (
-              <span className="rounded-full bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-white/5 dark:border-white/5 dark:text-slate-300">
-                {product.price}
-              </span>
-            ) : null}
             {product.material ? (
               <span className="rounded-full bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-white/5 dark:border-white/5 dark:text-slate-300">
                 {product.material}

@@ -51,7 +51,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <main className="pt-8 sm:pt-12 lg:pt-16 px-4 sm:px-6 md:px-8 xl:px-0 max-w-5xl mx-auto overflow-hidden">
+    <main className="pt-24 sm:pt-20 lg:pt-16 px-4 sm:px-6 md:px-8 xl:px-0 max-w-5xl mx-auto overflow-hidden">
       <div className="relative w-full px-3 sm:px-8 lg:px-12 py-12 sm:py-20 md:py-24">
         {/* Accent Borders animating with scale & fade */}
         <motion.div

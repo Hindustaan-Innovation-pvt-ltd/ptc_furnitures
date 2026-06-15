@@ -239,11 +239,9 @@ export default function WhatsNew({ products }: WhatsNewProps) {
                 </div>
 
                 {/* Description / highlights */}
-                <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-light">
-                  This piece is crafted exclusively upon order, allowing you to
-                  select the exact fabric, finish, and configuration that fits
-                  your workspace. Ideal for bulk and institutional purchases
-                  with lead times of 10–20 business days.
+                <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-light font-normal">
+                  {activeProduct.tag ||
+                    `This piece is crafted exclusively upon order, allowing you to select the exact fabric, finish, and configuration that fits your workspace. Ideal for bulk and institutional purchases with lead times of 10–20 business days.`}
                 </p>
 
                 {/* Price + CTA */}

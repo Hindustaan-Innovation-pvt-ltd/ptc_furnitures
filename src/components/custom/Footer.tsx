@@ -10,14 +10,10 @@ const company = [
   "Authorized Dealers",
   "Contact Us",
   "Payment Details",
-  "Careers",
-  "Sustainability",
 ];
 const legal = [
   "Privacy Policy",
   "Terms of Use",
-  "Cookie Settings",
-  "Accessibility",
 ];
 
 export default function Footer() {

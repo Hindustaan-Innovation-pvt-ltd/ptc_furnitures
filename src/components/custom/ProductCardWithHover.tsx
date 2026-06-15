@@ -71,9 +71,6 @@ export default function ProductCardWithHover({
   priority = false,
 }: ProductCardWithHoverProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [viewMode, setViewMode] = React.useState<"carousel" | "grid">(
-    "carousel",
-  );
   const [reviews, setReviews] = React.useState<Review[]>([]);
   const [newRating, setNewRating] = React.useState(5);
   const [newText, setNewText] = React.useState("");
@@ -91,9 +88,6 @@ export default function ProductCardWithHover({
   const [mainApi, setMainApi] = React.useState<CarouselApi>();
   const [mainIndex, setMainIndex] = React.useState(0);
 
-  const [dialogApi, setDialogApi] = React.useState<CarouselApi>();
-  const [dialogIndex, setDialogIndex] = React.useState(0);
-
   React.useEffect(() => {
     if (!mainApi) return;
     const onSelect = () => setMainIndex(mainApi.selectedScrollSnap());
@@ -103,16 +97,6 @@ export default function ProductCardWithHover({
       mainApi.off("select", onSelect);
     };
   }, [mainApi]);
-
-  React.useEffect(() => {
-    if (!dialogApi) return;
-    const onSelect = () => setDialogIndex(dialogApi.selectedScrollSnap());
-    dialogApi.on("select", onSelect);
-    onSelect();
-    return () => {
-      dialogApi.off("select", onSelect);
-    };
-  }, [dialogApi]);
 
   React.useEffect(() => {
     async function fetchReviews() {
@@ -306,157 +290,67 @@ export default function ProductCardWithHover({
           </div>
         </div>
 
-        <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-3xl rounded-3xl p-6 pt-12 bg-white border border-slate-200 text-slate-900 shadow-2xl overflow-hidden dark:bg-white dark:text-slate-900 dark:border-slate-200">
+        <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-4xl rounded-3xl p-6 pt-12 bg-white border border-slate-200 text-slate-900 shadow-2xl overflow-hidden dark:bg-white dark:text-slate-900 dark:border-slate-200">
           <DialogTitle className="sr-only">{product.name} Details</DialogTitle>
           <DialogDescription className="sr-only">
             Detailed view of {product.name} including reviews, images, and brand
             details.
           </DialogDescription>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start max-h-[80vh] overflow-y-auto pr-1">
-            {/* Left Column: Images */}
-            <div className="flex flex-col gap-4">
-              {displayImages && displayImages.length > 1 && (
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs uppercase tracking-wider font-extrabold text-slate-400">
-                    Image Views
-                  </span>
-                  <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-full border border-slate-200/50">
-                    <button
-                      onClick={() => setViewMode("carousel")}
-                      className={`px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${
-                        viewMode === "carousel"
-                          ? "bg-white text-red-600 shadow-sm"
-                          : "text-slate-500 hover:text-slate-800"
-                      }`}
-                    >
-                      Carousel
-                    </button>
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={`px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase rounded-full transition-all cursor-pointer ${
-                        viewMode === "grid"
-                          ? "bg-white text-red-600 shadow-sm"
-                          : "text-slate-500 hover:text-slate-800"
-                      }`}
-                    >
-                      Grid
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Image Preview Container */}
-              <div className="w-full aspect-square md:aspect-auto md:h-80 flex items-center justify-center bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden p-4 relative">
-                {viewMode === "carousel" ||
-                !displayImages ||
-                displayImages.length <= 1 ? (
-                  displayImages && displayImages.length > 1 ? (
-                    <Carousel
-                      setApi={setDialogApi}
-                      className="w-full h-full relative"
-                      opts={{ loop: true }}
-                    >
-                      <CarouselContent className="ml-0 h-full">
-                        {displayImages.map((image, index) => (
-                          <CarouselItem
-                            key={`dialog-${product.id}-img-${index}`}
-                            className="pl-0 h-full flex items-center justify-center"
-                          >
-                            <AssetImage
-                              brand={product.brand}
-                              src={image}
-                              alt="Dialog Preview"
-                              width={300}
-                              height={300}
-                              className="size-full p-4 object-contain"
-                            />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-
-                      {/* Tiny indicator dots to switch images */}
-                      <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10 bg-slate-900/60 dark:bg-slate-900/80 px-2 py-1 rounded-full backdrop-blur-xs">
-                        {displayImages.map((_, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              dialogApi?.scrollTo(idx);
-                            }}
-                            className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                              dialogIndex === idx
-                                ? "bg-red-600 dark:bg-red-500 scale-120 w-3"
-                                : "bg-white/70 hover:bg-white"
-                            }`}
-                            aria-label={`Go to image ${idx + 1}`}
-                          />
-                        ))}
-                      </div>
-
-                      <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/95 border border-slate-200 text-slate-800 size-8" />
-                      <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/95 border border-slate-200 text-slate-800 size-8" />
-                    </Carousel>
-                  ) : (
+          <div className="flex flex-col gap-6 max-h-[80vh] overflow-y-auto pr-1">
+            {/* Top Section: Images Grid */}
+            <div className={`grid gap-4 ${
+              displayImages.length === 1 
+                ? 'grid-cols-1 max-w-lg mx-auto w-full' 
+                : displayImages.length === 2 
+                ? 'grid-cols-2' 
+                : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+            }`}>
+              {displayImages && displayImages.length > 0 ? (
+                displayImages.map((image, idx) => (
+                  <div
+                    key={idx}
+                    className="relative aspect-square border border-slate-100 rounded-2xl overflow-hidden bg-slate-50 flex items-center justify-center group/dialog-thumb hover:border-red-500/30 transition-all duration-300 shadow-xs"
+                  >
                     <AssetImage
                       brand={product.brand}
-                      src={displayImages[0] ?? ""}
-                      alt="Dialog Preview"
-                      width={300}
-                      height={300}
-                      className="size-full p-4 object-contain max-h-60"
+                      src={image}
+                      alt={`${product.name} - Image ${idx + 1}`}
+                      fill
+                      className="object-contain p-4 transition-transform duration-300 group-hover/dialog-thumb:scale-102"
                     />
-                  )
-                ) : (
-                  <div className="grid grid-cols-3 gap-2 size-full overflow-y-auto pr-0.5 scrollbar-thin">
-                    {displayImages && displayImages.length > 0 ? (
-                      displayImages.map((image, idx) => (
-                        <div
-                          key={idx}
-                          className="relative aspect-square border border-slate-100 rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center group/dialog-thumb hover:border-red-500/30 transition-all duration-300"
-                        >
-                          <AssetImage
-                            brand={product.brand}
-                            src={image}
-                            alt="Grid preview"
-                            fill
-                            className="object-contain p-1.5"
-                          />
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={() =>
-                                    downloadWatermarked(image, idx)
-                                  }
-                                  className="absolute right-1 bottom-1 p-1 bg-white/95 border border-slate-200/50 rounded-full hover:bg-red-600 hover:text-white transition shadow-md cursor-pointer disabled:opacity-50 shrink-0 flex items-center justify-center"
-                                >
-                                  <Download className="size-2.5 text-slate-700 hover:text-white" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent
-                                side="top"
-                                className="px-1.5 py-0.5 rounded bg-slate-950 text-white text-[8px] font-bold z-50"
-                              >
-                                <span>Download watermarked</span>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="col-span-3 text-center text-xs text-slate-400 py-4">
-                        No images available
-                      </div>
-                    )}
+                    <div className="absolute right-2.5 bottom-2.5">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => downloadWatermarked(image, idx)}
+                              className="p-2 bg-white/90 hover:bg-red-600 hover:text-white border border-slate-200/50 rounded-full shadow-md transition-all duration-300 cursor-pointer text-slate-700 shrink-0 flex items-center justify-center hover:scale-105 active:scale-95"
+                            >
+                              <Download className="size-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="top"
+                            className="px-2 py-1 rounded bg-slate-950 text-white text-[10px] font-bold z-50"
+                          >
+                            <span>Download watermarked</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center text-xs text-slate-400 py-12">
+                  No images available
+                </div>
+              )}
             </div>
 
-            {/* Right Column: Info & Reviews */}
-            <div className="flex flex-col h-full gap-4">
+            {/* Bottom Section: Info & Reviews */}
+            <div className="flex flex-col gap-6">
               {/* Title and Rating Info */}
               <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
                 <div className="min-w-0">
@@ -485,13 +379,9 @@ export default function ProductCardWithHover({
                           variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const activeIndex =
-                              displayImages && displayImages.length > 1
-                                ? dialogIndex
-                                : 0;
                             downloadWatermarked(
-                              displayImages[activeIndex] ?? "",
-                              activeIndex,
+                              displayImages[0] ?? "",
+                              0,
                             );
                           }}
                           className="rounded-full size-9 shrink-0 bg-white hover:bg-slate-50 text-slate-700 hover:text-red-600 border-slate-200 cursor-pointer shadow-xs transition-all duration-300 hover:scale-105 active:scale-95"

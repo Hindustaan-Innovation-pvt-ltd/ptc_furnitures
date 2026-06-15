@@ -3,8 +3,6 @@ import type { Product } from "@/lib/products";
 export type ProductSortValue =
   | "featured"
   | "newest"
-  | "price-asc"
-  | "price-desc"
   | "name-asc"
   | "brand-asc";
 
@@ -42,7 +40,6 @@ function buildSearchIndex(product: Product) {
     product.material,
     product.tag,
     product.craftedBy,
-    product.price,
     ...(product.customFields ?? []).flatMap((field) => [
       field.label,
       field.value,
@@ -78,19 +75,7 @@ function uniqueValues(values: Array<string | undefined | null>) {
   );
 }
 
-function _parsePriceValue(price?: string) {
-  if (!price) {
-    return null;
-  }
 
-  const digits = price.replace(/[^\d]/g, "");
-  if (!digits) {
-    return null;
-  }
-
-  const parsedPrice = Number(digits);
-  return Number.isFinite(parsedPrice) ? parsedPrice : null;
-}
 
 export function getProductFilterOptions(
   products: Product[],

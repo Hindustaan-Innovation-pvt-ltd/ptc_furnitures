@@ -21,6 +21,11 @@ type EditableCustomField = ProductCustomField & {
 type ProductFormState = {
   brand: string;
   name: string;
+  price: string;
+  material: string;
+  craftedBy: string;
+  tag: string;
+  premium: boolean;
 };
 
 type AdminProductFormProps = {
@@ -40,10 +45,20 @@ function getInitialState(
     ? {
         brand: product.brand,
         name: product.name ?? "",
+        price: product.price ?? "",
+        material: product.material ?? "",
+        craftedBy: product.craftedBy ?? "",
+        tag: product.tag ?? "",
+        premium: !!product.premium,
       }
     : {
         brand: initialBrand ?? "PTC GOLD",
         name: "",
+        price: "",
+        material: "",
+        craftedBy: "",
+        tag: "",
+        premium: false,
       };
 }
 
@@ -129,6 +144,11 @@ export default function AdminProductForm({
     const formData = new FormData();
     formData.set("brand", formState.brand);
     formData.set("name", formState.name);
+    formData.set("price", "");
+    if (formState.material) formData.set("material", formState.material);
+    if (formState.craftedBy) formData.set("craftedBy", formState.craftedBy);
+    if (formState.tag) formData.set("tag", formState.tag);
+    formData.set("premium", String(formState.premium));
     formData.set("customFields", JSON.stringify(normalizedCustomFields));
 
     if (product) {
@@ -252,7 +272,7 @@ export default function AdminProductForm({
                 needed.
               </p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3 sm:items-end">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:items-end">
               <div className="grid gap-2">
                 <Label htmlFor="name">Product name</Label>
                 <Input
@@ -296,6 +316,74 @@ export default function AdminProductForm({
                   </Select>
                 </div>
               ) : null}
+
+
+
+              <div className="grid gap-2">
+                <Label htmlFor="material">Material (Optional)</Label>
+                <Input
+                  id="material"
+                  value={formState.material}
+                  onChange={(event) =>
+                    setFormState((current) => ({
+                      ...current,
+                      material: event.target.value,
+                    }))
+                  }
+                  placeholder="e.g. Premium Leatherette / Teak Wood"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="craftedBy">Crafted By (Optional)</Label>
+                <Input
+                  id="craftedBy"
+                  value={formState.craftedBy}
+                  onChange={(event) =>
+                    setFormState((current) => ({
+                      ...current,
+                      craftedBy: event.target.value,
+                    }))
+                  }
+                  placeholder="e.g. Handcrafted in India / Custom Made"
+                />
+              </div>
+
+              <div className="grid gap-2 sm:col-span-2 lg:col-span-3">
+                <Label htmlFor="tag">Custom Description / Tag (Optional)</Label>
+                <Input
+                  id="tag"
+                  value={formState.tag}
+                  onChange={(event) =>
+                    setFormState((current) => ({
+                      ...current,
+                      tag: event.target.value,
+                    }))
+                  }
+                  placeholder="e.g. Custom-crafted exclusively on-order. Select exact finish, fabric and details."
+                />
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50/30 p-3.5 dark:border-amber-900/30 dark:bg-amber-950/10 sm:col-span-2 lg:col-span-3">
+                <input
+                  type="checkbox"
+                  id="premium"
+                  checked={formState.premium}
+                  onChange={(event) =>
+                    setFormState((current) => ({
+                      ...current,
+                      premium: event.target.checked,
+                    }))
+                  }
+                  className="rounded border-amber-300 text-amber-600 focus:ring-amber-500 size-4 shrink-0 cursor-pointer"
+                />
+                <Label
+                  htmlFor="premium"
+                  className="text-xs font-bold text-amber-800 dark:text-amber-455 cursor-pointer flex items-center gap-1.5 select-none"
+                >
+                  ⭐ Featured Premium Selection (places at top of catalogs & home slider)
+                </Label>
+              </div>
             </div>
           </section>
 

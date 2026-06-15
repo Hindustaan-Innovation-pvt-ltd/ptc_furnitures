@@ -350,11 +350,7 @@ async function CatalogDetailsLoader({
                             {product.name || "Unnamed Furnishing"}
                           </h3>
 
-                          {product.price && (
-                            <p className="text-xl font-black mt-2 text-slate-800 dark:text-slate-200">
-                              {product.price}
-                            </p>
-                          )}
+
 
                           <div className="mt-5 space-y-3.5 text-xs text-slate-500 dark:text-slate-400">
                             {product.material && (

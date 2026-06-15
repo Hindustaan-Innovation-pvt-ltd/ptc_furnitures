@@ -33,8 +33,6 @@ type ProductsCollectionsProps = {
 const _sortOptions = [
   { value: "featured", label: "Featured" },
   { value: "newest", label: "Newest" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
   { value: "name-asc", label: "Name: A to Z" },
   { value: "brand-asc", label: "Brand: A to Z" },
 ];
