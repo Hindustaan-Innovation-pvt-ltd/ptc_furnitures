@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { motion } from "motion/react";
 import AdminProductForm from "@/components/custom/AdminProductForm";
@@ -44,6 +44,72 @@ export default function AdminProductsManager({
   const [orderedProducts, setOrderedProducts] = useState<Product[]>([]);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  // Global Drag Auto-Scroll Loop for the scrollable container <main>
+  useEffect(() => {
+    const active = isReorderMode || !!draggingProductId;
+    if (!active) return;
+
+    let scrollSpeed = 0;
+    let animationFrameId: number | null = null;
+
+    const scrollLoop = () => {
+      if (scrollSpeed !== 0) {
+        const container = document.querySelector("main");
+        if (container && container.scrollHeight > container.clientHeight) {
+          container.scrollBy(0, scrollSpeed);
+        } else {
+          window.scrollBy(0, scrollSpeed);
+        }
+      }
+      animationFrameId = requestAnimationFrame(scrollLoop);
+    };
+
+    // Start requestAnimationFrame scroll loop
+    animationFrameId = requestAnimationFrame(scrollLoop);
+
+    const handleGlobalDragOver = (e: DragEvent) => {
+      e.preventDefault(); // Keep drag active globally so dragover fires continuously
+      const container = document.querySelector("main");
+
+      const threshold = 150; // distance from top/bottom of screen in pixels to trigger scrolling
+      const maxSpeed = 20; // maximum scrolling speed in pixels per frame
+
+      const mouseY = e.clientY;
+      const viewportHeight = window.innerHeight;
+
+      if (mouseY < threshold) {
+        // Near top of screen: scroll up (speed up if dragged past top)
+        const ratio = (threshold - mouseY) / threshold;
+        scrollSpeed = -Math.max(1, Math.round(Math.min(ratio, 1.8) * maxSpeed));
+      } else if (mouseY > viewportHeight - threshold) {
+        // Near bottom of screen: scroll down (speed up if dragged past bottom)
+        const ratio = (mouseY - (viewportHeight - threshold)) / threshold;
+        scrollSpeed = Math.max(1, Math.round(Math.min(ratio, 1.8) * maxSpeed));
+      } else {
+        // Mouse is in the middle of the screen: don't scroll
+        scrollSpeed = 0;
+      }
+    };
+
+    const handleGlobalDragEnd = () => {
+      scrollSpeed = 0;
+    };
+
+    window.addEventListener("dragover", handleGlobalDragOver);
+    window.addEventListener("dragend", handleGlobalDragEnd);
+    window.addEventListener("drop", handleGlobalDragEnd);
+
+    return () => {
+      scrollSpeed = 0;
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      window.removeEventListener("dragover", handleGlobalDragOver);
+      window.removeEventListener("dragend", handleGlobalDragEnd);
+      window.removeEventListener("drop", handleGlobalDragEnd);
+    };
+  }, [isReorderMode, draggingProductId]);
 
   const startReordering = () => {
     setEditingProduct(null);
@@ -89,9 +155,25 @@ export default function AdminProductsManager({
     setDraggedIndex(index);
   };
 
-  const handleSortDragEnter = (e: React.DragEvent, index: number) => {
+  const handleSortDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === index) return;
+
+    const targetRect = e.currentTarget.getBoundingClientRect();
+    const hoverClientY = e.clientY - targetRect.top;
+    const hoverClientX = e.clientX - targetRect.left;
+    
+    const hoverMiddleY = (targetRect.bottom - targetRect.top) / 2;
+    const hoverMiddleX = (targetRect.right - targetRect.left) / 2;
+
+    // Dragging downwards/rightwards (forward)
+    if (draggedIndex < index && hoverClientY < hoverMiddleY && hoverClientX < hoverMiddleX) {
+      return;
+    }
+    // Dragging upwards/leftwards (backward)
+    if (draggedIndex > index && hoverClientY > hoverMiddleY && hoverClientX > hoverMiddleX) {
+      return;
+    }
 
     setOrderedProducts((prev) => {
       const newItems = [...prev];
@@ -432,146 +514,14 @@ export default function AdminProductsManager({
             )}
           </div>
         </div>
-
         {isReorderMode && (
-          <div className="mt-4 grid gap-6 lg:grid-cols-3">
-            {/* Rearrange Control Panel */}
-            <div className="lg:col-span-1 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/5 dark:bg-[#15171e]/50 backdrop-blur-md flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-red-500">
-                    <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                  </svg>
-                  Reorder Control List
-                </h3>
-                <span className="text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400 px-2 py-0.5 rounded-full">
-                  {orderedProducts.length} Products
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
-                Type directly in the position box or use Up/Down buttons to rearrange. Visual cards will slide into place instantly.
-              </p>
-              
-              <div className="flex flex-col gap-2 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
-                {orderedProducts.map((p, idx) => {
-                  const displayImg = p.originalImages?.[0] || p.images?.[0] || "";
-                  return (
-                    <div key={p.id} className="flex items-center gap-3 bg-white dark:bg-[#0c0d12] border border-slate-200 dark:border-white/5 p-2 rounded-xl text-xs shadow-xs transition-colors hover:border-slate-350 dark:hover:border-white/10">
-                      {/* Position Input */}
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <input
-                          type="number"
-                          min="1"
-                          max={orderedProducts.length}
-                          value={idx + 1}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (isNaN(val) || val < 1 || val > orderedProducts.length) return;
-                            handleMoveToPosition(idx, val - 1);
-                          }}
-                          className="w-10 h-7 text-center font-bold text-xs bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-red-500"
-                        />
-                      </div>
-
-                      {/* Thumbnail */}
-                      <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 overflow-hidden shrink-0 flex items-center justify-center">
-                        {displayImg ? (
-                          <img src={displayImg} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="text-[9px] text-slate-400 font-bold">PTC</span>
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="min-w-0 flex-1">
-                        <p className="font-bold text-slate-700 dark:text-slate-300 truncate">
-                          {p.name || "Unnamed Product"}
-                        </p>
-                        <p className="text-[10px] text-slate-400 truncate">
-                          {p.price ? `${p.price}` : "No price"}
-                        </p>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          disabled={idx === 0}
-                          onClick={() => handleSwapIndices(idx, idx - 1)}
-                          title="Move Up"
-                          className="h-7 w-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-slate-400 cursor-pointer"
-                        >
-                          ▲
-                        </button>
-                        <button
-                          type="button"
-                          disabled={idx === orderedProducts.length - 1}
-                          onClick={() => handleSwapIndices(idx, idx + 1)}
-                          title="Move Down"
-                          className="h-7 w-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-slate-400 cursor-pointer"
-                        >
-                          ▼
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Drag & Drop Alert Indicator and Quick Sort actions */}
-            <div className="lg:col-span-2 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 dark:border-amber-500/10 flex flex-col justify-between gap-4">
-              <div>
-                <h4 className="text-sm font-bold text-amber-800 dark:text-amber-400 flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Rearrange Methods & Auto-Persistence
-                </h4>
-                <p className="mt-2 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  This interface provides full manual control. You can rearrange items using the list inputs on the left, click Move Up/Down buttons, or drag-and-drop the visual cards below using their grip handle.
-                </p>
-                <div className="mt-4 flex flex-col gap-2 text-xs text-slate-500 dark:text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
-                    <span><strong>Real-time spring physics:</strong> Reordered products will glide into place automatically.</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
-                    <span><strong>Save changes:</strong> Remember to click <strong>&quot;Save Order&quot;</strong> in the top header once finished.</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Instant Presets */}
-              <div className="flex items-center gap-2 flex-wrap pt-4 border-t border-slate-200/50 dark:border-white/5">
-                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Sort Presets:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const sorted = [...orderedProducts].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-                    setOrderedProducts(sorted);
-                  }}
-                  className="px-3 py-1.5 text-xs rounded-xl bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer border border-slate-200 dark:border-white/5 transition-colors shadow-xs"
-                >
-                  Alphabetical A-Z
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const sorted = [...orderedProducts].sort((a, b) => {
-                      const priceA = parseFloat((a.price || "").replace(/[^0-9.]/g, "")) || 0;
-                      const priceB = parseFloat((b.price || "").replace(/[^0-9.]/g, "")) || 0;
-                      return priceA - priceB;
-                    });
-                    setOrderedProducts(sorted);
-                  }}
-                  className="px-3 py-1.5 text-xs rounded-xl bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer border border-slate-200 dark:border-white/5 transition-colors shadow-xs"
-                >
-                  Price: Low to High
-                </button>
-              </div>
-            </div>
+          <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 dark:border-amber-500/10 flex items-center gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-amber-600 dark:text-amber-400 shrink-0">
+              <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <p className="text-xs text-amber-800 dark:text-amber-400 font-medium">
+              Drag and drop any product card below to rearrange its position. Click <strong>&quot;Save Order&quot;</strong> in the header to persist changes.
+            </p>
           </div>
         )}
 
@@ -638,13 +588,9 @@ export default function AdminProductsManager({
                   isReorderMode={true}
                   index={index}
                   onSortDragStart={handleSortDragStart}
-                  onSortDragEnter={handleSortDragEnter}
+                  onSortDragOver={handleSortDragOver}
                   onSortDragEnd={handleSortDragEnd}
                   isDragged={draggedIndex === index}
-                  isFirst={index === 0}
-                  isLast={index === orderedProducts.length - 1}
-                  onMoveUp={(idx) => handleSwapIndices(idx, idx - 1)}
-                  onMoveDown={(idx) => handleSwapIndices(idx, idx + 1)}
                 />
               ))
             : thisBrandProducts.map((product) => (
@@ -678,13 +624,9 @@ type ProductCardProps = {
   isReorderMode?: boolean;
   index?: number;
   onSortDragStart?: (index: number) => void;
-  onSortDragEnter?: (e: React.DragEvent, index: number) => void;
+  onSortDragOver?: (e: React.DragEvent, index: number) => void;
   onSortDragEnd?: () => void;
   isDragged?: boolean;
-  isFirst?: boolean;
-  isLast?: boolean;
-  onMoveUp?: (index: number) => void;
-  onMoveDown?: (index: number) => void;
 };
 
 function ProductCard({
@@ -699,13 +641,9 @@ function ProductCard({
   isReorderMode = false,
   index,
   onSortDragStart,
-  onSortDragEnter,
+  onSortDragOver,
   onSortDragEnd,
   isDragged = false,
-  isFirst = false,
-  isLast = false,
-  onMoveUp,
-  onMoveDown,
 }: ProductCardProps) {
   const displayImages =
     product.originalImages && product.originalImages.length > 0
@@ -716,9 +654,14 @@ function ProductCard({
     const target = e.target as HTMLElement;
     
     if (isReorderMode) {
-      // In reorder mode, only allow dragging when clicking/dragging the drag-grip element
-      const isGrip = target.closest(".drag-grip");
-      if (!isGrip) {
+      // Allow dragging the entire card in reorder mode, but prevent dragging on interactive components
+      if (
+        target.closest("button") ||
+        target.closest("select") ||
+        target.closest("[role='combobox']") ||
+        target.closest(".overflow-x-auto") ||
+        target.closest("a")
+      ) {
         e.preventDefault();
         return;
       }
@@ -748,15 +691,10 @@ function ProductCard({
     }
   };
 
-  const dragEnterHandler = (e: React.DragEvent) => {
-    if (isReorderMode) {
-      onSortDragEnter?.(e, index!);
-    }
-  };
-
   const dragOverHandler = (e: React.DragEvent) => {
     if (isReorderMode) {
       e.preventDefault();
+      onSortDragOver?.(e, index!);
     }
   };
 
@@ -766,7 +704,6 @@ function ProductCard({
       draggable
       onDragStart={dragStartHandler as any}
       onDragEnd={dragEndHandler as any}
-      onDragEnter={dragEnterHandler as any}
       onDragOver={dragOverHandler as any}
       transition={{ type: "spring", stiffness: 300, damping: 28 }}
       className={`group flex flex-col gap-4 rounded-2xl border p-4 shadow-sm select-none shrink-0 transition-all duration-300 ${
@@ -783,31 +720,12 @@ function ProductCard({
             <div className="flex items-center gap-1.5 flex-wrap">
               {isReorderMode ? (
                 <div className="flex items-center gap-1">
-                  <span className="drag-grip inline-flex items-center gap-1.5 rounded-full bg-red-100 hover:bg-red-200 dark:bg-red-950/40 dark:hover:bg-red-950/60 px-2.5 py-1 text-[10px] font-bold text-red-700 dark:text-red-400 cursor-grab active:cursor-grabbing border border-red-200/50 dark:border-red-900/30 transition-colors">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 opacity-80">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-950/40 px-2.5 py-1 text-[10px] font-bold text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-900/30 transition-colors">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 opacity-80 animate-pulse">
                       <path d="M8 6h2v2H8V6zm0 4h2v2H8v-2zm0 4h2v2H8v-2zm0 4h2v2H8v-2zm6-12h2v2h-2V6zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z" fill="currentColor"/>
                     </svg>
                     Pos #{index! + 1}
                   </span>
-                  
-                  <button
-                    type="button"
-                    disabled={isFirst}
-                    onClick={() => onMoveUp?.(index!)}
-                    title="Move Up"
-                    className="h-6 w-6 flex items-center justify-center bg-slate-50 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-[10px] text-slate-600 dark:text-slate-400 cursor-pointer transition-colors"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isLast}
-                    onClick={() => onMoveDown?.(index!)}
-                    title="Move Down"
-                    className="h-6 w-6 flex items-center justify-center bg-slate-50 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-[10px] text-slate-600 dark:text-slate-400 cursor-pointer transition-colors"
-                  >
-                    ▼
-                  </button>
                 </div>
               ) : (
                 <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/20 dark:text-red-400">
