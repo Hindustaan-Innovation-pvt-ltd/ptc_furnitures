@@ -1,5 +1,5 @@
-import { connectToDatabase } from "../src/lib/mongodb";
 import { Product } from "../src/lib/db-models";
+import { connectToDatabase } from "../src/lib/mongodb";
 
 async function testReal() {
   console.log("Connecting...");
@@ -7,7 +7,7 @@ async function testReal() {
   console.log("Connected.");
 
   const products = await Product.find().limit(3);
-  const reorderIds = products.map(p => p.id);
+  const reorderIds = products.map((p) => p.id);
 
   console.log("Reorder IDs:", reorderIds);
 
@@ -27,7 +27,9 @@ async function testReal() {
   }
 }
 
-testReal().then(() => process.exit(0)).catch(err => {
-  console.error("Test failed:", err);
-  process.exit(1);
-});
+testReal()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error("Test failed:", err);
+    process.exit(1);
+  });

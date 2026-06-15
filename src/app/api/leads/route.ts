@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { addLead, deleteLead, readLeads, updateLead } from "@/lib/leads";
+import { sendDealerLeadEmail } from "@/lib/mail";
 import { sendLeadSmsNotification } from "@/lib/sms";
 import { sendDealerWhatsAppMessage } from "@/lib/whatsapp";
-import { sendDealerLeadEmail } from "@/lib/mail";
 
 export async function GET() {
   try {

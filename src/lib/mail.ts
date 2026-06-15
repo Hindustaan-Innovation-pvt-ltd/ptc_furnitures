@@ -11,12 +11,13 @@ export async function sendLeadEmail({
   const smtpPort = Number(process.env.BREVO_PORT) || 587;
   const smtpUser = process.env.BREVO_USER;
   const smtpPass = process.env.BREVO_PASSWORD;
-  const senderMail = process.env.BREVO_SENDER_MAIL || "awadhiyanaveen39@gmail.com";
+  const senderMail =
+    process.env.BREVO_SENDER_MAIL || "awadhiyanaveen39@gmail.com";
   const recipientMail = "pankajtradingco.14@gmail.com";
 
   if (!smtpUser || !smtpPass) {
     console.error(
-      "[NodeMailer] SMTP credentials not fully configured in environment variables."
+      "[NodeMailer] SMTP credentials not fully configured in environment variables.",
     );
     return { success: false, error: "SMTP credentials not configured" };
   }
@@ -288,24 +289,36 @@ export async function sendDownloadLeadEmail(lead: {
           <th>Action Logged</th>
           <td><span class="badge badge-download">${getActionLabel(lead.action)}</span></td>
         </tr>
-        ${lead.productName ? `
+        ${
+          lead.productName
+            ? `
         <tr>
           <th>Product Name</th>
           <td>${lead.productName}</td>
         </tr>
-        ` : ""}
-        ${lead.productId ? `
+        `
+            : ""
+        }
+        ${
+          lead.productId
+            ? `
         <tr>
           <th>Product ID</th>
           <td>${lead.productId}</td>
         </tr>
-        ` : ""}
-        ${lead.catalogUrl ? `
+        `
+            : ""
+        }
+        ${
+          lead.catalogUrl
+            ? `
         <tr>
           <th>Catalog Link</th>
           <td><a href="${lead.catalogUrl}" target="_blank">${lead.catalogUrl}</a></td>
         </tr>
-        ` : ""}
+        `
+            : ""
+        }
         <tr>
           <th>Logged At</th>
           <td>${formattedDate}</td>
@@ -331,9 +344,12 @@ export async function sendSubscriberEmail(subscriber: {
   email: string;
   subscribedAt: Date | string;
 }) {
-  const formattedDate = new Date(subscriber.subscribedAt).toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-  });
+  const formattedDate = new Date(subscriber.subscribedAt).toLocaleString(
+    "en-IN",
+    {
+      timeZone: "Asia/Kolkata",
+    },
+  );
 
   const html = `
 <!DOCTYPE html>

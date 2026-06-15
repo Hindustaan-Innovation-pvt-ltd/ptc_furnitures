@@ -1,6 +1,6 @@
+import ContactForm from "@/components/custom/ContactForm";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
-import ContactForm from "@/components/custom/ContactForm";
 
 export default function ContactPage() {
   return (

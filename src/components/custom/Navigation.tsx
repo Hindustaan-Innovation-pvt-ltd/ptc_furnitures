@@ -239,9 +239,7 @@ function NavigationContent() {
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
                 className={`pl-9 py-1.5 text-xs font-semibold bg-slate-100/50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/60 dark:border-white/10 rounded-full focus:outline-none focus:border-red-500 dark:focus:border-red-500 focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-red-500/10 text-slate-800 dark:text-slate-200 transition-all duration-300 placeholder:text-slate-400/90 placeholder:font-normal ${
-                  searchValue
-                    ? "w-52 pr-8"
-                    : "w-32 pr-4 focus:w-52 focus:pr-8"
+                  searchValue ? "w-52 pr-8" : "w-32 pr-4 focus:w-52 focus:pr-8"
                 }`}
                 placeholder="Search..."
                 aria-label="Search products"

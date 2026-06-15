@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     if (source) {
       // Filter by source (e.g. google, storefront)
       const filtered = reviews.filter(
-        (r) => r.source === source && r.status === "approved"
+        (r) => r.source === source && r.status === "approved",
       );
       return NextResponse.json({ success: true, reviews: filtered });
     }

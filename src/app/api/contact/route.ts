@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ContactMessageModel } from "@/lib/db-models";
-import { connectToDatabase } from "@/lib/mongodb";
 import { sendContactMessageEmail } from "@/lib/mail";
+import { connectToDatabase } from "@/lib/mongodb";
 
 export async function POST(request: Request) {
   try {

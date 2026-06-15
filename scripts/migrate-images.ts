@@ -3,9 +3,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import mongoose from "mongoose";
 import sharp from "sharp";
-import { connectToDatabase } from "../src/lib/mongodb";
 import { Product, StoredFile } from "../src/lib/db-models";
-import { removeWhiteBackground, compositeBrandWatermark } from "../src/lib/image-processor";
+import {
+  compositeBrandWatermark,
+  removeWhiteBackground,
+} from "../src/lib/image-processor";
+import { connectToDatabase } from "../src/lib/mongodb";
 
 // 1. Manually load environment variables from .env if needed
 async function loadEnv() {
@@ -18,7 +21,10 @@ async function loadEnv() {
       const index = trimmed.indexOf("=");
       if (index !== -1) {
         const key = trimmed.substring(0, index).trim();
-        const val = trimmed.substring(index + 1).trim().replace(/^['"]|['"]$/g, "");
+        const val = trimmed
+          .substring(index + 1)
+          .trim()
+          .replace(/^['"]|['"]$/g, "");
         process.env[key] = val;
       }
     }
@@ -74,19 +80,27 @@ async function loadSourceBuffer(source: string): Promise<Buffer | null> {
     }
 
     if (source.startsWith("/")) {
-      const localPath = path.join(process.cwd(), "public", source.replace(/^\//, ""));
+      const localPath = path.join(
+        process.cwd(),
+        "public",
+        source.replace(/^\//, ""),
+      );
       return await fs.readFile(localPath);
     }
   } catch (error) {
-    console.error(`Failed to load source buffer for "${source.substring(0, 100)}":`, error);
+    console.error(
+      `Failed to load source buffer for "${source.substring(0, 100)}":`,
+      error,
+    );
   }
   return null;
 }
 
 async function run() {
   await loadEnv();
-  
-  const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/furnitures";
+
+  const MONGODB_URI =
+    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/furnitures";
   console.log(`==> Connecting to MongoDB: ${MONGODB_URI}`);
   await connectToDatabase();
   console.log("==> Connected successfully.");
@@ -106,9 +120,10 @@ async function run() {
     let modified = false;
 
     // We align images and originalImages arrays
-    const originalList = product.originalImages && product.originalImages.length > 0
-      ? [...product.originalImages]
-      : [...product.images];
+    const originalList =
+      product.originalImages && product.originalImages.length > 0
+        ? [...product.originalImages]
+        : [...product.images];
 
     const imagesList = [...product.images];
 
@@ -120,7 +135,9 @@ async function run() {
     const newOriginalImages: string[] = [];
     const newImages: string[] = [];
 
-    console.log(`[${pIdx + 1}/${products.length}] Checking product "${product.name || 'Unnamed'}" (${product.id}, brand: "${brand}")...`);
+    console.log(
+      `[${pIdx + 1}/${products.length}] Checking product "${product.name || "Unnamed"}" (${product.id}, brand: "${brand}")...`,
+    );
 
     for (let i = 0; i < originalList.length; i++) {
       const origSource = originalList[i];
@@ -130,24 +147,29 @@ async function run() {
       const needsMigration = (src: string) => {
         if (!src) return false;
         if (src.startsWith("data:")) return true;
-        if (src.startsWith("http://") || src.startsWith("https://")) return true;
+        if (src.startsWith("http://") || src.startsWith("https://"))
+          return true;
         if (src.startsWith("/api/images")) return true;
         return false;
       };
 
       if (needsMigration(origSource) || needsMigration(currentWatermarked)) {
-        console.log(`  -> Image ${i + 1} needs migration. Source starts with: ${origSource.substring(0, 50)}...`);
-        
+        console.log(
+          `  -> Image ${i + 1} needs migration. Source starts with: ${origSource.substring(0, 50)}...`,
+        );
+
         // Load original unwatermarked buffer if possible
         let sourceBuffer = await loadSourceBuffer(origSource);
-        
+
         // If unwatermarked is not loadable or same as watermarked, try watermarked
         if (!sourceBuffer && currentWatermarked) {
           sourceBuffer = await loadSourceBuffer(currentWatermarked);
         }
 
         if (!sourceBuffer) {
-          console.error(`  [ERROR] Could not load image buffer for index ${i} on product ${product.id}`);
+          console.error(
+            `  [ERROR] Could not load image buffer for index ${i} on product ${product.id}`,
+          );
           // Keep whatever was there
           newOriginalImages.push(origSource);
           newImages.push(currentWatermarked);
@@ -179,7 +201,7 @@ async function run() {
 
           newOriginalImages.push(`/upload/${originalFilename}`);
           newImages.push(`/upload/${filename}`);
-          
+
           migratedImagesCount++;
           modified = true;
           console.log(`  -> Migrated and saved to /upload/${filename}`);
@@ -203,10 +225,12 @@ async function run() {
             images: newImages,
             originalImages: newOriginalImages,
           },
-        }
+        },
       );
       migratedProductsCount++;
-      console.log(`  [SUCCESS] Product "${product.name || 'Unnamed'}" updated in DB.`);
+      console.log(
+        `  [SUCCESS] Product "${product.name || "Unnamed"}" updated in DB.`,
+      );
     }
   }
 
@@ -215,7 +239,7 @@ async function run() {
   console.log(`Total Products Migrated/Updated: ${migratedProductsCount}`);
   console.log(`Total Images Migrated: ${migratedImagesCount}`);
   console.log("==========================================");
-  
+
   await mongoose.disconnect();
   process.exit(0);
 }

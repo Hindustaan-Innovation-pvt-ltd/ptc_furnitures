@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { NewsletterSubscriberModel } from "@/lib/db-models";
-import { connectToDatabase } from "@/lib/mongodb";
 import { sendSubscriberEmail } from "@/lib/mail";
+import { connectToDatabase } from "@/lib/mongodb";
 
 // GET — fetch all subscribers (admin use)
 export async function GET() {

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const MONGODB_URI = "mongodb://ptcfurnitures.com:27017/ptc_furnitures";
 
@@ -9,17 +9,24 @@ async function run() {
   });
   console.log("Connected successfully.");
 
-  const ProductSchema = new mongoose.Schema({
-    id: { type: String, required: true, unique: true },
-    brand: { type: String, default: "" },
-    position: { type: Number, default: 0 },
-  }, { strict: false });
+  const ProductSchema = new mongoose.Schema(
+    {
+      id: { type: String, required: true, unique: true },
+      brand: { type: String, default: "" },
+      position: { type: Number, default: 0 },
+    },
+    { strict: false },
+  );
 
-  const Product = mongoose.models.Product || mongoose.model("Product", ProductSchema);
+  const Product =
+    mongoose.models.Product || mongoose.model("Product", ProductSchema);
 
   // Get a few products
   const products = await Product.find().limit(3);
-  console.log("Found products:", products.map(p => ({ id: p.id, name: p.name, position: p.position })));
+  console.log(
+    "Found products:",
+    products.map((p) => ({ id: p.id, name: p.name, position: p.position })),
+  );
 
   if (products.length > 0) {
     const bulkOps = products.map((p, index) => ({
@@ -29,7 +36,10 @@ async function run() {
       },
     }));
 
-    console.log("Running bulkWrite with ops:", JSON.stringify(bulkOps, null, 2));
+    console.log(
+      "Running bulkWrite with ops:",
+      JSON.stringify(bulkOps, null, 2),
+    );
     const result = await Product.bulkWrite(bulkOps);
     console.log("bulkWrite success result:", result);
   }
@@ -38,7 +48,7 @@ async function run() {
   console.log("Disconnected.");
 }
 
-run().catch(err => {
+run().catch((err) => {
   console.error("Error encountered:", err);
   process.exit(1);
 });

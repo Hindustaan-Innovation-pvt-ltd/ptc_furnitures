@@ -108,9 +108,12 @@ export async function updateLead(
     email: cleanUpdates.email ?? existing.email ?? undefined,
     createdAt: existing.createdAt,
     status: cleanUpdates.status ?? existing.status ?? "new",
-    whatsappStatus: cleanUpdates.whatsappStatus ?? existing.whatsappStatus ?? undefined,
-    whatsappSentAt: cleanUpdates.whatsappSentAt ?? existing.whatsappSentAt ?? undefined,
-    whatsappMessage: cleanUpdates.whatsappMessage ?? existing.whatsappMessage ?? undefined,
+    whatsappStatus:
+      cleanUpdates.whatsappStatus ?? existing.whatsappStatus ?? undefined,
+    whatsappSentAt:
+      cleanUpdates.whatsappSentAt ?? existing.whatsappSentAt ?? undefined,
+    whatsappMessage:
+      cleanUpdates.whatsappMessage ?? existing.whatsappMessage ?? undefined,
   };
 }
 

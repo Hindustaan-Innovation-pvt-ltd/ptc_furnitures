@@ -1,11 +1,12 @@
+import { Eye, FileText, Lock, Mail, MapPin, Phone, Shield } from "lucide-react";
+import type { Metadata } from "next";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
-import { Shield, Lock, Eye, FileText, Mail, Phone, MapPin } from "lucide-react";
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | PTC Furniture",
-  description: "Learn how PTC Furniture collects, uses, and protects your personal information and trade data.",
+  description:
+    "Learn how PTC Furniture collects, uses, and protects your personal information and trade data.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -16,17 +17,21 @@ export default function PrivacyPolicyPage() {
       content: (
         <div className="space-y-3">
           <p>
-            We collect personal information that you voluntarily provide to us when you interact with our platform. This includes:
+            We collect personal information that you voluntarily provide to us
+            when you interact with our platform. This includes:
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>
-              <strong>Dealer Applications:</strong> Full name, business details, phone number, city, and optional email address.
+              <strong>Dealer Applications:</strong> Full name, business details,
+              phone number, city, and optional email address.
             </li>
             <li>
-              <strong>Catalog Downloads:</strong> Name and mobile number collected to authorize access to our premium trade catalogs.
+              <strong>Catalog Downloads:</strong> Name and mobile number
+              collected to authorize access to our premium trade catalogs.
             </li>
             <li>
-              <strong>Inquiries & Contact Forms:</strong> Name, phone number, subject, and the text of your message.
+              <strong>Inquiries & Contact Forms:</strong> Name, phone number,
+              subject, and the text of your message.
             </li>
           </ul>
         </div>
@@ -38,13 +43,19 @@ export default function PrivacyPolicyPage() {
       content: (
         <div className="space-y-3">
           <p>
-            The information we collect is used solely to facilitate our trade services and dealer program, specifically:
+            The information we collect is used solely to facilitate our trade
+            services and dealer program, specifically:
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>To review, process, and approve dealer applications.</li>
             <li>To track download statistics and measure catalog interest.</li>
-            <li>To reply to customer support, inquiries, and custom requests.</li>
-            <li>To send automated confirmation alerts via WhatsApp or SMS regarding your submitted requests.</li>
+            <li>
+              To reply to customer support, inquiries, and custom requests.
+            </li>
+            <li>
+              To send automated confirmation alerts via WhatsApp or SMS
+              regarding your submitted requests.
+            </li>
           </ul>
         </div>
       ),
@@ -55,14 +66,20 @@ export default function PrivacyPolicyPage() {
       content: (
         <div className="space-y-3">
           <p>
-            Our site integrates with external systems to provide instant updates:
+            Our site integrates with external systems to provide instant
+            updates:
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>
-              <strong>Google Analytics:</strong> We track anonymous usage statistics, search terms, and submission conversions to improve our user experience.
+              <strong>Google Analytics:</strong> We track anonymous usage
+              statistics, search terms, and submission conversions to improve
+              our user experience.
             </li>
             <li>
-              <strong>SMS & WhatsApp Notifications:</strong> When you submit an inquiry, we route confirmation alerts via SMS and WhatsApp to ensure timely updates. We do not sell or lease your phone number or trade profile to third-party brokers.
+              <strong>SMS & WhatsApp Notifications:</strong> When you submit an
+              inquiry, we route confirmation alerts via SMS and WhatsApp to
+              ensure timely updates. We do not sell or lease your phone number
+              or trade profile to third-party brokers.
             </li>
           </ul>
         </div>
@@ -73,7 +90,10 @@ export default function PrivacyPolicyPage() {
       title: "4. Payments & Offline Transactions",
       content: (
         <p>
-          PTC Furniture displays bank transfer and UPI details directly on our Payment page. We do not collect, process, or store credit card numbers, CVVs, or online banking passwords. All payments are executed offline directly through your banking institution or UPI app.
+          PTC Furniture displays bank transfer and UPI details directly on our
+          Payment page. We do not collect, process, or store credit card
+          numbers, CVVs, or online banking passwords. All payments are executed
+          offline directly through your banking institution or UPI app.
         </p>
       ),
     },
@@ -82,7 +102,11 @@ export default function PrivacyPolicyPage() {
       title: "5. Data Retention & Security",
       content: (
         <p>
-          We employ industry-standard administrative and technical security measures to safeguard your personal data. We retain lead submissions and catalog request records in our secure database for as long as necessary to fulfill the business objectives outlined in this policy, or to satisfy legal compliance requirements.
+          We employ industry-standard administrative and technical security
+          measures to safeguard your personal data. We retain lead submissions
+          and catalog request records in our secure database for as long as
+          necessary to fulfill the business objectives outlined in this policy,
+          or to satisfy legal compliance requirements.
         </p>
       ),
     },
@@ -91,7 +115,11 @@ export default function PrivacyPolicyPage() {
       title: "6. Your Rights & Options",
       content: (
         <p>
-          Depending on your location, you have the right to request access to, correction of, or deletion of the personal information we hold. If you have submitted a dealer application or contact form and wish to have your details removed from our active databases, please contact our privacy administrator.
+          Depending on your location, you have the right to request access to,
+          correction of, or deletion of the personal information we hold. If you
+          have submitted a dealer application or contact form and wish to have
+          your details removed from our active databases, please contact our
+          privacy administrator.
         </p>
       ),
     },
@@ -113,13 +141,13 @@ export default function PrivacyPolicyPage() {
           Privacy <span className="text-red-700 dark:text-red-500">Policy</span>
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-base text-slate-500 dark:text-slate-400 sm:text-lg leading-relaxed">
-          Last updated: June 5, 2026. This policy outlines how we manage and safeguard your information at PTC Furniture.
+          Last updated: June 5, 2026. This policy outlines how we manage and
+          safeguard your information at PTC Furniture.
         </p>
       </header>
 
       <main className="relative mx-auto max-w-4xl px-4 pb-32 sm:px-6">
         <div className="bg-white/70 backdrop-blur-md border border-slate-200/50 dark:border-white/5 dark:bg-[#0f1116]/80 rounded-3xl p-6 sm:p-10 shadow-xl shadow-slate-100 dark:shadow-none space-y-10">
-          
           {sections.map((section, idx) => (
             <div key={idx} className="space-y-4">
               <div className="flex items-center gap-3">
@@ -160,7 +188,6 @@ export default function PrivacyPolicyPage() {
               </div>
             </div>
           </div>
-
         </div>
       </main>
 

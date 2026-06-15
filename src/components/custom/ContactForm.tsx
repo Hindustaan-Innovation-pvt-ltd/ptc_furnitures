@@ -1,11 +1,11 @@
 "use client";
 
+import { sendGAEvent } from "@next/third-parties/google";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { sendGAEvent } from "@next/third-parties/google";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({

@@ -104,7 +104,12 @@ export default function AdminProductsCatalog({
   }
 
   function openDeleteModal(product: Product) {
-    setDeleteModal({ open: true, product, purgeFiles: false, isDeleting: false });
+    setDeleteModal({
+      open: true,
+      product,
+      purgeFiles: false,
+      isDeleting: false,
+    });
   }
 
   async function confirmDelete() {
@@ -120,7 +125,12 @@ export default function AdminProductsCatalog({
         throw new Error(payload.error ?? "Unable to delete product.");
       }
       await mutate();
-      setDeleteModal({ open: false, product: null, purgeFiles: false, isDeleting: false });
+      setDeleteModal({
+        open: false,
+        product: null,
+        purgeFiles: false,
+        isDeleting: false,
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to delete product.";
@@ -206,7 +216,10 @@ export default function AdminProductsCatalog({
                 type="checkbox"
                 checked={deleteModal.purgeFiles}
                 onChange={(e) =>
-                  setDeleteModal((s) => ({ ...s, purgeFiles: e.target.checked }))
+                  setDeleteModal((s) => ({
+                    ...s,
+                    purgeFiles: e.target.checked,
+                  }))
                 }
                 className="mt-0.5 accent-red-600 size-4 shrink-0"
               />
@@ -229,7 +242,12 @@ export default function AdminProductsCatalog({
                 className="rounded-full px-5"
                 disabled={deleteModal.isDeleting}
                 onClick={() =>
-                  setDeleteModal({ open: false, product: null, purgeFiles: false, isDeleting: false })
+                  setDeleteModal({
+                    open: false,
+                    product: null,
+                    purgeFiles: false,
+                    isDeleting: false,
+                  })
                 }
               >
                 Cancel
@@ -429,7 +447,7 @@ export default function AdminProductsCatalog({
                       src={product.images[0]}
                       alt={product.name || "Product image"}
                       fill
-                      className="object-contain p-3"
+                      className="object-contain p-2"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">

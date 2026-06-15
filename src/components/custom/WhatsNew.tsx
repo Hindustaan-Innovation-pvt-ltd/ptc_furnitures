@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import {
-  ClipboardList,
-  MessageCircle,
+  AlertCircle,
   ChevronLeft,
   ChevronRight,
-  AlertCircle,
+  ClipboardList,
+  MessageCircle,
   Star,
 } from "lucide-react";
-import type { Product } from "@/lib/products";
+import { AnimatePresence, motion } from "motion/react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import AssetImage from "@/components/custom/AssetImage";
 import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
 import { Button } from "@/components/ui/button";
+import type { Product } from "@/lib/products";
 
 type WhatsNewProps = {
   products: Product[];
@@ -54,7 +54,7 @@ export default function WhatsNew({ products }: WhatsNewProps) {
       setDirection(dir);
       setActiveIndex((nextIndex + count) % count);
     },
-    [count]
+    [count],
   );
 
   const next = useCallback(() => {
@@ -149,8 +149,9 @@ export default function WhatsNew({ products }: WhatsNewProps) {
             <div className="h-px bg-red-700 w-full" />
           </div>
           <p className="mx-auto mt-2 max-w-xl text-sm sm:text-base text-slate-500 dark:text-slate-400 font-light">
-            Exquisite seating solutions customised for your exact workspace needs.
-            Available exclusively on-order with tailored dimensions and choices.
+            Exquisite seating solutions customised for your exact workspace
+            needs. Available exclusively on-order with tailored dimensions and
+            choices.
           </p>
         </motion.div>
 
@@ -241,8 +242,8 @@ export default function WhatsNew({ products }: WhatsNewProps) {
                 <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-light">
                   This piece is crafted exclusively upon order, allowing you to
                   select the exact fabric, finish, and configuration that fits
-                  your workspace. Ideal for bulk and institutional purchases with
-                  lead times of 10–20 business days.
+                  your workspace. Ideal for bulk and institutional purchases
+                  with lead times of 10–20 business days.
                 </p>
 
                 {/* Price + CTA */}
@@ -297,10 +298,11 @@ export default function WhatsNew({ products }: WhatsNewProps) {
                 key={i}
                 aria-label={`Go to slide ${i + 1}`}
                 onClick={() => goTo(i, i > activeIndex ? 1 : -1)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === activeIndex
-                  ? "w-8 bg-red-700"
-                  : "w-4 bg-slate-300 dark:bg-white/20 hover:bg-red-400"
-                  }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === activeIndex
+                    ? "w-8 bg-red-700"
+                    : "w-4 bg-slate-300 dark:bg-white/20 hover:bg-red-400"
+                }`}
               />
             ))}
           </div>

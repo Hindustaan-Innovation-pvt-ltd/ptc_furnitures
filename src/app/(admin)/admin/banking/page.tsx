@@ -337,7 +337,9 @@ function EntryForm({
           </div>
           <div className="flex flex-col gap-3">
             <p className="text-xs text-slate-400 leading-relaxed">
-              Upload a UPI QR image (PNG, JPG). <strong>Note:</strong> Only one payment QR code can be active across all accounts. Uploading a QR here will automatically remove it from any other account.
+              Upload a UPI QR image (PNG, JPG). <strong>Note:</strong> Only one
+              payment QR code can be active across all accounts. Uploading a QR
+              here will automatically remove it from any other account.
             </p>
             <input
               ref={fileRef}

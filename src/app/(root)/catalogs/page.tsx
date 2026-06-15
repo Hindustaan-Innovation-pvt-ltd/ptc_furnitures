@@ -98,10 +98,11 @@ async function PublicCatalogsLoader({
         <div className="flex items-center justify-center gap-2 flex-wrap mb-12 select-none">
           <Link
             href="/catalogs"
-            className={`px-4.5 py-2.5 rounded-full text-xs font-bold transition shadow-xs ${activeBrandFilter === ""
-              ? "bg-red-700 text-white shadow-md shadow-red-500/10"
-              : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
-              }`}
+            className={`px-4.5 py-2.5 rounded-full text-xs font-bold transition shadow-xs ${
+              activeBrandFilter === ""
+                ? "bg-red-700 text-white shadow-md shadow-red-500/10"
+                : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+            }`}
           >
             All Collections
           </Link>
@@ -109,10 +110,11 @@ async function PublicCatalogsLoader({
             <Link
               key={b}
               href={`/catalogs?brand=${encodeURIComponent(b)}`}
-              className={`px-4.5 py-2.5 rounded-full text-xs font-bold transition shadow-xs ${activeBrandFilter === b
-                ? "bg-red-700 text-white shadow-md shadow-red-500/10"
-                : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
-                }`}
+              className={`px-4.5 py-2.5 rounded-full text-xs font-bold transition shadow-xs ${
+                activeBrandFilter === b
+                  ? "bg-red-700 text-white shadow-md shadow-red-500/10"
+                  : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+              }`}
             >
               {b}
             </Link>
@@ -184,12 +186,13 @@ async function PublicCatalogsLoader({
                       {previews.map((src, i) => (
                         <div
                           key={src}
-                          className={`relative h-full overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 ${i === 0
-                            ? "col-span-2 rounded-l-2xl"
-                            : i === 1
-                              ? "rounded-tr-2xl"
-                              : "rounded-br-2xl"
-                            }`}
+                          className={`relative h-full overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 ${
+                            i === 0
+                              ? "col-span-2 rounded-l-2xl"
+                              : i === 1
+                                ? "rounded-tr-2xl"
+                                : "rounded-br-2xl"
+                          }`}
                         >
                           <Image
                             src={src}

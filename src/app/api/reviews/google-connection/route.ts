@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
+import { ProductReviewModel } from "@/lib/db-models";
 import {
   getGoogleConnection,
-  updateGoogleConnection,
   syncGoogleReviews,
+  updateGoogleConnection,
 } from "@/lib/reviews";
-import { ProductReviewModel } from "@/lib/db-models";
 
 export async function GET() {
   try {
@@ -13,7 +13,7 @@ export async function GET() {
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error?.message || "Failed to get connection" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     if (action === "connect") {
       const email = accountEmail || "pankajtrading.raipur@gmail.com";
       const name = businessName || "Pankaj Trading Co.";
-      
+
       const conn = await updateGoogleConnection({
         isConnected: true,
         accountEmail: email,
@@ -52,14 +52,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, connection: conn });
     } else {
       return NextResponse.json(
-        { success: false, error: "Invalid action. Must be 'connect' or 'disconnect'." },
-        { status: 400 }
+        {
+          success: false,
+          error: "Invalid action. Must be 'connect' or 'disconnect'.",
+        },
+        { status: 400 },
       );
     }
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error?.message || "Failed to update connection" },
-      { status: 500 }
+      {
+        success: false,
+        error: error?.message || "Failed to update connection",
+      },
+      { status: 500 },
     );
   }
 }

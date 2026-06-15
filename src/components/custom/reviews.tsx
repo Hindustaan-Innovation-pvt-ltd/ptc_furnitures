@@ -3,11 +3,11 @@
 import * as React from "react";
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from "@/components/ui/carousel";
 
 type ProductReview = {
@@ -76,7 +76,11 @@ export default function Reviews() {
       try {
         const res = await fetch("/api/reviews?source=google");
         const data = await res.json();
-        if (data.success && Array.isArray(data.reviews) && data.reviews.length > 0) {
+        if (
+          data.success &&
+          Array.isArray(data.reviews) &&
+          data.reviews.length > 0
+        ) {
           setReviews(data.reviews);
         } else {
           setReviews(FALLBACK_REVIEWS);
@@ -118,7 +122,8 @@ export default function Reviews() {
           reviews
         </span>
         <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50 sm:text-4xl mt-2">
-          What Our <span className="text-red-800 dark:text-red-600">Customers</span> Say
+          What Our{" "}
+          <span className="text-red-800 dark:text-red-600">Customers</span> Say
         </h2>
         <div className="grid gap-6 mt-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
@@ -151,7 +156,8 @@ export default function Reviews() {
         reviews
       </span>
       <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50 sm:text-4xl mt-2">
-        What Our <span className="text-red-800 dark:text-red-600">Customers</span> Say
+        What Our{" "}
+        <span className="text-red-800 dark:text-red-600">Customers</span> Say
       </h2>
 
       <div
@@ -195,7 +201,11 @@ export default function Reviews() {
                       {/* Google G logo badge for verified Google reviews */}
                       {review.source === "google" && (
                         <div className="flex items-center gap-1 bg-slate-50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 px-2 py-0.5 rounded-full select-none shrink-0">
-                          <svg className="size-3" viewBox="0 0 24 24" fill="none">
+                          <svg
+                            className="size-3"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
                             <path
                               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                               fill="#4285F4"
@@ -231,7 +241,9 @@ export default function Reviews() {
                       <span>{review.reviewerLocation || "Raipur"}</span>
                       <span>•</span>
                       <span className="font-semibold text-red-700 dark:text-red-500">
-                        {review.source === "google" ? "Google Maps Review" : (review.productName || "Product Review")}
+                        {review.source === "google"
+                          ? "Google Maps Review"
+                          : review.productName || "Product Review"}
                       </span>
                     </div>
                   </div>
@@ -254,10 +266,11 @@ export default function Reviews() {
               key={idx}
               type="button"
               onClick={() => api?.scrollTo(idx)}
-              className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${currentIndex === idx
-                ? "bg-red-700 dark:bg-red-500 scale-120 w-4"
-                : "bg-slate-400 dark:bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-400"
-                }`}
+              className={`size-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                currentIndex === idx
+                  ? "bg-red-700 dark:bg-red-500 scale-120 w-4"
+                  : "bg-slate-400 dark:bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-400"
+              }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
           ))}

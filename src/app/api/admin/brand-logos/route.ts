@@ -9,7 +9,6 @@ import { Product } from "@/lib/db-models";
 import { rewatermarkImage } from "@/lib/image-processor";
 import { connectToDatabase } from "@/lib/mongodb";
 
-
 export async function POST(request: Request) {
   try {
     const form = await request.formData();
@@ -79,7 +78,9 @@ export async function POST(request: Request) {
           : prod.images;
 
       if (!Array.isArray(originalImages)) {
-        console.warn(`==> [Brand Logo Update] Skipping product ${prod.id || 'unknown'} - originalImages is not an array`);
+        console.warn(
+          `==> [Brand Logo Update] Skipping product ${prod.id || "unknown"} - originalImages is not an array`,
+        );
         continue;
       }
 
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
             images: newImages,
             originalImages: originalImages,
           },
-        }
+        },
       );
     }
 

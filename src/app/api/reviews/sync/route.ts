@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
-import { getGoogleConnection, syncGoogleReviews, readReviews } from "@/lib/reviews";
+import {
+  getGoogleConnection,
+  readReviews,
+  syncGoogleReviews,
+} from "@/lib/reviews";
 
 export async function POST() {
   try {
     const conn = await getGoogleConnection();
     if (!conn.isConnected) {
       return NextResponse.json(
-        { success: false, error: "Cannot sync. Google account is not connected." },
-        { status: 400 }
+        {
+          success: false,
+          error: "Cannot sync. Google account is not connected.",
+        },
+        { status: 400 },
       );
     }
 
@@ -22,7 +29,7 @@ export async function POST() {
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error?.message || "Failed to sync reviews" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -60,8 +60,7 @@ export function sha256Sync(str: string): string {
     const w = [] as number[];
     for (let t = 0; t < 16; t++) w[t] = words[i + t] | 0;
     for (let t = 16; t < 64; t++) {
-      w[t] =
-        (gamma1(w[t - 2]) + w[t - 7] + gamma0(w[t - 15]) + w[t - 16]) | 0;
+      w[t] = (gamma1(w[t - 2]) + w[t - 7] + gamma0(w[t - 15]) + w[t - 16]) | 0;
     }
 
     let a = H0;

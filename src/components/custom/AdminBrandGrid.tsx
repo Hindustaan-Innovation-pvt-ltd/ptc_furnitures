@@ -98,7 +98,8 @@ export default async function AdminBrandGrid({
                   {summary.batches} batch{summary.batches === 1 ? "" : "es"}
                 </p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {summary.images} uploaded image{summary.images === 1 ? "" : "s"}
+                  {summary.images} uploaded image
+                  {summary.images === 1 ? "" : "s"}
                 </p>
               </CardContent>
               <CardFooter className="border-t border-slate-200 p-4 text-sm font-medium text-red-700 dark:border-white/10 dark:text-red-300 sm:p-6">

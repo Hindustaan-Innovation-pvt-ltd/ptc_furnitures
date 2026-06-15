@@ -1,7 +1,7 @@
 "use client";
+import { sendGAEvent } from "@next/third-parties/google";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { sendGAEvent } from "@next/third-parties/google";
 
 export default function FloatingActionButton() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function FloatingActionButton() {
             window.open(
               "https://wa.me/+917880002245",
               "_blank",
-              "noopener,noreferrer"
+              "noopener,noreferrer",
             );
           }
         }}

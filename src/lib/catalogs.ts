@@ -91,10 +91,7 @@ export async function updateCatalog(
   if (input.brand !== undefined)
     updates.brand = input.brand.trim() || undefined;
 
-  const result = await CatalogModel.updateOne(
-    { id },
-    { $set: updates },
-  );
+  const result = await CatalogModel.updateOne({ id }, { $set: updates });
 
   if (result.matchedCount === 0) {
     return null;

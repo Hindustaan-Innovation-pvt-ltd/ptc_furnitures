@@ -39,7 +39,7 @@ async function syncBrandProducts(brand: string) {
           images: newImages,
           originalImages: originalImages,
         },
-      }
+      },
     );
   }
 }

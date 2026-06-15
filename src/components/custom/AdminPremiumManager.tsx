@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, useTransition } from "react";
-import { Star, Search, Crown, Package } from "lucide-react";
-import type { Product } from "@/lib/products";
+import { Crown, Package, Search, Star } from "lucide-react";
+import React, { useMemo, useState, useTransition } from "react";
 import AssetImage from "@/components/custom/AssetImage";
+import type { Product } from "@/lib/products";
 
 type Tab = "all" | "premium" | "non-premium";
 
@@ -48,8 +48,8 @@ export default function AdminPremiumManager({
     // Optimistic update
     setProducts((prev) =>
       prev.map((p) =>
-        p.id === product.id ? { ...p, premium: nextPremium } : p
-      )
+        p.id === product.id ? { ...p, premium: nextPremium } : p,
+      ),
     );
 
     startTransition(async () => {
@@ -67,14 +67,14 @@ export default function AdminPremiumManager({
         showToast(
           nextPremium
             ? `⭐ "${product.name || product.brand}" marked as Premium`
-            : `"${product.name || product.brand}" removed from Premium`
+            : `"${product.name || product.brand}" removed from Premium`,
         );
       } catch {
         // Revert on failure
         setProducts((prev) =>
           prev.map((p) =>
-            p.id === product.id ? { ...p, premium: !nextPremium } : p
-          )
+            p.id === product.id ? { ...p, premium: !nextPremium } : p,
+          ),
         );
         showToast("❌ Failed to update. Please try again.");
       }
@@ -84,7 +84,11 @@ export default function AdminPremiumManager({
   const tabs: { key: Tab; label: string; count: number }[] = [
     { key: "all", label: "All Products", count: products.length },
     { key: "premium", label: "Premium", count: premiumCount },
-    { key: "non-premium", label: "Standard", count: products.length - premiumCount },
+    {
+      key: "non-premium",
+      label: "Standard",
+      count: products.length - premiumCount,
+    },
   ];
 
   return (
@@ -116,7 +120,9 @@ export default function AdminPremiumManager({
           <span className="text-sm font-bold text-amber-700 dark:text-amber-400">
             {premiumCount} Premium
           </span>
-          <span className="text-slate-400 text-xs">/ {products.length} total</span>
+          <span className="text-slate-400 text-xs">
+            / {products.length} total
+          </span>
         </div>
       </div>
 
@@ -183,15 +189,15 @@ export default function AdminPremiumManager({
                 )}
 
                 {/* Image */}
-                <div className="relative aspect-square bg-slate-50 dark:bg-black/20 flex items-center justify-center p-3">
+                <div className="relative aspect-square bg-slate-50 dark:bg-black/20 flex items-center justify-center">
                   {imgSrc ? (
-                    <div className="relative w-4/5 h-4/5 transition-transform duration-300 group-hover:scale-105">
+                    <div className="relative w-full h-full transition-transform duration-300 group-hover:scale-105">
                       <AssetImage
                         src={imgSrc}
                         alt={product.name || "Product"}
                         fill
                         brand={product.brand}
-                        className="object-contain"
+                        className="object-contain p-2"
                       />
                     </div>
                   ) : (

@@ -7,6 +7,7 @@ import {
   compositeBrandWatermark,
   removeWhiteBackground,
   rewatermarkImage,
+  standardizeImage,
 } from "@/lib/image-processor";
 import { connectToDatabase } from "@/lib/mongodb";
 import {
@@ -17,7 +18,6 @@ import {
   readProducts,
   updateProduct,
 } from "@/lib/products";
-
 
 function getStringField(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -56,9 +56,13 @@ async function storeProductImage(
   try {
     // 1. Process background removal (feathered)
     const bgRemoved = await removeWhiteBackground(fileBuffer);
+    const standardizedBgRemoved = await standardizeImage(bgRemoved);
 
     // 2. Add brand watermark
-    const watermarked = await compositeBrandWatermark(bgRemoved, brand);
+    const watermarked = await compositeBrandWatermark(
+      standardizedBgRemoved,
+      brand,
+    );
 
     // Save as WebP for smaller file size — loads much faster in browser
     const filename = `${uniqueId}.webp`;
@@ -71,7 +75,7 @@ async function storeProductImage(
       .webp({ quality: 90, lossless: false })
       .toFile(filePath);
 
-    await sharp(bgRemoved)
+    await sharp(standardizedBgRemoved)
       .webp({ quality: 92, lossless: false })
       .toFile(origFilePath);
 
@@ -315,7 +319,10 @@ export async function PATCH(request: Request) {
   try {
     const body: unknown = await request.json();
     if (!body || typeof body !== "object") {
-      return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid request body." },
+        { status: 400 },
+      );
     }
 
     const bodyObj = body as Record<string, unknown>;
@@ -333,12 +340,18 @@ export async function PATCH(request: Request) {
       }));
 
       await Product.bulkWrite(bulkOps);
-      return NextResponse.json({ success: true, message: "Positions reordered successfully." });
+      return NextResponse.json({
+        success: true,
+        message: "Positions reordered successfully.",
+      });
     }
 
     const { id, premium, position } = bodyObj;
     if (typeof id !== "string" || id.trim().length === 0) {
-      return NextResponse.json({ error: "Missing product id." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing product id." },
+        { status: 400 },
+      );
     }
 
     await connectToDatabase();
@@ -346,19 +359,28 @@ export async function PATCH(request: Request) {
     const updateFields: any = {};
     if (premium !== undefined) {
       if (typeof premium !== "boolean") {
-        return NextResponse.json({ error: "Invalid 'premium' value." }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid 'premium' value." },
+          { status: 400 },
+        );
       }
       updateFields.premium = premium;
     }
     if (position !== undefined) {
       if (typeof position !== "number") {
-        return NextResponse.json({ error: "Invalid 'position' value." }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid 'position' value." },
+          { status: 400 },
+        );
       }
       updateFields.position = position;
     }
 
     if (Object.keys(updateFields).length === 0) {
-      return NextResponse.json({ error: "No fields to update." }, { status: 400 });
+      return NextResponse.json(
+        { error: "No fields to update." },
+        { status: 400 },
+      );
     }
 
     const result = await Product.updateOne(
@@ -367,13 +389,19 @@ export async function PATCH(request: Request) {
     );
 
     if (result.matchedCount === 0) {
-      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Product not found." },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json({ product: { id: id.trim(), ...updateFields } });
   } catch (error) {
     console.error("PATCH /api/products error:", error);
-    const message = error instanceof Error ? error.message : "Failed to update product status.";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to update product status.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
@@ -409,7 +437,10 @@ export async function DELETE(request: Request) {
       );
     }
 
-    return NextResponse.json({ product: deletedProduct, filesPurged: purgeFiles });
+    return NextResponse.json({
+      product: deletedProduct,
+      filesPurged: purgeFiles,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unable to delete product.";

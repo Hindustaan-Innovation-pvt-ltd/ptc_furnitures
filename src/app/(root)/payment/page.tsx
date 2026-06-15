@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import Script from "next/script";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import QrCodeDownloader from "@/components/custom/QrCodeDownloader";
@@ -180,7 +180,9 @@ async function PaymentEntriesLoader({
   searchParams?: Promise<{ bank?: string | string[] }>;
 }) {
   const params = searchParams ? await searchParams : undefined;
-  const selectedBank = Array.isArray(params?.bank) ? params.bank[0] : params?.bank;
+  const selectedBank = Array.isArray(params?.bank)
+    ? params.bank[0]
+    : params?.bank;
 
   const entries = await getActiveEntries();
 
@@ -217,9 +219,13 @@ async function PaymentEntriesLoader({
   const mainQrLabel = qrEntry?.label || "Payment QR Code";
 
   return (
-    <div className={`grid grid-cols-1 ${mainQrImage ? "lg:grid-cols-3" : ""} gap-8 items-start`}>
+    <div
+      className={`grid grid-cols-1 ${mainQrImage ? "lg:grid-cols-3" : ""} gap-8 items-start`}
+    >
       {/* Left Column: List of bank accounts */}
-      <div className={`space-y-8 ${mainQrImage ? "lg:col-span-2" : "max-w-2xl mx-auto w-full"}`}>
+      <div
+        className={`space-y-8 ${mainQrImage ? "lg:col-span-2" : "max-w-2xl mx-auto w-full"}`}
+      >
         {entries.map((b, idx) => {
           const hasBank = b.accountNumber || b.bankName;
           const hasUpi = b.upiId;
@@ -227,7 +233,11 @@ async function PaymentEntriesLoader({
           return (
             <div
               key={b._id}
-              id={b.bankName ? b.bankName.trim().toLowerCase().replace(/\s+/g, "-") : undefined}
+              id={
+                b.bankName
+                  ? b.bankName.trim().toLowerCase().replace(/\s+/g, "-")
+                  : undefined
+              }
               className="rounded-3xl border border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#111318] shadow-xs overflow-hidden scroll-mt-24"
             >
               {/* Account header strip */}
@@ -413,7 +423,6 @@ async function PaymentEntriesLoader({
                           </div>
                         ))}
                     </div>
-
                   </div>
                 )}
 
@@ -498,11 +507,14 @@ async function PaymentEntriesLoader({
                 </div>
                 {mainUpiName && (
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-slate-400">Registered Name</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">{mainUpiName}</span>
+                    <span className="font-semibold text-slate-400">
+                      Registered Name
+                    </span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {mainUpiName}
+                    </span>
                   </div>
                 )}
-
               </div>
             )}
           </div>

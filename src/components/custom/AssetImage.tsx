@@ -45,7 +45,10 @@ export default function AssetImage({
 }: AssetImageProps) {
   const [errorOccurred, setErrorOccurred] = useState(false);
 
-  const displaySrc = errorOccurred ? fallbackSrc : resolveSrc(src, fallbackSrc);
+  let displaySrc = errorOccurred ? fallbackSrc : resolveSrc(src, fallbackSrc);
+  if (displaySrc.startsWith("/") && !displaySrc.startsWith("//")) {
+    displaySrc = displaySrc.split("?")[0];
+  }
 
   return (
     <span
@@ -72,7 +75,7 @@ export default function AssetImage({
           <img
             src={`/api/brand-logo?brand=${encodeURIComponent(brand)}`}
             alt="Watermark placeholder"
-            className="w-1/4 h-1/4 max-w-[80px] max-h-[80px] object-contain opacity-35 select-none"
+            className="w-1/2 h-1/2 max-w-[80px] max-h-[80px] object-contain opacity-35 select-none"
             onError={(e) => {
               e.currentTarget.style.display = "none";
             }}

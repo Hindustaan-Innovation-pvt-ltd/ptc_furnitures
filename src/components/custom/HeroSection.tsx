@@ -1,17 +1,11 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import React from "react";
-import { motion, AnimatePresence } from "motion/react";
 
-const carouselImages1 = [
-  "/hero_office_1.png",
-  "/hero_office_3.png",
-];
+const carouselImages1 = ["/hero_office_1.png", "/hero_office_3.png"];
 
-const carouselImages2 = [
-  "/hero_office_2.png",
-  "/hero_office_4.png",
-];
+const carouselImages2 = ["/hero_office_2.png", "/hero_office_4.png"];
 
 const slideLeftVariants = {
   enter: {
@@ -94,7 +88,7 @@ export default function HeroSection() {
                   exit="exit"
                   transition={{
                     y: { type: "spring", stiffness: 220, damping: 28 },
-                    opacity: { duration: 0.25 }
+                    opacity: { duration: 0.25 },
                   }}
                   className="absolute inset-0 w-full h-full object-cover object-center"
                 />
@@ -106,11 +100,17 @@ export default function HeroSection() {
           <motion.div
             initial={{ opacity: 0, x: 80 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            transition={{
+              duration: 0.85,
+              ease: [0.16, 1, 0.3, 1],
+              delay: 0.15,
+            }}
             className="text-3xl sm:text-5xl md:text-6xl lg:text-[76px] xl:text-[80px] leading-[1.05] text-center whitespace-nowrap"
           >
             <span className="font-semibold">OF </span>
-            <span className="text-[#b30d17] dark:text-red-500 font-black">WORKSPACE</span>
+            <span className="text-[#b30d17] dark:text-red-500 font-black">
+              WORKSPACE
+            </span>
           </motion.div>
 
           {/* Row 3: [Pill-Image-2] DESIGN (slides from Bottom) */}
@@ -132,7 +132,7 @@ export default function HeroSection() {
                   exit="exit"
                   transition={{
                     x: { type: "spring", stiffness: 220, damping: 28 },
-                    opacity: { duration: 0.25 }
+                    opacity: { duration: 0.25 },
                   }}
                   className="absolute inset-0 h-full object-cover object-center w-full"
                 />

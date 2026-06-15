@@ -1,8 +1,12 @@
 "use client";
 
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
-import useSWR from "swr";
+=======
 import { motion } from "motion/react";
+import { useMemo, useState } from "react";
+>>>>>>> 0f35dab (refactor: optimize image assets and update core components for workspace management and product catalog handling)
+import useSWR from "swr";
 import AdminProductForm from "@/components/custom/AdminProductForm";
 import AssetImage from "@/components/custom/AssetImage";
 import { Button } from "@/components/ui/button";
@@ -145,7 +149,9 @@ export default function AdminProductsManager({
       setIsReorderMode(false);
       await mutate();
     } catch (err) {
-      alert("Error saving order: " + (err instanceof Error ? err.message : err));
+      alert(
+        "Error saving order: " + (err instanceof Error ? err.message : err),
+      );
     } finally {
       setIsSavingOrder(false);
     }
@@ -489,8 +495,20 @@ export default function AdminProductsManager({
                     </>
                   ) : (
                     <>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4.5 12.75l6 6 9-13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M4.5 12.75l6 6 9-13.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       Save Order
                     </>
@@ -506,8 +524,20 @@ export default function AdminProductsManager({
                 onClick={startReordering}
                 disabled={thisBrandProducts.length <= 1}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 7h18M3 12h18M3 17h18"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
                 Sort Products
               </Button>
@@ -515,6 +545,7 @@ export default function AdminProductsManager({
           </div>
         </div>
         {isReorderMode && (
+<<<<<<< HEAD
           <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 dark:border-amber-500/10 flex items-center gap-3">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-amber-600 dark:text-amber-400 shrink-0">
               <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -522,6 +553,204 @@ export default function AdminProductsManager({
             <p className="text-xs text-amber-800 dark:text-amber-400 font-medium">
               Drag and drop any product card below to rearrange its position. Click <strong>&quot;Save Order&quot;</strong> in the header to persist changes.
             </p>
+=======
+          <div className="mt-4 grid gap-6 lg:grid-cols-3">
+            {/* Rearrange Control Panel */}
+            <div className="lg:col-span-1 rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/5 dark:bg-[#15171e]/50 backdrop-blur-md flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-red-500"
+                  >
+                    <path
+                      d="M4 6h16M4 12h16M4 18h16"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Reorder Control List
+                </h3>
+                <span className="text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400 px-2 py-0.5 rounded-full">
+                  {orderedProducts.length} Products
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+                Type directly in the position box or use Up/Down buttons to
+                rearrange. Visual cards will slide into place instantly.
+              </p>
+
+              <div className="flex flex-col gap-2 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
+                {orderedProducts.map((p, idx) => {
+                  const displayImg =
+                    p.originalImages?.[0] || p.images?.[0] || "";
+                  return (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-3 bg-white dark:bg-[#0c0d12] border border-slate-200 dark:border-white/5 p-2 rounded-xl text-xs shadow-xs transition-colors hover:border-slate-350 dark:hover:border-white/10"
+                    >
+                      {/* Position Input */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <input
+                          type="number"
+                          min="1"
+                          max={orderedProducts.length}
+                          value={idx + 1}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (
+                              isNaN(val) ||
+                              val < 1 ||
+                              val > orderedProducts.length
+                            )
+                              return;
+                            handleMoveToPosition(idx, val - 1);
+                          }}
+                          className="w-10 h-7 text-center font-bold text-xs bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:ring-1 focus:ring-red-500"
+                        />
+                      </div>
+
+                      {/* Thumbnail */}
+                      <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 overflow-hidden shrink-0 flex items-center justify-center">
+                        {displayImg ? (
+                          <img
+                            src={displayImg}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-[9px] text-slate-400 font-bold">
+                            PTC
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-slate-700 dark:text-slate-300 truncate">
+                          {p.name || "Unnamed Product"}
+                        </p>
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {p.price ? `${p.price}` : "No price"}
+                        </p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => handleSwapIndices(idx, idx - 1)}
+                          title="Move Up"
+                          className="h-7 w-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-slate-400 cursor-pointer"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === orderedProducts.length - 1}
+                          onClick={() => handleSwapIndices(idx, idx + 1)}
+                          title="Move Down"
+                          className="h-7 w-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-slate-600 dark:text-slate-400 cursor-pointer"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Drag & Drop Alert Indicator and Quick Sort actions */}
+            <div className="lg:col-span-2 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 dark:border-amber-500/10 flex flex-col justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-amber-800 dark:text-amber-400 flex items-center gap-2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Rearrange Methods & Auto-Persistence
+                </h4>
+                <p className="mt-2 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  This interface provides full manual control. You can rearrange
+                  items using the list inputs on the left, click Move Up/Down
+                  buttons, or drag-and-drop the visual cards below using their
+                  grip handle.
+                </p>
+                <div className="mt-4 flex flex-col gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                    <span>
+                      <strong>Real-time spring physics:</strong> Reordered
+                      products will glide into place automatically.
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                    <span>
+                      <strong>Save changes:</strong> Remember to click{" "}
+                      <strong>&quot;Save Order&quot;</strong> in the top header
+                      once finished.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Instant Presets */}
+              <div className="flex items-center gap-2 flex-wrap pt-4 border-t border-slate-200/50 dark:border-white/5">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                  Sort Presets:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sorted = [...orderedProducts].sort((a, b) =>
+                      (a.name || "").localeCompare(b.name || ""),
+                    );
+                    setOrderedProducts(sorted);
+                  }}
+                  className="px-3 py-1.5 text-xs rounded-xl bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer border border-slate-200 dark:border-white/5 transition-colors shadow-xs"
+                >
+                  Alphabetical A-Z
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sorted = [...orderedProducts].sort((a, b) => {
+                      const priceA =
+                        parseFloat((a.price || "").replace(/[^0-9.]/g, "")) ||
+                        0;
+                      const priceB =
+                        parseFloat((b.price || "").replace(/[^0-9.]/g, "")) ||
+                        0;
+                      return priceA - priceB;
+                    });
+                    setOrderedProducts(sorted);
+                  }}
+                  className="px-3 py-1.5 text-xs rounded-xl bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer border border-slate-200 dark:border-white/5 transition-colors shadow-xs"
+                >
+                  Price: Low to High
+                </button>
+              </div>
+            </div>
+>>>>>>> 0f35dab (refactor: optimize image assets and update core components for workspace management and product catalog handling)
           </div>
         )}
 
@@ -652,7 +881,7 @@ function ProductCard({
 
   const dragStartHandler = (e: React.DragEvent) => {
     const target = e.target as HTMLElement;
-    
+
     if (isReorderMode) {
       // Allow dragging the entire card in reorder mode, but prevent dragging on interactive components
       if (
@@ -720,12 +949,50 @@ function ProductCard({
             <div className="flex items-center gap-1.5 flex-wrap">
               {isReorderMode ? (
                 <div className="flex items-center gap-1">
+<<<<<<< HEAD
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-950/40 px-2.5 py-1 text-[10px] font-bold text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-900/30 transition-colors">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 opacity-80 animate-pulse">
                       <path d="M8 6h2v2H8V6zm0 4h2v2H8v-2zm0 4h2v2H8v-2zm0 4h2v2H8v-2zm6-12h2v2h-2V6zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z" fill="currentColor"/>
                     </svg>
                     Pos #{index! + 1}
                   </span>
+=======
+                  <span className="drag-grip inline-flex items-center gap-1.5 rounded-full bg-red-100 hover:bg-red-200 dark:bg-red-950/40 dark:hover:bg-red-950/60 px-2.5 py-1 text-[10px] font-bold text-red-700 dark:text-red-400 cursor-grab active:cursor-grabbing border border-red-200/50 dark:border-red-900/30 transition-colors">
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="shrink-0 opacity-80"
+                    >
+                      <path
+                        d="M8 6h2v2H8V6zm0 4h2v2H8v-2zm0 4h2v2H8v-2zm0 4h2v2H8v-2zm6-12h2v2h-2V6zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    Pos #{index! + 1}
+                  </span>
+
+                  <button
+                    type="button"
+                    disabled={isFirst}
+                    onClick={() => onMoveUp?.(index!)}
+                    title="Move Up"
+                    className="h-6 w-6 flex items-center justify-center bg-slate-50 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-[10px] text-slate-600 dark:text-slate-400 cursor-pointer transition-colors"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isLast}
+                    onClick={() => onMoveDown?.(index!)}
+                    title="Move Down"
+                    className="h-6 w-6 flex items-center justify-center bg-slate-50 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-[10px] text-slate-600 dark:text-slate-400 cursor-pointer transition-colors"
+                  >
+                    ▼
+                  </button>
+>>>>>>> 0f35dab (refactor: optimize image assets and update core components for workspace management and product catalog handling)
                 </div>
               ) : (
                 <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/20 dark:text-red-400">
@@ -782,7 +1049,7 @@ function ProductCard({
                     src={image}
                     alt={`${product.name || "Product"} image ${index + 1}`}
                     fill
-                    className="object-contain p-3 pointer-events-none transition-transform duration-300 group-hover:scale-105"
+                    className="object-contain p-2 pointer-events-none transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
                     <span className="rounded-full bg-black/40 px-2 py-0.5 backdrop-blur-sm">
@@ -847,7 +1114,9 @@ function ProductCard({
                 <SelectValue placeholder="No Brand (Unassigned)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="UNASSIGNED">No Brand (Unassigned)</SelectItem>
+                <SelectItem value="UNASSIGNED">
+                  No Brand (Unassigned)
+                </SelectItem>
                 {brands.map((b) => (
                   <SelectItem key={b} value={b}>
                     {b}

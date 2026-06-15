@@ -1,30 +1,30 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { NextResponse } from "next/server";
 import { getBrandLogo, loadLogosIntoCache } from "@/lib/brand-logos";
 import { StoredFile } from "@/lib/db-models";
 import { connectToDatabase } from "@/lib/mongodb";
-import fs from "node:fs/promises";
-import path from "node:path";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const brand = searchParams.get("brand") || "";
-    
+
     await connectToDatabase();
     await loadLogosIntoCache();
-    
+
     let logo = await getBrandLogo(brand);
     if (!logo) {
       logo = await getBrandLogo("PTC");
     }
-    
+
     if (!logo) {
       return new NextResponse("Not Found", { status: 404 });
     }
-    
+
     let contentType = "image/png";
     let buffer: Buffer;
-    
+
     if (logo.src.startsWith("data:")) {
       const parts = logo.src.split(",");
       contentType = parts[0].match(/:(.*?);/)?.[1] || "image/png";
@@ -38,7 +38,11 @@ export async function GET(request: Request) {
       contentType = storedFile.contentType || "image/png";
       buffer = Buffer.from(storedFile.data);
     } else {
-      const filePath = path.join(process.cwd(), "public", logo.src.replace(/^\//, ""));
+      const filePath = path.join(
+        process.cwd(),
+        "public",
+        logo.src.replace(/^\//, ""),
+      );
       buffer = await fs.readFile(filePath);
       if (logo.src.endsWith(".svg")) {
         contentType = "image/svg+xml";
@@ -48,7 +52,7 @@ export async function GET(request: Request) {
         contentType = "image/jpeg";
       }
     }
-    
+
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": contentType,

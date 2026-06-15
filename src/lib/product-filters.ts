@@ -125,7 +125,8 @@ export function filterAndSortProducts(
           cleanedIndex.includes(token),
         );
       } else {
-        matchesSearch = normalizeValue(productSearchIndex).includes(searchQuery);
+        matchesSearch =
+          normalizeValue(productSearchIndex).includes(searchQuery);
       }
     }
 

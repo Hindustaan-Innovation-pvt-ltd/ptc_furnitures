@@ -1,8 +1,9 @@
-import { connection } from "next/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import AdminProductsManager from "@/components/custom/AdminProductsManager";
+import WorkspaceBrandActions from "@/components/custom/WorkspaceBrandActions";
 import { readBrands, readProducts } from "@/lib/products";
 
 function normalizeBrand(value: string | undefined | null): string {
@@ -46,7 +47,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
       subtitle={`Workspace uploader and drag-and-drop staging area for ${selectedBrand}`}
     >
       <div className="grid gap-6">
-        <div className="flex items-center">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/admin"
             className="rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-2 text-xs font-semibold text-red-700 dark:text-red-300 flex items-center gap-1.5 border border-slate-200/50 dark:border-white/5"
@@ -68,6 +69,8 @@ export default async function BrandPage({ params }: BrandPageProps) {
             </svg>
             Back to Overview
           </Link>
+
+          <WorkspaceBrandActions brandName={selectedBrand} />
         </div>
 
         <AdminProductsManager

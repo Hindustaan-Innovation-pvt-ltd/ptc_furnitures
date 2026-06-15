@@ -388,11 +388,19 @@ export interface INewsletterSubscriber extends Document {
 }
 
 const NewsletterSubscriberSchema = new Schema<INewsletterSubscriber>({
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
   subscribedAt: { type: Date, default: Date.now },
 });
 
 export const NewsletterSubscriberModel =
   mongoose.models.NewsletterSubscriber ||
-  mongoose.model<INewsletterSubscriber>("NewsletterSubscriber", NewsletterSubscriberSchema);
-
+  mongoose.model<INewsletterSubscriber>(
+    "NewsletterSubscriber",
+    NewsletterSubscriberSchema,
+  );

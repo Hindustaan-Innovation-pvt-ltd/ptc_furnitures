@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { updateGoogleConnection, syncGoogleReviews } from "@/lib/reviews";
+import { syncGoogleReviews, updateGoogleConnection } from "@/lib/reviews";
 
 export async function GET(request: Request) {
   try {
@@ -12,7 +12,10 @@ export async function GET(request: Request) {
     }
 
     if (!code) {
-      return NextResponse.json({ success: false, error: "No authorization code found" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "No authorization code found" },
+        { status: 400 },
+      );
     }
 
     const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -20,7 +23,10 @@ export async function GET(request: Request) {
     const redirectUri = `${origin}/api/reviews/google-callback`;
 
     if (!clientId || !clientSecret) {
-      return NextResponse.json({ success: false, error: "OAuth environment variables are missing" }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: "OAuth environment variables are missing" },
+        { status: 500 },
+      );
     }
 
     // Exchange authorization code for tokens
@@ -38,19 +44,31 @@ export async function GET(request: Request) {
 
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok) {
-      return NextResponse.json({ success: false, error: tokenData.error_description || "Token exchange failed" }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: tokenData.error_description || "Token exchange failed",
+        },
+        { status: 400 },
+      );
     }
 
     const accessToken = tokenData.access_token;
 
     // Retrieve the authenticated user's profile info
-    const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const userRes = await fetch(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
     const userData = await userRes.json();
 
     if (!userRes.ok) {
-      return NextResponse.json({ success: false, error: "Failed to fetch user profile" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Failed to fetch user profile" },
+        { status: 400 },
+      );
     }
 
     const email = userData.email || "unknown@google.com";
@@ -105,6 +123,9 @@ export async function GET(request: Request) {
       headers: { "Content-Type": "text/html" },
     });
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
   }
 }

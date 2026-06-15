@@ -81,17 +81,30 @@ export default function Footer() {
             </p>
 
             <div className="mt-7 flex items-center gap-3">
-              {
-                [
-                  {
-                    icon: <svg width="48" height="48" className="size-5 stroke-white" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M35 13H35.02M14 4H34C39.5228 4 44 8.47715 44 14V34C44 39.5228 39.5228 44 34 44H14C8.47715 44 4 39.5228 4 34V14C4 8.47715 8.47715 4 14 4ZM32 22.74C32.2468 24.4045 31.9625 26.1044 31.1875 27.598C30.4125 29.0916 29.1863 30.3028 27.6833 31.0593C26.1802 31.8159 24.4769 32.0792 22.8156 31.8119C21.1543 31.5445 19.6195 30.7602 18.4297 29.5703C17.2398 28.3805 16.4555 26.8457 16.1881 25.1844C15.9208 23.5231 16.1841 21.8198 16.9407 20.3167C17.6972 18.8137 18.9084 17.5875 20.402 16.8125C21.8956 16.0375 23.5955 15.7532 25.26 16C26.9578 16.2518 28.5297 17.0429 29.7434 18.2566C30.9571 19.4703 31.7482 21.0422 32 22.74Z" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              {[
+                {
+                  icon: (
+                    <svg
+                      width="48"
+                      height="48"
+                      className="size-5 stroke-white"
+                      viewBox="0 0 48 48"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M35 13H35.02M14 4H34C39.5228 4 44 8.47715 44 14V34C44 39.5228 39.5228 44 34 44H14C8.47715 44 4 39.5228 4 34V14C4 8.47715 8.47715 4 14 4ZM32 22.74C32.2468 24.4045 31.9625 26.1044 31.1875 27.598C30.4125 29.0916 29.1863 30.3028 27.6833 31.0593C26.1802 31.8159 24.4769 32.0792 22.8156 31.8119C21.1543 31.5445 19.6195 30.7602 18.4297 29.5703C17.2398 28.3805 16.4555 26.8457 16.1881 25.1844C15.9208 23.5231 16.1841 21.8198 16.9407 20.3167C17.6972 18.8137 18.9084 17.5875 20.402 16.8125C21.8956 16.0375 23.5955 15.7532 25.26 16C26.9578 16.2518 28.5297 17.0429 29.7434 18.2566C30.9571 19.4703 31.7482 21.0422 32 22.74Z"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
-                    ,
-                    link: "https://www.instagram.com/ptc_furnitures/",
-                  },
-                  {
-                    icon: <svg
+                  ),
+                  link: "https://www.instagram.com/ptc_furnitures/",
+                },
+                {
+                  icon: (
+                    <svg
                       width="512"
                       height="512"
                       viewBox="0 0 512 512"
@@ -141,15 +154,20 @@ export default function Footer() {
                           <stop offset="1" stopColor="white" />
                         </linearGradient>
                       </defs>
-                    </svg>,
-                    link: "https://wa.me/+917880002245",
-                  },
-                ].map((item, i) => (
-                  <Link href={item.link} target="_blank" key={i} className="border-2 p-2 rounded-full">
-                    {item.icon}
-                  </Link>
-                ))
-              }
+                    </svg>
+                  ),
+                  link: "https://wa.me/+917880002245",
+                },
+              ].map((item, i) => (
+                <Link
+                  href={item.link}
+                  target="_blank"
+                  key={i}
+                  className="border-2 p-2 rounded-full"
+                >
+                  {item.icon}
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -163,10 +181,7 @@ export default function Footer() {
             &copy;2026 PTC Furniture. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-            {(bankNames.length > 0
-              ? bankNames
-              : []
-            ).map((card) => (
+            {(bankNames.length > 0 ? bankNames : []).map((card) => (
               <Link
                 key={card}
                 href={`/payment?bank=${encodeURIComponent(card.trim().toLowerCase().replace(/\s+/g, "-"))}`}
@@ -196,11 +211,11 @@ function FooterColumn({ title, links }: FooterColumnProps) {
     if (link === "Payment Details") return "/payment";
     if (link === "Privacy Policy") return "/privacy-policy";
     if (link === "Terms of Use") return "/terms-of-use";
-    
+
     if (company.includes(link) || legal.includes(link)) {
       return "#";
     }
-    
+
     return `/collections?q=${encodeURIComponent(link)}`;
   };
 

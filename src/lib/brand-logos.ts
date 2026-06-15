@@ -48,15 +48,15 @@ export async function loadLogosIntoCache() {
 export async function getBrandLogo(brand: string): Promise<BrandLogo | null> {
   await connectToDatabase();
   await loadLogosIntoCache();
-  
+
   const normalized = normalizeBrand(brand);
   const escapedBrand = normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   const doc = await BrandLogoModel.findOne({
     $or: [
       { brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") } },
-      { aliases: { $regex: new RegExp(`^${escapedBrand}$`, "i") } }
-    ]
+      { aliases: { $regex: new RegExp(`^${escapedBrand}$`, "i") } },
+    ],
   }).lean();
 
   if (doc) {
@@ -94,7 +94,7 @@ export async function setBrandLogo(brand: string, logo: BrandLogo) {
 
   const targetBrand = logo.brand.trim();
   const escapedBrand = targetBrand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  
+
   const existing = await BrandLogoModel.findOne({
     brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") },
   });

@@ -1,17 +1,17 @@
 "use client";
 
+import { sendGAEvent } from "@next/third-parties/google";
 import {
   Building2,
   Check,
+  Globe,
   Percent,
   ShieldCheck,
   Sparkles,
   Truck,
-  Globe,
 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
-import { sendGAEvent } from "@next/third-parties/google";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import { Button } from "@/components/ui/button";
@@ -25,19 +25,26 @@ const TRANSLATIONS = {
     programTag: "Partner Showroom Program",
     titleStart: "Become an Authorized ",
     titleEnd: "Dealer",
-    subtitle: "Unlock wholesale catalog pricing, custom showroom credits, priority fabrication, and co-marketing benefits. Partner with PTC Furnitures to inspire considered spaces.",
+    subtitle:
+      "Unlock wholesale catalog pricing, custom showroom credits, priority fabrication, and co-marketing benefits. Partner with PTC Furnitures to inspire considered spaces.",
     benefitsHeading: "Exclusive Partnership Benefits",
-    benefitsDesc: "Join a distinguished network of trade professionals and showrooms curated for exceptional hospitality and residential interior designs.",
+    benefitsDesc:
+      "Join a distinguished network of trade professionals and showrooms curated for exceptional hospitality and residential interior designs.",
     benefit1Title: "Trade Pricing & Multi-Tier Discounts",
-    benefit1Desc: "Access tier-1 trade pricing with volume scales up to 45% off retail lists, with tax exemption workflows.",
+    benefit1Desc:
+      "Access tier-1 trade pricing with volume scales up to 45% off retail lists, with tax exemption workflows.",
     benefit2Title: "White-Glove Priority Freight",
-    benefit2Desc: "Expedited fabrication processing with consolidated shipping routes and local logistics support.",
+    benefit2Desc:
+      "Expedited fabrication processing with consolidated shipping routes and local logistics support.",
     benefit3Title: "Dedicated Project Consultations",
-    benefit3Desc: "Custom upholstery specifications, CAD layouts, material swatches, and 3D modeling support.",
+    benefit3Desc:
+      "Custom upholstery specifications, CAD layouts, material swatches, and 3D modeling support.",
     showroomTitle: "Showroom Sample Program",
-    showroomDesc: "Qualify for up to 50% discount on showroom demonstration furniture collections to assist local retail presentation.",
+    showroomDesc:
+      "Qualify for up to 50% discount on showroom demonstration furniture collections to assist local retail presentation.",
     formHeading: "Partnership Inquiry Form",
-    formDesc: "Submit details below to initiate dealer approval. A partnership advisor will contact you within 24 hours.",
+    formDesc:
+      "Submit details below to initiate dealer approval. A partnership advisor will contact you within 24 hours.",
     labelName: "Full Name *",
     labelPhone: "Phone Number *",
     labelCity: "City *",
@@ -50,27 +57,36 @@ const TRANSLATIONS = {
     btnSubmitting: "Submitting Inquiry...",
     successTitle: "Application Logged!",
     successRef: "Reference ID: ",
-    successDesc: "Thank you for applying to the PTC Furniture authorized dealer program. A regional distribution consultant has been assigned to your reference and will review your credentials soon.",
-    successEmailNotify: "A notification email has been dispatched to our sales team.",
-    successReset: "Send Another Inquiry"
+    successDesc:
+      "Thank you for applying to the PTC Furniture authorized dealer program. A regional distribution consultant has been assigned to your reference and will review your credentials soon.",
+    successEmailNotify:
+      "A notification email has been dispatched to our sales team.",
+    successReset: "Send Another Inquiry",
   },
   hi: {
     programTag: "पार्टनर शोरूम कार्यक्रम",
     titleStart: "अधिकृत ",
     titleEnd: "डीलर बनें",
-    subtitle: "थोक सूची मूल्य निर्धारण, विशेष शोरूम क्रेडिट, निर्माण में प्राथमिकता और सह-विपणन लाभों को अनलॉक करें। सुरुचिपूर्ण और आधुनिक स्थानों के लिए पीटीसी फर्नीचर्स के साथ साझेदारी करें।",
+    subtitle:
+      "थोक सूची मूल्य निर्धारण, विशेष शोरूम क्रेडिट, निर्माण में प्राथमिकता और सह-विपणन लाभों को अनलॉक करें। सुरुचिपूर्ण और आधुनिक स्थानों के लिए पीटीसी फर्नीचर्स के साथ साझेदारी करें।",
     benefitsHeading: "अनन्य साझेदारी लाभ",
-    benefitsDesc: "असाधारण आतिथ्य और आवासीय इंटीरियर डिजाइन के लिए तैयार किए गए इंटीरियर पेशेवरों और शोरूम के एक प्रतिष्ठित नेटवर्क में शामिल हों।",
+    benefitsDesc:
+      "असाधारण आतिथ्य और आवासीय इंटीरियर डिजाइन के लिए तैयार किए गए इंटीरियर पेशेवरों और शोरूम के एक प्रतिष्ठित नेटवर्क में शामिल हों।",
     benefit1Title: "ट्रेड मूल्य निर्धारण और बहु-स्तरीय छूट",
-    benefit1Desc: "कर छूट वर्कफ़्लो के साथ, खुदरा मूल्य सूची पर 45% तक की छूट के साथ टियर-1 व्यापार मूल्य निर्धारण का लाभ उठाएं।",
+    benefit1Desc:
+      "कर छूट वर्कफ़्लो के साथ, खुदरा मूल्य सूची पर 45% तक की छूट के साथ टियर-1 व्यापार मूल्य निर्धारण का लाभ उठाएं।",
     benefit2Title: "व्हाइट-ग्लव प्राथमिकता शिपिंग",
-    benefit2Desc: "समेकित शिपिंग मार्गों और स्थानीय लॉजिस्टिक्स सहायता के साथ निर्माण और वितरण प्रक्रिया में प्राथमिकता।",
+    benefit2Desc:
+      "समेकित शिपिंग मार्गों और स्थानीय लॉजिस्टिक्स सहायता के साथ निर्माण और वितरण प्रक्रिया में प्राथमिकता।",
     benefit3Title: "समर्पित परियोजना परामर्श",
-    benefit3Desc: "कस्टम अपहोल्स्ट्री विनिर्देश, सीएडी (CAD) लेआउट, सामग्री नमूने और 3डी मॉडलिंग सहायता प्राप्त करें।",
+    benefit3Desc:
+      "कस्टम अपहोल्स्ट्री विनिर्देश, सीएडी (CAD) लेआउट, सामग्री नमूने और 3डी मॉडलिंग सहायता प्राप्त करें।",
     showroomTitle: "शोरूम नमूना कार्यक्रम",
-    showroomDesc: "स्थानीय खुदरा प्रदर्शन में सहायता के लिए शोरूम प्रदर्शन फर्नीचर संग्रह पर 50% तक की छूट के पात्र बनें।",
+    showroomDesc:
+      "स्थानीय खुदरा प्रदर्शन में सहायता के लिए शोरूम प्रदर्शन फर्नीचर संग्रह पर 50% तक की छूट के पात्र बनें।",
     formHeading: "साझेदारी पूछताछ फॉर्म",
-    formDesc: "डीलर बनने की प्रक्रिया शुरू करने के लिए नीचे विवरण भरें। एक साझेदारी सलाहकार 24 घंटे के भीतर आपसे संपर्क करेगा।",
+    formDesc:
+      "डीलर बनने की प्रक्रिया शुरू करने के लिए नीचे विवरण भरें। एक साझेदारी सलाहकार 24 घंटे के भीतर आपसे संपर्क करेगा।",
     labelName: "पूरा नाम *",
     labelPhone: "फ़ोन नंबर *",
     labelCity: "शहर *",
@@ -83,10 +99,11 @@ const TRANSLATIONS = {
     btnSubmitting: "आवेदन भेजा जा रहा है...",
     successTitle: "आवेदन सफलतापूर्वक दर्ज हुआ!",
     successRef: "संदर्भ संख्या: ",
-    successDesc: "पीटीसी फर्नीचर अधिकृत डीलर कार्यक्रम के लिए आवेदन करने के लिए धन्यवाद। एक क्षेत्रीय वितरण सलाहकार को आपका संदर्भ सौंपा गया है और वह जल्द ही आपके विवरण की समीक्षा करेंगे।",
+    successDesc:
+      "पीटीसी फर्नीचर अधिकृत डीलर कार्यक्रम के लिए आवेदन करने के लिए धन्यवाद। एक क्षेत्रीय वितरण सलाहकार को आपका संदर्भ सौंपा गया है और वह जल्द ही आपके विवरण की समीक्षा करेंगे।",
     successEmailNotify: "हमारी टीम को एक ईमेल सूचना भेज दी गई है।",
-    successReset: "दूसरा आवेदन भेजें"
-  }
+    successReset: "दूसरा आवेदन भेजें",
+  },
 };
 
 export default function DealersPage() {
@@ -187,10 +204,11 @@ export default function DealersPage() {
               key={l.code}
               type="button"
               onClick={() => setLang(l.code as Language)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer ${lang === l.code
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer ${
+                lang === l.code
                   ? "bg-red-600 text-white shadow-xs"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                }`}
+              }`}
             >
               {l.label}
             </button>

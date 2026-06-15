@@ -32,7 +32,10 @@ type AdminProductFormProps = {
   onCancelEdit?: () => void;
 };
 
-function getInitialState(product?: Product | null, initialBrand?: string): ProductFormState {
+function getInitialState(
+  product?: Product | null,
+  initialBrand?: string,
+): ProductFormState {
   return product
     ? {
         brand: product.brand,
@@ -127,7 +130,6 @@ export default function AdminProductForm({
     formData.set("brand", formState.brand);
     formData.set("name", formState.name);
     formData.set("customFields", JSON.stringify(normalizedCustomFields));
-
 
     if (product) {
       formData.set("id", product.id);
@@ -294,8 +296,6 @@ export default function AdminProductForm({
                   </Select>
                 </div>
               ) : null}
-
-
             </div>
           </section>
 

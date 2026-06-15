@@ -48,6 +48,24 @@ export async function removeWhiteBackground(
   }
 }
 
+export async function standardizeImage(imageBuffer: Buffer): Promise<Buffer> {
+  try {
+    const targetSize = 800;
+    return await sharp(imageBuffer)
+      .trim()
+      .resize({
+        width: targetSize,
+        height: targetSize,
+        fit: "contain",
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
+      .png()
+      .toBuffer();
+  } catch {
+    return imageBuffer;
+  }
+}
+
 export async function compositeBrandWatermark(
   imageBuffer: Buffer,
   brand: string,
@@ -90,15 +108,7 @@ export async function compositeBrandWatermark(
 
     // Standardize/resize the input image buffer to a uniform 800x800 square transparent canvas first
     const targetSize = 800;
-    const standardizedImageBuffer = await sharp(imageBuffer)
-      .resize({
-        width: targetSize,
-        height: targetSize,
-        fit: "contain",
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .png()
-      .toBuffer();
+    const standardizedImageBuffer = await standardizeImage(imageBuffer);
 
     // Every watermark must be of the exact same size (200px)
     const watermarkSize = 200;
@@ -227,9 +237,13 @@ export async function rewatermarkImage(
 
     // 1. Remove background
     const bgRemoved = await removeWhiteBackground(imageBuffer);
+    const standardizedBgRemoved = await standardizeImage(bgRemoved);
 
     // 2. Add brand watermark
-    const watermarked = await compositeBrandWatermark(bgRemoved, brand);
+    const watermarked = await compositeBrandWatermark(
+      standardizedBgRemoved,
+      brand,
+    );
 
     if (
       isLocalUpload &&
@@ -244,6 +258,13 @@ export async function rewatermarkImage(
       await sharp(watermarked)
         .webp({ quality: 90, lossless: false })
         .toFile(filePath);
+
+      // Also save the trimmed, standardized background-removed image
+      const origFilePath = path.join(uploadDir, originalFilename);
+      await sharp(standardizedBgRemoved)
+        .webp({ quality: 92, lossless: false })
+        .toFile(origFilePath);
+
       return `/upload/${filename}?v=${Date.now()}`;
     } else {
       const uniqueId = crypto.randomUUID();
@@ -253,7 +274,7 @@ export async function rewatermarkImage(
       await sharp(watermarked)
         .webp({ quality: 90, lossless: false })
         .toFile(path.join(uploadDir, filename));
-      await sharp(bgRemoved)
+      await sharp(standardizedBgRemoved)
         .webp({ quality: 92, lossless: false })
         .toFile(path.join(uploadDir, origFilename));
 

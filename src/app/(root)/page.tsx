@@ -1,11 +1,11 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
 import Footer from "@/components/custom/Footer";
-import Navigation from "@/components/custom/Navigation";
 import HeroSection from "@/components/custom/HeroSection";
+import Navigation from "@/components/custom/Navigation";
 import Products from "@/components/custom/products";
-import WhatsNew from "@/components/custom/WhatsNew";
 import Reviews from "@/components/custom/reviews";
+import WhatsNew from "@/components/custom/WhatsNew";
 import { getBrandLogos, loadLogosIntoCache } from "@/lib/brand-logos";
 import { readBrands, readProducts } from "@/lib/products";
 
@@ -58,8 +58,6 @@ async function HomeProductsLoader({
   ]);
   const q = params?.q;
   const initialSearchTerm = Array.isArray(q) ? (q[0] ?? "") : (q ?? "");
-
-
 
   return (
     <>

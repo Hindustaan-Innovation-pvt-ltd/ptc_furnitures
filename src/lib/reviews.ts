@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { ProductReviewModel, GoogleConnectionModel } from "./db-models";
+import { GoogleConnectionModel, ProductReviewModel } from "./db-models";
 import { connectToDatabase } from "./mongodb";
 
 export type ProductReview = {
@@ -25,7 +25,6 @@ export type ProductReviewInput = {
   source?: "storefront" | "google";
   date?: string;
 };
-
 
 export async function readReviews(): Promise<ProductReview[]> {
   try {
@@ -160,17 +159,22 @@ export async function updateGoogleConnection(data: {
   const conn = await GoogleConnectionModel.findOneAndUpdate(
     {},
     { $set: data },
-    { returnDocument: "after", upsert: true }
+    { returnDocument: "after", upsert: true },
   ).lean();
   return conn;
 }
 
-export async function syncGoogleReviews(businessName: string = "Pankaj Trading Co."): Promise<void> {
+export async function syncGoogleReviews(
+  businessName: string = "Pankaj Trading Co.",
+): Promise<void> {
   await connectToDatabase();
 
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+  const apiKey =
+    process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
-    throw new Error("Sync Failed: GOOGLE_PLACES_API_KEY is not defined in your .env file. Please add your Google Places API Key to fetch real reviews.");
+    throw new Error(
+      "Sync Failed: GOOGLE_PLACES_API_KEY is not defined in your .env file. Please add your Google Places API Key to fetch real reviews.",
+    );
   }
 
   let reviewsToInsert = [];
@@ -191,30 +195,41 @@ export async function syncGoogleReviews(businessName: string = "Pankaj Trading C
       const detailsRes = await fetch(detailsUrl);
       const detailsData = await detailsRes.json();
 
-      if (detailsData.status === "OK" && detailsData.result?.reviews?.length > 0) {
+      if (
+        detailsData.status === "OK" &&
+        detailsData.result?.reviews?.length > 0
+      ) {
         const fetchedReviews = detailsData.result.reviews;
-        console.log(`==> [Sync] Retrieved ${fetchedReviews.length} live Google reviews.`);
+        console.log(
+          `==> [Sync] Retrieved ${fetchedReviews.length} live Google reviews.`,
+        );
 
         reviewsToInsert = fetchedReviews.map((rev: any) => ({
           reviewerName: rev.author_name || "Anonymous",
           reviewerLocation: "Google Maps Reviewer",
           rating: rev.rating || 5,
           text: rev.text || "",
-          date: rev.time ? new Date(rev.time * 1000).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+          date: rev.time
+            ? new Date(rev.time * 1000).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
           productId: "google",
           productName: "Google Review",
           source: "google" as const,
-          status: "approved" as const
+          status: "approved" as const,
         }));
       } else {
-        throw new Error(`No reviews found or place details failed (Status: ${detailsData.status})`);
+        throw new Error(
+          `No reviews found or place details failed (Status: ${detailsData.status})`,
+        );
       }
     } else {
       throw new Error(`Place search failed (Status: ${searchData.status})`);
     }
   } catch (err: any) {
     console.error("==> [Sync] Failed to fetch live Google Reviews:", err);
-    throw new Error(err.message || "Failed to fetch reviews from Google Places API.");
+    throw new Error(
+      err.message || "Failed to fetch reviews from Google Places API.",
+    );
   }
 
   // Clear existing google reviews first to prevent duplicates only after successful fetch
@@ -236,8 +251,8 @@ export async function syncGoogleReviews(businessName: string = "Pankaj Trading C
     {
       $set: {
         lastSyncedAt: new Date().toLocaleString(),
-        businessName: businessName
-      }
-    }
+        businessName: businessName,
+      },
+    },
   );
 }

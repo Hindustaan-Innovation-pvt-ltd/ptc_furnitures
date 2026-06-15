@@ -62,12 +62,21 @@ ${email ? `Email: ${email}` : ""}`;
 
       if (res.ok) {
         const responseData = await res.json();
-        console.log(`[MSG91] SMS alert sent successfully for lead: ${id}`, responseData);
+        console.log(
+          `[MSG91] SMS alert sent successfully for lead: ${id}`,
+          responseData,
+        );
         return { success: true };
       } else {
         const errText = await res.text();
-        console.error(`[MSG91] SMS alert failed with status ${res.status}:`, errText);
-        return { success: false, error: `MSG91 failed (${res.status}): ${errText}` };
+        console.error(
+          `[MSG91] SMS alert failed with status ${res.status}:`,
+          errText,
+        );
+        return {
+          success: false,
+          error: `MSG91 failed (${res.status}): ${errText}`,
+        };
       }
     } catch (err: any) {
       console.error("MSG91 SMS dispatch failed:", err);

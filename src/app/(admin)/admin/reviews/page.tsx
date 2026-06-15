@@ -5,13 +5,13 @@ import {
   Award,
   CheckCircle,
   MessageSquare,
+  Plus,
+  RefreshCw,
   Search,
   ShieldAlert,
   Star,
-  Trash2,
   Store,
-  Plus,
-  RefreshCw,
+  Trash2,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -46,17 +46,19 @@ type GoogleConnection = {
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<ProductReview[]>([]);
-  const [googleConn, setGoogleConn] = useState<GoogleConnection>({ isConnected: false });
-  
+  const [googleConn, setGoogleConn] = useState<GoogleConnection>({
+    isConnected: false,
+  });
+
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
-  
+
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   // Manual Review Dialog Modal state
@@ -116,13 +118,13 @@ export default function AdminReviewsPage() {
     const height = 650;
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
-    
+
     window.open(
       "/api/reviews/google-auth",
       "Google OAuth",
-      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`,
     );
-    
+
     // Fallback timer to disable loading overlay if popup is closed manually
     setTimeout(() => {
       setConnecting(false);
@@ -130,7 +132,11 @@ export default function AdminReviewsPage() {
   }
 
   async function handleGoogleDisconnect() {
-    if (!window.confirm("Are you sure you want to disconnect your Google account? Synced Google Reviews will be removed from the site.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to disconnect your Google account? Synced Google Reviews will be removed from the site.",
+      )
+    ) {
       return;
     }
     setConnecting(true);
@@ -251,7 +257,7 @@ export default function AdminReviewsPage() {
       const data = await response.json();
       if (response.ok && data.success) {
         setReviews((prev) => [data.review, ...prev]);
-        
+
         // Reset form & close modal
         setNewReviewerName("");
         setNewReviewerLoc("");
@@ -272,8 +278,12 @@ export default function AdminReviewsPage() {
 
   // Compute metrics
   const totalReviews = reviews.length;
-  const storefrontReviewsCount = reviews.filter((r) => r.source !== "google").length;
-  const googleReviewsCount = reviews.filter((r) => r.source === "google").length;
+  const storefrontReviewsCount = reviews.filter(
+    (r) => r.source !== "google",
+  ).length;
+  const googleReviewsCount = reviews.filter(
+    (r) => r.source === "google",
+  ).length;
 
   const averageRating =
     reviews.length > 0
@@ -289,7 +299,9 @@ export default function AdminReviewsPage() {
     const matchesSearch =
       review.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       review.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (review.reviewerName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (review.reviewerName || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       review.id.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesRating =
@@ -297,7 +309,7 @@ export default function AdminReviewsPage() {
     const matchesStatus =
       statusFilter === "all" || review.status === statusFilter;
     const matchesSource =
-      sourceFilter === "all" || 
+      sourceFilter === "all" ||
       (sourceFilter === "google" && review.source === "google") ||
       (sourceFilter === "storefront" && review.source !== "google");
 
@@ -349,12 +361,19 @@ export default function AdminReviewsPage() {
                 Google Business Profile Reviews
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl leading-relaxed">
-                Connect your brand's Google Business Account. Once authenticated, PTC Furnitures will sync verified Google Reviews to render on your homepage storefront.
+                Connect your brand's Google Business Account. Once
+                authenticated, PTC Furnitures will sync verified Google Reviews
+                to render on your homepage storefront.
               </p>
               <div className="flex items-center gap-2 mt-2">
-                <span className={`inline-block size-2 rounded-full ${googleConn.isConnected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
+                <span
+                  className={`inline-block size-2 rounded-full ${googleConn.isConnected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`}
+                />
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  Status: {googleConn.isConnected ? `Connected as ${googleConn.accountEmail}` : "Not Connected"}
+                  Status:{" "}
+                  {googleConn.isConnected
+                    ? `Connected as ${googleConn.accountEmail}`
+                    : "Not Connected"}
                 </span>
                 {googleConn.isConnected && googleConn.lastSyncedAt && (
                   <span className="text-[10px] text-slate-400 dark:text-slate-500">
@@ -373,7 +392,9 @@ export default function AdminReviewsPage() {
                   disabled={syncing || connecting}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <RefreshCw className={`size-3.5 ${syncing ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`size-3.5 ${syncing ? "animate-spin" : ""}`}
+                  />
                   {syncing ? "Syncing..." : "Sync Reviews"}
                 </button>
                 <button
@@ -485,7 +506,8 @@ export default function AdminReviewsPage() {
                 Customer Feedback Logs
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Audit review copy, verify star ratings, and toggle moderation status filters.
+                Audit review copy, verify star ratings, and toggle moderation
+                status filters.
               </p>
             </div>
 
@@ -569,7 +591,9 @@ export default function AdminReviewsPage() {
                 <SelectContent>
                   <SelectItem value="all">All Sources</SelectItem>
                   <SelectItem value="google">Google Maps Reviews</SelectItem>
-                  <SelectItem value="storefront">Storefront Products</SelectItem>
+                  <SelectItem value="storefront">
+                    Storefront Products
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -640,7 +664,11 @@ export default function AdminReviewsPage() {
                         <td className="py-4 px-4">
                           {isGoogle ? (
                             <div className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/30 px-2 py-0.5 rounded-full">
-                              <svg className="size-3" viewBox="0 0 24 24" fill="none">
+                              <svg
+                                className="size-3"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                              >
                                 <path
                                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                                   fill="#4285F4"
@@ -682,14 +710,18 @@ export default function AdminReviewsPage() {
                               </span>
                             </div>
                           ) : (
-                            <span className="text-slate-400 font-medium">Anonymous Customer</span>
+                            <span className="text-slate-400 font-medium">
+                              Anonymous Customer
+                            </span>
                           )}
                         </td>
 
                         {/* Target Product */}
                         <td className="py-4 px-4 font-semibold text-slate-800 dark:text-slate-200">
                           {isGoogle ? (
-                            <span className="text-slate-400 italic">Pankaj Trading Co. (General)</span>
+                            <span className="text-slate-400 italic">
+                              Pankaj Trading Co. (General)
+                            </span>
                           ) : (
                             review.productName
                           )}
@@ -698,18 +730,22 @@ export default function AdminReviewsPage() {
                         {/* Rating Stars */}
                         <td className="py-4 px-4 text-center">
                           <div className="flex items-center justify-center gap-0.5 text-amber-500">
-                            {Array.from({ length: review.rating }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className="size-3 fill-amber-500 text-amber-500"
-                              />
-                            ))}
-                            {Array.from({ length: 5 - review.rating }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className="size-3 text-slate-200 dark:text-slate-800"
-                              />
-                            ))}
+                            {Array.from({ length: review.rating }).map(
+                              (_, i) => (
+                                <Star
+                                  key={i}
+                                  className="size-3 fill-amber-500 text-amber-500"
+                                />
+                              ),
+                            )}
+                            {Array.from({ length: 5 - review.rating }).map(
+                              (_, i) => (
+                                <Star
+                                  key={i}
+                                  className="size-3 text-slate-200 dark:text-slate-800"
+                                />
+                              ),
+                            )}
                           </div>
                         </td>
 
@@ -809,7 +845,6 @@ export default function AdminReviewsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs select-none animate-fade-in">
           <div className="relative w-full max-w-125 bg-white dark:bg-[#111318] border border-slate-200 dark:border-white/5 rounded-3xl p-6 shadow-2xl flex flex-col gap-5 text-slate-800 dark:text-slate-100 animate-scale-up">
-            
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4">
               <div className="flex items-center gap-2">
@@ -852,7 +887,10 @@ export default function AdminReviewsPage() {
             )}
 
             {/* Modal Form */}
-            <form onSubmit={handleAddGoogleReview} className="flex flex-col gap-4">
+            <form
+              onSubmit={handleAddGoogleReview}
+              className="flex flex-col gap-4"
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">

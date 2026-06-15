@@ -3,8 +3,9 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { ThemeProvider } from "@/components/theme-provider";
 import ScrollToTop from "@/components/custom/ScrollToTop";
+import AuthProvider from "@/components/providers/AuthProvider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   description:
     "Portfolio of PTC Furnitures, showcasing our latest collections and designs.",
   icons: {
-    icon: "/PTC.png",
+    icon: "/logo-white.svg",
   },
 };
 
@@ -46,7 +47,9 @@ export default function RootLayout({
         inter.variable,
       )}
     >
-      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || ''} />
+      <GoogleAnalytics
+        gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || ""}
+      />
       <body className="min-h-screen overflow-x-hidden">
         <ThemeProvider
           attribute="class"
@@ -54,10 +57,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Suspense fallback={null}>
-            <ScrollToTop />
-          </Suspense>
-          {children}
+          <AuthProvider>
+            <Suspense fallback={null}>
+              <ScrollToTop />
+            </Suspense>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

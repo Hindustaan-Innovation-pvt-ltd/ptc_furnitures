@@ -1,5 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { BrandModel, Product as ProductModel, StoredFile } from "./db-models";
+import {
+  BrandLogoModel,
+  BrandModel,
+  BrandWatermarkModel,
+  Product as ProductModel,
+  StoredFile,
+} from "./db-models";
 import { connectToDatabase } from "./mongodb";
 
 export type Product = {
@@ -85,7 +91,10 @@ export async function purgeUploadFile(imagePath: string): Promise<void> {
  * Permanently removes all disk files (watermarked + original) for a product.
  * Should only be called after explicit admin confirmation in the UI.
  */
-export async function purgeProductFiles(imagePaths: string[], originalImagePaths: string[]): Promise<void> {
+export async function purgeProductFiles(
+  imagePaths: string[],
+  originalImagePaths: string[],
+): Promise<void> {
   const allPaths = [...new Set([...imagePaths, ...originalImagePaths])];
   await Promise.all(allPaths.map((p) => purgeUploadFile(p)));
 }
@@ -136,7 +145,9 @@ export function isBrandInput(value: unknown): value is { name: string } {
 export async function readProducts(): Promise<Product[]> {
   try {
     await connectToDatabase();
-    const docs = await ProductModel.find().sort({ position: 1, createdAt: -1 }).lean();
+    const docs = await ProductModel.find()
+      .sort({ position: 1, createdAt: -1 })
+      .lean();
     return docs.map((doc: any) => ({
       id: doc.id,
       brand: doc.brand || "",
@@ -203,15 +214,83 @@ export async function addBrand(name: string): Promise<Brand> {
   return normalizedBrand;
 }
 
+export async function updateBrand(
+  oldName: string,
+  newName: string,
+): Promise<void> {
+  const normalizedOld = oldName.trim().replace(/\s+/g, " ");
+  const normalizedNew = newName.trim().replace(/\s+/g, " ");
+
+  if (!normalizedNew) {
+    throw new Error("Brand name is required.");
+  }
+
+  if (normalizedOld.toLowerCase() === normalizedNew.toLowerCase()) {
+    if (normalizedOld === normalizedNew) return;
+  }
+
+  await connectToDatabase();
+
+  const escapedNew = normalizedNew.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const existingBrand = await BrandModel.findOne({
+    name: { $regex: new RegExp(`^${escapedNew}$`, "i") },
+  });
+
+  if (
+    existingBrand &&
+    existingBrand.name.toLowerCase() !== normalizedOld.toLowerCase()
+  ) {
+    throw new Error("Brand already exists.");
+  }
+
+  const escapedOld = normalizedOld.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const oldRegex = new RegExp(`^${escapedOld}$`, "i");
+
+  // Update brand name
+  await BrandModel.updateOne({ name: oldRegex }, { name: normalizedNew });
+
+  // Update products referencing this brand name
+  await ProductModel.updateMany({ brand: oldRegex }, { brand: normalizedNew });
+
+  // Update BrandLogo
+  await BrandLogoModel.updateOne({ brand: oldRegex }, { brand: normalizedNew });
+
+  // Update BrandWatermark
+  await BrandWatermarkModel.updateOne(
+    { brand: oldRegex },
+    { brand: normalizedNew },
+  );
+}
+
+export async function deleteBrand(name: string): Promise<void> {
+  const normalized = name.trim().replace(/\s+/g, " ");
+  await connectToDatabase();
+
+  const escaped = normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`^${escaped}$`, "i");
+
+  // Delete brand
+  await BrandModel.deleteOne({ name: regex });
+
+  // Update products referencing this brand to empty string
+  await ProductModel.updateMany({ brand: regex }, { brand: "" });
+
+  // Delete logo
+  await BrandLogoModel.deleteOne({ brand: regex });
+
+  // Delete watermark
+  await BrandWatermarkModel.deleteOne({ brand: regex });
+}
+
 export async function addProduct(product: ProductInput): Promise<Product> {
   await connectToDatabase();
- 
+
   const normalizedImages = product.images
     .map((image) => image.trim())
     .filter((image) => image.length > 0);
- 
+
   const newId = randomUUID();
- 
+
   const doc = await ProductModel.create({
     id: newId,
     brand: product.brand.trim().replace(/\s+/g, " "),
@@ -227,7 +306,7 @@ export async function addProduct(product: ProductInput): Promise<Product> {
     premium: !!product.premium,
     position: product.position ?? 0,
   });
- 
+
   return {
     id: doc.id,
     brand: doc.brand || "",
@@ -273,7 +352,9 @@ export async function updateProduct(
   // occurs when lean() is chained on findOneAndUpdate for non-_id filters.
   // The document's existence was already confirmed above via findOne.
   const finalImages =
-    normalizedImages.length > 0 ? normalizedImages : (existingDoc.images as string[]);
+    normalizedImages.length > 0
+      ? normalizedImages
+      : (existingDoc.images as string[]);
   const finalOriginalImages =
     product.originalImages ||
     (existingDoc.originalImages as string[] | undefined) ||
@@ -318,7 +399,10 @@ export async function updateProduct(
     tag: product.tag?.trim() || undefined,
     customFields: product.customFields || [],
     premium: !!product.premium,
-    position: product.position !== undefined ? product.position : (existingDoc.position ?? 0),
+    position:
+      product.position !== undefined
+        ? product.position
+        : (existingDoc.position ?? 0),
   };
 }
 
@@ -334,10 +418,7 @@ export async function deleteProduct(
 
   // Clean up legacy MongoDB StoredFile records (if any).
   // Disk files are preserved on purpose — use purgeProductFiles() for explicit deletion.
-  const allImagePaths = [
-    ...(doc.images || []),
-    ...(doc.originalImages || []),
-  ];
+  const allImagePaths = [...(doc.images || []), ...(doc.originalImages || [])];
   if (allImagePaths.length > 0) {
     await deleteStoredFiles(allImagePaths);
   }

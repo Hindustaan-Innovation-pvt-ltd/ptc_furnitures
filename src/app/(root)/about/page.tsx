@@ -1,11 +1,17 @@
-"use client"
+"use client";
+import {
+  Armchair,
+  ChevronLeft,
+  ChevronRight,
+  ShieldCheck,
+  Tag,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useTheme } from "next-themes";
+import React, { useEffect, useRef, useState } from "react";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, ShieldCheck, Tag, Armchair } from "lucide-react";
-import React, { useEffect, useState, useRef } from "react";
 
 function Counter({ value }: { value: string }) {
   const [displayValue, setDisplayValue] = useState(0);
@@ -27,7 +33,7 @@ function Counter({ value }: { value: string }) {
           observer.unobserve(el);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observer.observe(el);
@@ -61,7 +67,8 @@ function Counter({ value }: { value: string }) {
 
   return (
     <span ref={elementRef} className="tabular-nums">
-      {displayValue.toLocaleString()}{suffix}
+      {displayValue.toLocaleString()}
+      {suffix}
     </span>
   );
 }
@@ -80,7 +87,7 @@ const premiumChairs = [
   {
     name: "AL - 233",
     image: "/upload/02c6e70d-df56-4b76-8bb1-376b66724707_original.webp",
-    brand: "ALTECH"
+    brand: "ALTECH",
   },
   {
     name: "AL - 57",
@@ -101,11 +108,11 @@ const premiumChairs = [
     name: "PO - 322 Luxury",
     image: "/upload/9e5c705e-78e7-49d6-bb25-b5063cb9fee2.webp",
     brand: "PTC",
-  }
+  },
 ];
 
 export default function page() {
-  const { theme } = useTheme()
+  const { theme } = useTheme();
   const [activeChairIndex, setActiveChairIndex] = useState(0);
   const [activeDirection, setActiveDirection] = useState(1);
 
@@ -116,7 +123,9 @@ export default function page() {
 
   const handlePrevChair = React.useCallback(() => {
     setActiveDirection(-1);
-    setActiveChairIndex((prev) => (prev - 1 + premiumChairs.length) % premiumChairs.length);
+    setActiveChairIndex(
+      (prev) => (prev - 1 + premiumChairs.length) % premiumChairs.length,
+    );
   }, []);
 
   useEffect(() => {
@@ -158,13 +167,13 @@ export default function page() {
               Built on a Belief in <span className="text-red-700">Better</span>.
             </h2>
             <p className="max-w-xl text-sm leading-10 sm:text-2xl">
-              We create workspaces that redefine
-              comfort and productivity with ergonomic,
-              stylish, and durable seating solutions.
+              We create workspaces that redefine comfort and productivity with
+              ergonomic, stylish, and durable seating solutions.
             </p>
             <p className="max-w-xl text-sm leading-10 sm:text-2xl">
-              Trusted by businesses and institutions
-              across Chhattisgarh and Orissa.            </p>
+              Trusted by businesses and institutions across Chhattisgarh and
+              Orissa.{" "}
+            </p>
           </div>
           <div className="grid grid-cols-2 border-t border-slate-600 divide-x divide-y divide-slate-200 dark:bg-stone-900/90 dark:divide-slate-600 sm:grid-cols-4 sm:divide-y-0">
             {[
@@ -214,7 +223,7 @@ export default function page() {
                   enter: (direction: number) => ({
                     x: direction > 0 ? 150 : -150,
                     opacity: 0,
-                    scale: 0.95
+                    scale: 0.95,
                   }),
                   center: {
                     x: 0,
@@ -222,8 +231,8 @@ export default function page() {
                     scale: 1,
                     transition: {
                       duration: 0.4,
-                      ease: "easeOut"
-                    }
+                      ease: "easeOut",
+                    },
                   },
                   exit: (direction: number) => ({
                     x: direction > 0 ? -150 : 150,
@@ -231,9 +240,9 @@ export default function page() {
                     scale: 0.95,
                     transition: {
                       duration: 0.3,
-                      ease: "easeIn"
-                    }
-                  })
+                      ease: "easeIn",
+                    },
+                  }),
                 }}
                 initial="enter"
                 animate="center"
@@ -249,7 +258,7 @@ export default function page() {
                     transition={{
                       duration: 5,
                       repeat: Infinity,
-                      ease: "easeInOut"
+                      ease: "easeInOut",
                     }}
                     src={premiumChairs[activeChairIndex].image}
                     alt={premiumChairs[activeChairIndex].name}
@@ -289,10 +298,11 @@ export default function page() {
                     setActiveDirection(idx > activeChairIndex ? 1 : -1);
                     setActiveChairIndex(idx);
                   }}
-                  className={`h-2 rounded-full transition-all duration-300 ${idx === activeChairIndex
-                    ? "w-6 bg-red-600 dark:bg-red-500"
-                    : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
-                    }`}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    idx === activeChairIndex
+                      ? "w-6 bg-red-600 dark:bg-red-500"
+                      : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
+                  }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
@@ -343,10 +353,34 @@ export default function page() {
 
             <div className="space-y-6 text-stone-600 dark:text-stone-300 text-base sm:text-lg lg:text-xl font-light leading-relaxed">
               <p>
-                We deliver <span className="text-red-700 font-semibold dark:text-red-400">affordable</span> seating solutions with a wide <span className="text-red-700 font-semibold dark:text-red-400">variety</span> of designs, tailored for <span className="text-red-700 font-semibold dark:text-red-400">bulk purchases</span> and modern workspace needs.
+                We deliver{" "}
+                <span className="text-red-700 font-semibold dark:text-red-400">
+                  affordable
+                </span>{" "}
+                seating solutions with a wide{" "}
+                <span className="text-red-700 font-semibold dark:text-red-400">
+                  variety
+                </span>{" "}
+                of designs, tailored for{" "}
+                <span className="text-red-700 font-semibold dark:text-red-400">
+                  bulk purchases
+                </span>{" "}
+                and modern workspace needs.
               </p>
               <p>
-                Our mission is to combine <span className="text-red-700 font-semibold dark:text-red-400">comfort</span>, <span className="text-red-700 font-semibold dark:text-red-400">quality</span>, and <span className="text-red-700 font-semibold dark:text-red-400">adaptability</span> with today's evolving workplace trends.
+                Our mission is to combine{" "}
+                <span className="text-red-700 font-semibold dark:text-red-400">
+                  comfort
+                </span>
+                ,{" "}
+                <span className="text-red-700 font-semibold dark:text-red-400">
+                  quality
+                </span>
+                , and{" "}
+                <span className="text-red-700 font-semibold dark:text-red-400">
+                  adaptability
+                </span>{" "}
+                with today's evolving workplace trends.
               </p>
             </div>
           </div>
@@ -385,7 +419,11 @@ export default function page() {
                   initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.15 }}
-                  transition={{ duration: 0.55, delay: index * 0.12, ease: "easeOut" }}
+                  transition={{
+                    duration: 0.55,
+                    delay: index * 0.12,
+                    ease: "easeOut",
+                  }}
                   className="border bg-white p-6 dark:border-white/10 dark:bg-white/6 hover:shadow-lg transition-shadow duration-300 rounded-lg group"
                 >
                   <div className="mx-auto mb-4 flex h-52 w-full items-center justify-center bg-slate-50 dark:bg-slate-900/40 sm:h-60 overflow-hidden rounded-md relative">
@@ -396,7 +434,9 @@ export default function page() {
                     />
                   </div>
                   <div className="text-start">
-                    <h4 className="mb-2 text-lg font-semibold text-stone-900 dark:text-stone-100">{item.title}</h4>
+                    <h4 className="mb-2 text-lg font-semibold text-stone-900 dark:text-stone-100">
+                      {item.title}
+                    </h4>
                     <p className="text-xs text-stone-500 dark:text-stone-400 lg:text-sm leading-relaxed">
                       {item.description}
                     </p>

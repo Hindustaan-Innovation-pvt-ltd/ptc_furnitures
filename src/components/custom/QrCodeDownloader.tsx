@@ -1,9 +1,9 @@
 "use client";
+import { sendGAEvent } from "@next/third-parties/google";
 import { Download } from "lucide-react";
 import React from "react";
 import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
 import { Button } from "@/components/ui/button";
-import { sendGAEvent } from "@next/third-parties/google";
 
 type QrCodeDownloaderProps = {
   qrImage: string;

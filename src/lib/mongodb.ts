@@ -29,8 +29,10 @@ export async function connectToDatabase() {
         try {
           // Dynamic imports to break circular dependencies at startup
           const { loadLogosIntoCache } = await import("./brand-logos");
-          const { loadWatermarksIntoCache } = await import("./brand-watermarks");
-          
+          const { loadWatermarksIntoCache } = await import(
+            "./brand-watermarks"
+          );
+
           await loadLogosIntoCache();
           await loadWatermarksIntoCache();
         } catch (err) {

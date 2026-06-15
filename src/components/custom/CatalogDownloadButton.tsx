@@ -1,7 +1,7 @@
 "use client";
+import { sendGAEvent } from "@next/third-parties/google";
 import React from "react";
 import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
-import { sendGAEvent } from "@next/third-parties/google";
 
 type CatalogDownloadButtonProps = {
   /** The URL to download (PDF) */

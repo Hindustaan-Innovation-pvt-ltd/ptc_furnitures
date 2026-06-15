@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { type ReactNode, useState } from "react";
 
 type AdminDashboardShellProps = {
@@ -274,11 +275,11 @@ export default function AdminDashboardShell({
           })}
         </nav>
 
-        {/* Sidebar Footer - Exit link */}
-        <div className="border-t border-slate-100 dark:border-white/5 pt-4">
+        {/* Sidebar Footer - Exit & Sign Out links */}
+        <div className="border-t border-slate-100 dark:border-white/5 pt-4 flex flex-col gap-1">
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
           >
             <svg
               width="20"
@@ -297,6 +298,27 @@ export default function AdminDashboardShell({
             </svg>
             Back to Storefront
           </Link>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="flex w-full items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all text-left border-none cursor-pointer"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Sign Out
+          </button>
         </div>
       </aside>
 
@@ -399,11 +421,11 @@ export default function AdminDashboardShell({
               })}
             </div>
 
-            <div className="border-t border-slate-100 dark:border-white/5 pt-4">
+            <div className="border-t border-slate-100 dark:border-white/5 pt-4 flex flex-col gap-1">
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
               >
                 <svg
                   width="20"
@@ -422,6 +444,30 @@ export default function AdminDashboardShell({
                 </svg>
                 Exit Dashboard
               </Link>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all text-left border-none cursor-pointer"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Sign Out
+              </button>
             </div>
           </nav>
         </div>
