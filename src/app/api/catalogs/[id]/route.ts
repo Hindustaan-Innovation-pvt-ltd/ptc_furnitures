@@ -8,7 +8,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, description, productIds, theme, type, pdfUrl } = body;
+    const { title, description, productIds, theme, type, pdfUrl, isDefault } = body;
 
     const savedCatalog = await updateCatalog(id, {
       title,
@@ -17,6 +17,7 @@ export async function PUT(
       theme,
       type,
       pdfUrl,
+      isDefault: isDefault !== undefined ? !!isDefault : undefined,
     });
 
     if (!savedCatalog) {

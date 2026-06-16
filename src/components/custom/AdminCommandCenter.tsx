@@ -104,12 +104,12 @@ export default function AdminCommandCenter() {
     try {
       const [resProd, resBrand, resCat, resBank, resRev, resLead] =
         await Promise.all([
-          fetch("/api/products").then((r) => r.json()),
-          fetch("/api/brands").then((r) => r.json()),
-          fetch("/api/catalogs").then((r) => r.json()),
-          fetch("/api/banking").then((r) => r.json()),
-          fetch("/api/reviews").then((r) => r.json()),
-          fetch("/api/leads").then((r) => r.json()),
+          fetch("/api/products", { cache: "no-store" }).then((r) => r.json()),
+          fetch("/api/brands", { cache: "no-store" }).then((r) => r.json()),
+          fetch("/api/catalogs", { cache: "no-store" }).then((r) => r.json()),
+          fetch("/api/banking", { cache: "no-store" }).then((r) => r.json()),
+          fetch("/api/reviews", { cache: "no-store" }).then((r) => r.json()),
+          fetch("/api/leads", { cache: "no-store" }).then((r) => r.json()),
         ]);
 
       if (resProd.products) setProducts(resProd.products);

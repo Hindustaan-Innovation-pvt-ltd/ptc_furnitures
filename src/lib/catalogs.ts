@@ -12,6 +12,7 @@ export type Catalog = {
   createdAt: string;
   theme?: "minimal" | "gold" | "dark";
   brand?: string;
+  isDefault?: boolean;
 };
 
 export type CatalogInput = {
@@ -22,6 +23,7 @@ export type CatalogInput = {
   productIds?: string[];
   theme?: "minimal" | "gold" | "dark";
   brand?: string;
+  isDefault?: boolean;
 };
 
 export async function readCatalogs(): Promise<Catalog[]> {
@@ -38,6 +40,7 @@ export async function readCatalogs(): Promise<Catalog[]> {
       createdAt: doc.createdAt,
       theme: doc.theme || "minimal",
       brand: doc.brand || undefined,
+      isDefault: doc.isDefault || false,
     }));
   } catch (error) {
     console.error("Failed to read catalogs from database:", error);
@@ -52,6 +55,11 @@ export async function writeCatalogs(_catalogs: Catalog[]): Promise<void> {
 export async function addCatalog(input: CatalogInput): Promise<Catalog> {
   await connectToDatabase();
 
+  const isDefault = input.isDefault || false;
+  if (isDefault) {
+    await CatalogModel.updateMany({}, { $set: { isDefault: false } });
+  }
+
   const newCatalog: Catalog = {
     id: randomUUID(),
     title: input.title.trim(),
@@ -62,6 +70,7 @@ export async function addCatalog(input: CatalogInput): Promise<Catalog> {
     createdAt: new Date().toISOString(),
     theme: input.theme || "minimal",
     brand: input.brand?.trim() || undefined,
+    isDefault,
   };
 
   await CatalogModel.create(newCatalog);
@@ -90,6 +99,12 @@ export async function updateCatalog(
   if (input.theme !== undefined) updates.theme = input.theme;
   if (input.brand !== undefined)
     updates.brand = input.brand.trim() || undefined;
+  if (input.isDefault !== undefined) {
+    updates.isDefault = input.isDefault;
+    if (input.isDefault) {
+      await CatalogModel.updateMany({ id: { $ne: id } }, { $set: { isDefault: false } });
+    }
+  }
 
   const result = await CatalogModel.updateOne({ id }, { $set: updates });
 
@@ -107,6 +122,7 @@ export async function updateCatalog(
     createdAt: existing.createdAt,
     theme: updates.theme ?? existing.theme ?? "minimal",
     brand: updates.brand ?? existing.brand ?? undefined,
+    isDefault: updates.isDefault ?? existing.isDefault ?? false,
   };
 }
 
@@ -141,5 +157,6 @@ export async function deleteCatalog(id: string): Promise<Catalog | null> {
     createdAt: doc.createdAt,
     theme: doc.theme || "minimal",
     brand: doc.brand || undefined,
+    isDefault: doc.isDefault || false,
   };
 }

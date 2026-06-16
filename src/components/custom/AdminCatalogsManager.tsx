@@ -42,6 +42,7 @@ export default function AdminCatalogsManager({
 
   // PDF File Upload State
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isDefault, setIsDefault] = useState(false);
 
   // Custom Catalog Product Selection State
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
@@ -125,6 +126,7 @@ export default function AdminCatalogsManager({
         formData.append("theme", theme);
         formData.append("brand", selectedBrand);
         formData.append("pdfFile", pdfFile);
+        formData.append("isDefault", String(isDefault));
 
         const response = await fetch("/api/catalogs", {
           method: "POST",
@@ -157,6 +159,7 @@ export default function AdminCatalogsManager({
             theme,
             brand: selectedBrand || undefined,
             productIds: selectedProductIds,
+            isDefault,
           }),
         });
 
@@ -173,14 +176,14 @@ export default function AdminCatalogsManager({
       setDescription("");
       setSelectedBrand("");
       setPdfFile(null);
+      setIsDefault(false);
       setSelectedProductIds([]);
       setActiveTab("list");
 
       // Reload
       startTransition(() => {
         router.refresh();
-        // Simple client reload to update component state
-        fetch("/api/catalogs")
+        fetch("/api/catalogs", { cache: "no-store" })
           .then((res) => res.json())
           .then((data) => {
             if (data.catalogs) setCatalogs(data.catalogs);
@@ -215,6 +218,37 @@ export default function AdminCatalogsManager({
       });
     } catch (err) {
       alert(err instanceof Error ? err.message : "Error deleting catalog.");
+    }
+  };
+
+  const handleSetDefault = async (id: string) => {
+    try {
+      const response = await fetch(`/api/catalogs/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          isDefault: true,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to set default catalog.");
+      }
+
+      setCatalogs((prev) =>
+        prev.map((c) => ({
+          ...c,
+          isDefault: c.id === id,
+        }))
+      );
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error setting default catalog.");
     }
   };
 
@@ -382,6 +416,14 @@ export default function AdminCatalogsManager({
                                   {catalog.brand}
                                 </span>
                               )}
+                              {catalog.isDefault && (
+                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5">
+                                  <svg className="w-2 h-2 fill-current" viewBox="0 0 24 24">
+                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                                  </svg>
+                                  Default
+                                </span>
+                              )}
                             </div>
                             <span className="text-[9px] text-slate-400">
                               {new Date(catalog.createdAt).toLocaleDateString(
@@ -467,15 +509,26 @@ export default function AdminCatalogsManager({
                             )}
                           </a>
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDelete(catalog.id, catalog.title)
-                            }
-                            className="text-xs font-bold text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition"
-                          >
-                            Delete
-                          </button>
+                          <div className="flex items-center gap-3">
+                            {catalog.type === "pdf" && !catalog.isDefault && (
+                              <button
+                                type="button"
+                                onClick={() => handleSetDefault(catalog.id)}
+                                className="text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition"
+                              >
+                                Set as Default
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDelete(catalog.id, catalog.title)
+                              }
+                              className="text-xs font-bold text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -613,58 +666,75 @@ export default function AdminCatalogsManager({
           {/* DYNAMIC FORM SEGMENTS */}
           {type === "pdf" ? (
             /* PDF UPLOADER BOX */
-            <div className="grid gap-2 border border-slate-200/60 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-white/5 p-5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Brochure File (PDF Only) *
-              </label>
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl p-8 bg-white dark:bg-[#111318] text-center">
-                <svg
-                  width="32"
-                  height="32"
-                  className="text-slate-400 mb-3"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
+            <div className="grid gap-4 border border-slate-200/60 dark:border-white/5 rounded-2xl bg-slate-50/50 dark:bg-white/5 p-5">
+              <div className="grid gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Brochure File (PDF Only) *
+                </label>
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl p-8 bg-white dark:bg-[#111318] text-center">
+                  <svg
+                    width="32"
+                    height="32"
+                    className="text-slate-400 mb-3"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                  </svg>
+                  {pdfFile ? (
+                    <div>
+                      <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                        {pdfFile.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {(pdfFile.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setPdfFile(null)}
+                        className="text-xs font-bold text-slate-400 hover:text-red-500 mt-2 block mx-auto underline"
+                      >
+                        Clear and Choose Another
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        id="pdfFileInput"
+                        className="hidden"
+                        onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                      />
+                      <label
+                        htmlFor="pdfFileInput"
+                        className="inline-block px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/60 dark:border-white/10 text-xs font-bold rounded-full cursor-pointer text-slate-700 dark:text-slate-300 transition"
+                      >
+                        Select PDF File
+                      </label>
+                      <p className="text-[10px] text-slate-400 mt-2">
+                        Maximum file upload size 20MB
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="isDefaultCheckbox"
+                  checked={isDefault}
+                  onChange={(e) => setIsDefault(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 dark:border-white/10 text-red-600 focus:ring-red-500 cursor-pointer"
+                />
+                <label
+                  htmlFor="isDefaultCheckbox"
+                  className="text-xs font-bold text-slate-650 dark:text-slate-300 cursor-pointer select-none"
                 >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                </svg>
-                {pdfFile ? (
-                  <div>
-                    <p className="text-sm font-bold text-red-600 dark:text-red-400">
-                      {pdfFile.name}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
-                      {(pdfFile.size / (1024 * 1024)).toFixed(2)} MB
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setPdfFile(null)}
-                      className="text-xs font-bold text-slate-400 hover:text-red-500 mt-2 block mx-auto underline"
-                    >
-                      Clear and Choose Another
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      id="pdfFileInput"
-                      className="hidden"
-                      onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-                    />
-                    <label
-                      htmlFor="pdfFileInput"
-                      className="inline-block px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/60 dark:border-white/10 text-xs font-bold rounded-full cursor-pointer text-slate-700 dark:text-slate-300 transition"
-                    >
-                      Select PDF File
-                    </label>
-                    <p className="text-[10px] text-slate-400 mt-2">
-                      Maximum file upload size 20MB
-                    </p>
-                  </div>
-                )}
+                  Set as Default Official Catalog for Download (replaces current default)
+                </label>
               </div>
             </div>
           ) : (

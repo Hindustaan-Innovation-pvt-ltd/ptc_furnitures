@@ -7,7 +7,14 @@ import { addCatalog, readCatalogs } from "@/lib/catalogs";
 export async function GET() {
   try {
     const catalogs = await readCatalogs();
-    return NextResponse.json({ catalogs });
+    return NextResponse.json(
+      { catalogs },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0, must-revalidate",
+        },
+      },
+    );
   } catch (error) {
     return NextResponse.json(
       {
@@ -30,6 +37,7 @@ export async function POST(request: Request) {
       const theme = (formData.get("theme") as string) || "minimal";
       const brand = (formData.get("brand") as string) || "";
       const pdfFile = formData.get("pdfFile") as File;
+      const isDefault = formData.get("isDefault") === "true";
 
       if (!title || !title.trim()) {
         return NextResponse.json(
@@ -67,6 +75,7 @@ export async function POST(request: Request) {
         productIds: [],
         theme: theme as "minimal" | "gold" | "dark",
         brand: brand || undefined,
+        isDefault,
       });
 
       return NextResponse.json({ catalog: savedCatalog }, { status: 201 });
@@ -74,7 +83,7 @@ export async function POST(request: Request) {
 
     // JSON body (custom digital catalogs)
     const body = await request.json();
-    const { title, description, productIds, theme, brand } = body;
+    const { title, description, productIds, theme, brand, isDefault } = body;
 
     if (!title || !title.trim()) {
       return NextResponse.json(
@@ -90,6 +99,7 @@ export async function POST(request: Request) {
       productIds: productIds || [],
       theme: theme || "minimal",
       brand: brand || undefined,
+      isDefault: !!isDefault,
     });
 
     return NextResponse.json({ catalog: savedCatalog }, { status: 201 });

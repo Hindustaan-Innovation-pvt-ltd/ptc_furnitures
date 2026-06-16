@@ -113,6 +113,7 @@ export interface ICatalog extends Document {
   createdAt: string;
   theme?: "minimal" | "gold" | "dark";
   brand?: string;
+  isDefault?: boolean;
 }
 
 const CatalogSchema = new Schema<ICatalog>({
@@ -129,6 +130,7 @@ const CatalogSchema = new Schema<ICatalog>({
     default: "minimal",
   },
   brand: { type: String },
+  isDefault: { type: Boolean, default: false },
 });
 
 export const CatalogModel =

@@ -82,7 +82,7 @@ function NavigationContent() {
     if (downloadState !== "idle") return;
     setDownloadState("loading");
     try {
-      const res = await fetch("/api/catalogs");
+      const res = await fetch("/api/catalogs", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch catalogs");
       const data = await res.json();
 
@@ -92,11 +92,11 @@ function NavigationContent() {
       let downloadUrl = "/uploads/catalogs/ptc-furniture-brochure-2026.pdf";
       let fileName = "ptc-furniture-brochure-2026.pdf";
 
-      if (pdfCatalogs.length > 0) {
-        const latestPdf = pdfCatalogs[0];
-        downloadUrl = latestPdf.pdfUrl;
+      const defaultPdf = pdfCatalogs.find((c: any) => c.isDefault);
+      if (defaultPdf) {
+        downloadUrl = defaultPdf.pdfUrl;
         fileName =
-          latestPdf.pdfUrl.split("/").pop() || "ptc-furniture-brochure.pdf";
+          defaultPdf.pdfUrl.split("/").pop() || "ptc-furniture-brochure.pdf";
       }
 
       // Save lead to database

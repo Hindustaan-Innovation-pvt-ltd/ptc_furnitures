@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
@@ -8,6 +9,7 @@ import {
 import { connectToDatabase } from "@/lib/mongodb";
 
 export async function GET(request: Request) {
+  await headers();
   try {
     const { searchParams } = new URL(request.url);
     const src = searchParams.get("src") || "";

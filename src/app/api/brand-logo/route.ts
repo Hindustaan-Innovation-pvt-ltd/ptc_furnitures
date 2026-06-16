@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
@@ -6,6 +7,7 @@ import { StoredFile } from "@/lib/db-models";
 import { connectToDatabase } from "@/lib/mongodb";
 
 export async function GET(request: Request) {
+  await headers();
   try {
     const { searchParams } = new URL(request.url);
     const brand = searchParams.get("brand") || "";
