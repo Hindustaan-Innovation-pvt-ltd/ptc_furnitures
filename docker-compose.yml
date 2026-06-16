@@ -47,8 +47,7 @@ services:
       mongodb:
         condition: service_healthy
     volumes:
-      - media_uploads:/app/public/upload
+      - ./public/upload:/app/public/upload
 
 volumes:
   mongodb_data:
-  media_uploads:

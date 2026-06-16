@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   reactCompiler: true,
   images: {
+    unoptimized: true,
     dangerouslyAllowLocalIP: true,
     remotePatterns: [
       {

@@ -113,8 +113,9 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 # Expose port 3000 to allow HTTP traffic
 EXPOSE 3000
 
-# Start Next.js standalone server, restoring pre-seeded images to the volume mount if missing
-# We need to run as root briefly to fix volume ownership (Docker mounts volumes owned by root)
-# then drop back to node to run the server
+# Copy the entrypoint script and set it as the entrypoint
+COPY --from=builder /app/scripts/docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 USER root
-CMD ["sh", "-c", "mkdir -p /app/public/upload && chown -R node:node /app/public/upload && su node -s /bin/sh -c 'cp -rn /app/public/upload_default/. /app/public/upload/ 2>/dev/null; node /app/server.js'"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
