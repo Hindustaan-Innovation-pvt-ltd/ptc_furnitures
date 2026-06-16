@@ -103,7 +103,27 @@ export async function compositeBrandWatermark(
         "public",
         logo.src.replace(/^\//, ""),
       );
-      logoBuffer = await fs.readFile(logoPath);
+      try {
+        logoBuffer = await fs.readFile(logoPath);
+      } catch (err: any) {
+        if (logo.src.startsWith("/upload/") || logo.src.startsWith("/uploads/")) {
+          try {
+            console.log(`==> [compositeBrandWatermark] Local logo not found: ${logoPath}. Fetching remote fallback: https://ptcfurnitures.com${logo.src}`);
+            const response = await fetch(`https://ptcfurnitures.com${logo.src}`);
+            if (response.ok) {
+              const arrayBuffer = await response.arrayBuffer();
+              logoBuffer = Buffer.from(arrayBuffer);
+            } else {
+              throw err;
+            }
+          } catch (fetchErr) {
+            console.error(`==> [compositeBrandWatermark] Failed to fetch remote fallback logo:`, fetchErr);
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
     }
 
     // Standardize/resize the input image buffer to a uniform 800x800 square transparent canvas first
@@ -197,6 +217,19 @@ export async function rewatermarkImage(
           "Failed to read local file for re-watermarking:",
           err.message,
         );
+        if (cleanSource.startsWith("/upload/") || cleanSource.startsWith("/uploads/")) {
+          try {
+            console.log(`==> [rewatermarkImage] Local image not found: ${cleanSource}. Fetching remote fallback: https://ptcfurnitures.com${cleanSource}`);
+            const res = await fetch(`https://ptcfurnitures.com${cleanSource}`);
+            if (res.ok) {
+              imageBuffer = Buffer.from(await res.arrayBuffer());
+              isLocalUpload = true;
+              originalFilename = path.basename(cleanSource);
+            }
+          } catch (fetchErr: any) {
+            console.error(`==> [rewatermarkImage] Failed to fetch remote fallback image:`, fetchErr.message);
+          }
+        }
       }
     } else {
       // It is a remote URL or base64 data URI from MongoDB — fetch it
@@ -227,7 +260,19 @@ export async function rewatermarkImage(
         imageBuffer = origBuffer;
         originalFilename = checkOrigFilename;
       } catch {
-        // use existing buffer
+        if (cleanSource.startsWith("/upload/") || cleanSource.startsWith("/uploads/")) {
+          try {
+            const remoteOrigUrl = `https://ptcfurnitures.com/upload/${checkOrigFilename}`;
+            console.log(`==> [rewatermarkImage] Local original image not found. Fetching remote original: ${remoteOrigUrl}`);
+            const res = await fetch(remoteOrigUrl);
+            if (res.ok) {
+              imageBuffer = Buffer.from(await res.arrayBuffer());
+              originalFilename = checkOrigFilename;
+            }
+          } catch (fetchErr: any) {
+            console.error(`==> [rewatermarkImage] Failed to fetch remote original image:`, fetchErr.message);
+          }
+        }
       }
     }
 

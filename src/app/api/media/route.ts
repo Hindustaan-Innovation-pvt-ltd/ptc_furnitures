@@ -69,9 +69,24 @@ async function loadSourceBuffer(source: string): Promise<Buffer | null> {
     }
 
     if (source.startsWith("/")) {
-      return await fs.readFile(
-        path.join(process.cwd(), "public", source.replace(/^\//, "")),
-      );
+      const filePath = path.join(process.cwd(), "public", source.replace(/^\//, ""));
+      try {
+        return await fs.readFile(filePath);
+      } catch (err: any) {
+        if (source.startsWith("/upload/") || source.startsWith("/uploads/")) {
+          try {
+            console.log(`==> [Media API] Local file not found: ${filePath}. Fetching remote fallback: https://ptcfurnitures.com${source}`);
+            const response = await fetch(`https://ptcfurnitures.com${source}`);
+            if (response.ok) {
+              const arrayBuffer = await response.arrayBuffer();
+              return Buffer.from(arrayBuffer);
+            }
+          } catch (fetchErr) {
+            console.error(`==> [Media API] Failed to fetch fallback image:`, fetchErr);
+          }
+        }
+        throw err;
+      }
     }
   } catch (error) {
     console.error("Failed to load source buffer:", error);

@@ -43,7 +43,27 @@ export async function GET(request: Request) {
         "public",
         logo.src.replace(/^\//, ""),
       );
-      buffer = await fs.readFile(filePath);
+      try {
+        buffer = await fs.readFile(filePath);
+      } catch (err: any) {
+        if (logo.src.startsWith("/upload/") || logo.src.startsWith("/uploads/")) {
+          try {
+            console.log(`==> [Brand Logo API] Local file not found: ${filePath}. Fetching remote fallback from production: https://ptcfurnitures.com${logo.src}`);
+            const response = await fetch(`https://ptcfurnitures.com${logo.src}`);
+            if (response.ok) {
+              const arrayBuffer = await response.arrayBuffer();
+              buffer = Buffer.from(arrayBuffer);
+            } else {
+              throw err;
+            }
+          } catch (fetchErr) {
+            console.error(`==> [Brand Logo API] Failed to fetch fallback brand logo:`, fetchErr);
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
       if (logo.src.endsWith(".svg")) {
         contentType = "image/svg+xml";
       } else if (logo.src.endsWith(".webp")) {
@@ -61,6 +81,17 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Failed to serve brand logo:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    try {
+      const fallbackPath = path.join(process.cwd(), "public", "logo-dark.svg");
+      const buffer = await fs.readFile(fallbackPath);
+      return new NextResponse(new Uint8Array(buffer), {
+        headers: {
+          "Content-Type": "image/svg+xml",
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
+    } catch {
+      return new NextResponse("Internal Server Error", { status: 500 });
+    }
   }
 }

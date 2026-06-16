@@ -45,6 +45,21 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    if (process.env.NODE_ENV === "production") {
+      return [];
+    }
+    return [
+      {
+        source: "/upload/:path*",
+        destination: "https://ptcfurnitures.com/upload/:path*",
+      },
+      {
+        source: "/uploads/:path*",
+        destination: "https://ptcfurnitures.com/uploads/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

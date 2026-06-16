@@ -27,7 +27,26 @@ export async function GET(request: Request) {
         "public",
         src.replace(/^\//, ""),
       );
-      imageBuffer = await fs.readFile(filePath);
+      try {
+        imageBuffer = await fs.readFile(filePath);
+      } catch (err: any) {
+        if (src.startsWith("/upload/") || src.startsWith("/uploads/")) {
+          try {
+            console.log(`==> [Download API] Local file not found: ${filePath}. Fetching remote fallback: https://ptcfurnitures.com${src}`);
+            const response = await fetch(`https://ptcfurnitures.com${src}`);
+            if (response.ok) {
+              imageBuffer = Buffer.from(await response.arrayBuffer());
+            } else {
+              throw err;
+            }
+          } catch (fetchErr) {
+            console.error(`==> [Download API] Failed to fetch fallback image:`, fetchErr);
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
     } else if (src.startsWith("data:")) {
       const parts = src.split(",");
       imageBuffer = Buffer.from(parts[1], "base64");
