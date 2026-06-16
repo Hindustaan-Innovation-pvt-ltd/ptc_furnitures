@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { Product } from "@/lib/db-models";
 import {
   compositeBrandWatermark,
@@ -346,6 +347,11 @@ export async function POST(request: Request) {
     const { product } = await parseProductRequest(request, false);
     const savedProduct = await addProduct(product);
 
+    // Force revalidation of all public pages listing products and brands
+    revalidatePath("/");
+    revalidatePath("/collections");
+    revalidatePath("/catalogs");
+
     return NextResponse.json({ product: savedProduct }, { status: 201 });
   } catch (error) {
     const message =
@@ -413,6 +419,11 @@ export async function PUT(request: Request) {
       );
     }
 
+    // Force revalidation of all public pages listing products and brands
+    revalidatePath("/");
+    revalidatePath("/collections");
+    revalidatePath("/catalogs");
+
     return NextResponse.json({ product: savedProduct });
   } catch (error) {
     const message =
@@ -447,6 +458,12 @@ export async function PATCH(request: Request) {
       }));
 
       await Product.bulkWrite(bulkOps);
+
+      // Force revalidation of all public pages listing products and brands
+      revalidatePath("/");
+      revalidatePath("/collections");
+      revalidatePath("/catalogs");
+
       return NextResponse.json({
         success: true,
         message: "Positions reordered successfully.",
@@ -520,6 +537,11 @@ export async function PATCH(request: Request) {
       );
     }
 
+    // Force revalidation of all public pages listing products and brands
+    revalidatePath("/");
+    revalidatePath("/collections");
+    revalidatePath("/catalogs");
+
     return NextResponse.json({ product: { id: id.trim(), ...updateFields } });
   } catch (error) {
     console.error("PATCH /api/products error:", error);
@@ -561,6 +583,11 @@ export async function DELETE(request: Request) {
         deletedProduct.originalImages ?? [],
       );
     }
+
+    // Force revalidation of all public pages listing products and brands
+    revalidatePath("/");
+    revalidatePath("/collections");
+    revalidatePath("/catalogs");
 
     return NextResponse.json({
       product: deletedProduct,

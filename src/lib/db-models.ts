@@ -89,10 +89,12 @@ export const Product =
 // ==========================================
 export interface IBrand extends Document {
   name: string;
+  position?: number;
 }
 
 const BrandSchema = new Schema<IBrand>({
   name: { type: String, required: true, unique: true },
+  position: { type: Number, default: 0 },
 });
 
 export const BrandModel =

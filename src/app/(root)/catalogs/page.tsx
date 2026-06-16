@@ -48,7 +48,7 @@ export default async function PublicCatalogsPage({
               </div>
             }
           >
-            <PublicCatalogsLoader searchParams={searchParams} />
+            <PublicCatalogsLoader />
           </Suspense>
         </div>
       </div>
@@ -57,22 +57,14 @@ export default async function PublicCatalogsPage({
   );
 }
 
-async function PublicCatalogsLoader({
-  searchParams,
-}: {
-  searchParams: Promise<{ brand?: string }>;
-}) {
+async function PublicCatalogsLoader() {
   await connection();
   const catalogsPromise = readCatalogs();
   const productsPromise = readProducts();
-  const brandsPromise = readBrands();
-  const [resolvedParams, catalogs, products, brands] = await Promise.all([
-    searchParams,
+  const [catalogs, products] = await Promise.all([
     catalogsPromise,
     productsPromise,
-    brandsPromise,
   ]);
-  const activeBrandFilter = resolvedParams.brand || "";
 
   // Helper to find product images for custom catalogs
   const getCatalogPreviewImages = (productIds: string[]): string[] => {
@@ -87,38 +79,10 @@ async function PublicCatalogsLoader({
     return images;
   };
 
-  const filteredCatalogs = catalogs.filter((c) =>
-    activeBrandFilter === "" ? true : c.brand === activeBrandFilter,
-  );
+  const filteredCatalogs = catalogs;
 
   return (
     <>
-      {/* Brand Filter Pills Storefront */}
-      {brands.length > 0 && (
-        <div className="flex items-center justify-center gap-2 flex-wrap mb-12 select-none">
-          <Link
-            href="/catalogs"
-            className={`px-4.5 py-2.5 rounded-full text-xs font-bold transition shadow-xs ${activeBrandFilter === ""
-                ? "bg-red-700 text-white shadow-md shadow-red-500/10"
-                : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
-              }`}
-          >
-            All Collections
-          </Link>
-          {brands.map((b) => (
-            <Link
-              key={b}
-              href={`/catalogs?brand=${encodeURIComponent(b)}`}
-              className={`px-4.5 py-2.5 rounded-full text-xs font-bold transition shadow-xs ${activeBrandFilter === b
-                  ? "bg-red-700 text-white shadow-md shadow-red-500/10"
-                  : "bg-white dark:bg-[#111318] text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
-                }`}
-            >
-              {b}
-            </Link>
-          ))}
-        </div>
-      )}
 
       {filteredCatalogs.length === 0 ? (
         <div className="text-center py-20 bg-white dark:bg-[#111318] border border-slate-200/60 dark:border-white/5 rounded-3xl p-8 max-w-md mx-auto">
@@ -135,9 +99,7 @@ async function PublicCatalogsLoader({
           </svg>
           <h3 className="text-base font-bold">No catalogs published yet</h3>
           <p className="text-xs text-slate-400 mt-1">
-            {activeBrandFilter
-              ? "We haven't uploaded copy brochures for this specific brand collection yet. Please select another collection."
-              : "Check back soon or contact us to receive physical copy mailers."}
+            Check back soon or contact us to receive physical copy mailers.
           </p>
         </div>
       ) : (

@@ -1,11 +1,16 @@
 import { connection } from "next/server";
 import AdminBrandGrid from "@/components/custom/AdminBrandGrid";
 import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
+import { getBrandLogos } from "@/lib/brand-logos";
 import { readBrands, readProducts } from "@/lib/products";
 
 export default async function AdminPage() {
   await connection();
-  const [products, brands] = await Promise.all([readProducts(), readBrands()]);
+  const [products, brands, brandLogos] = await Promise.all([
+    readProducts(),
+    readBrands(),
+    getBrandLogos(),
+  ]);
 
   // Compute analytics metrics
   const totalProducts = products.length;
@@ -168,7 +173,7 @@ export default async function AdminPage() {
             </p>
           </div>
 
-          <AdminBrandGrid brands={brands} products={products} />
+          <AdminBrandGrid brands={brands} products={products} brandLogos={brandLogos} />
         </div>
       </div>
     </AdminDashboardShell>

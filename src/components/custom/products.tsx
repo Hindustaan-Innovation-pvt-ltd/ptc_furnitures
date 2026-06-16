@@ -61,8 +61,8 @@ export default function Products({
   const router = useRouter();
 
   const visibleProducts = React.useMemo(
-    () => filterAndSortProducts(products, filters),
-    [filters, products],
+    () => filterAndSortProducts(products, filters, brands),
+    [filters, products, brands],
   );
 
   const pagination = React.useMemo(
@@ -83,8 +83,10 @@ export default function Products({
   }, []);
 
   const brandOptions = React.useMemo(() => {
-    const list =
-      brands.length > 0 ? brands : products.map((product) => product.brand);
+    if (brands.length > 0) {
+      return brands.map((b) => b.trim()).filter(Boolean);
+    }
+    const list = products.map((product) => product.brand);
     return Array.from(new Set(list.map((b) => b.trim())))
       .filter(Boolean)
       .sort((a, b) => a.localeCompare(b));
@@ -99,7 +101,7 @@ export default function Products({
 
   React.useEffect(() => {
     setCurrentPage(1);
-  }, []);
+  }, [filters]);
 
   function updateFilter<K extends keyof ProductFiltersState>(
     key: K,
@@ -151,11 +153,12 @@ export default function Products({
                   key={label}
                   title={label}
                   onClick={() => {
-                    updateFilter("brand", brand);
                     sendGAEvent("event", "filter_brand", {
                       brand_selected: brand,
                       label,
                     });
+                    const brandParam = brand === "all" ? "" : `brand=${encodeURIComponent(brand)}`;
+                    router.push(`/collections${brandParam ? `?${brandParam}` : ""}`);
                   }}
                   className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
                     isSelected

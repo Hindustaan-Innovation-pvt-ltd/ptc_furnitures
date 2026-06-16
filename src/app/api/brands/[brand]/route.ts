@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { deleteBrand, updateBrand } from "@/lib/products";
 
 type RouteContext = {
@@ -28,6 +29,11 @@ export async function PUT(request: Request, { params }: RouteContext) {
     const newName = (body as any).name;
     await updateBrand(decodedBrand, newName);
 
+    // Force revalidation of all public pages listing brands and products
+    revalidatePath("/");
+    revalidatePath("/collections");
+    revalidatePath("/catalogs");
+
     return NextResponse.json({ success: true, brand: newName });
   } catch (error) {
     const message =
@@ -41,6 +47,12 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     const { brand } = await params;
     const decodedBrand = decodeURIComponent(brand);
     await deleteBrand(decodedBrand);
+
+    // Force revalidation of all public pages listing brands and products
+    revalidatePath("/");
+    revalidatePath("/collections");
+    revalidatePath("/catalogs");
+
     return NextResponse.json({ success: true });
   } catch (error) {
     const message =
@@ -48,3 +60,4 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
+

@@ -1,34 +1,36 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { addBrand, isBrandInput, readBrands } from "@/lib/products";
-
-export async function GET() {
-  const brands = await readBrands();
-  return NextResponse.json({ brands });
-}
+import { reorderBrands } from "@/lib/products";
 
 export async function POST(request: Request) {
   try {
     const body: unknown = await request.json();
 
-    if (!isBrandInput(body)) {
+    if (
+      !body ||
+      typeof body !== "object" ||
+      !("brands" in body) ||
+      !Array.isArray((body as any).brands) ||
+      !(body as any).brands.every((item: any) => typeof item === "string")
+    ) {
       return NextResponse.json(
-        { error: "Invalid brand payload." },
+        { error: "Invalid brands array payload." },
         { status: 400 },
       );
     }
 
-    const brand = await addBrand(body.name);
+    const orderedBrands = (body as any).brands as string[];
+    await reorderBrands(orderedBrands);
 
     // Force revalidation of all public pages listing brands and products
     revalidatePath("/");
     revalidatePath("/collections");
     revalidatePath("/catalogs");
 
-    return NextResponse.json({ brand }, { status: 201 });
+    return NextResponse.json({ success: true });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unable to save brand.";
+      error instanceof Error ? error.message : "Unable to reorder brands.";
 
     return NextResponse.json({ error: message }, { status: 400 });
   }

@@ -14,7 +14,18 @@ function normalizeBrand(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
+let isSeeded = false;
+let cacheLogos: BrandLogo[] | null = null;
+let cacheLogosTime = 0;
+const CACHE_TTL = 30000; // 30 seconds cache TTL
+
+export function clearLogoCache() {
+  cacheLogos = null;
+  cacheLogosTime = 0;
+}
+
 export async function loadLogosIntoCache() {
+  if (isSeeded) return;
   try {
     const count = await BrandLogoModel.countDocuments();
     if (count === 0) {
@@ -40,53 +51,47 @@ export async function loadLogosIntoCache() {
         },
       ]);
     }
+    isSeeded = true;
   } catch (err) {
     console.error("Failed to seed default logos:", err);
   }
 }
 
-export async function getBrandLogo(brand: string): Promise<BrandLogo | null> {
-  await connectToDatabase();
-  await loadLogosIntoCache();
-
-  const normalized = normalizeBrand(brand);
-  const escapedBrand = normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  const doc = await BrandLogoModel.findOne({
-    $or: [
-      { brand: { $regex: new RegExp(`^${escapedBrand}$`, "i") } },
-      { aliases: { $regex: new RegExp(`^${escapedBrand}$`, "i") } },
-    ],
-  }).lean();
-
-  if (doc) {
-    return {
-      brand: doc.brand,
-      src: doc.src,
-      alt: doc.alt,
-      aliases: doc.aliases || [],
-    };
+export async function getBrandLogos(): Promise<BrandLogo[]> {
+  const now = Date.now();
+  if (cacheLogos && now - cacheLogosTime < CACHE_TTL) {
+    return cacheLogos;
   }
 
-  return null;
-}
-
-export async function getBrandLogoSrc(brand: string): Promise<string | null> {
-  const logo = await getBrandLogo(brand);
-  return logo?.src ?? null;
-}
-
-export async function getBrandLogos(): Promise<BrandLogo[]> {
   await connectToDatabase();
   await loadLogosIntoCache();
 
   const docs = await BrandLogoModel.find().lean();
-  return docs.map((doc: any) => ({
+  cacheLogos = docs.map((doc: any) => ({
     brand: doc.brand,
     src: doc.src,
     alt: doc.alt,
     aliases: doc.aliases || [],
   }));
+  cacheLogosTime = now;
+  return cacheLogos;
+}
+
+export async function getBrandLogo(brand: string): Promise<BrandLogo | null> {
+  const logos = await getBrandLogos();
+  const normalized = normalizeBrand(brand);
+  return (
+    logos.find(
+      (l) =>
+        normalizeBrand(l.brand) === normalized ||
+        l.aliases.some((alias) => normalizeBrand(alias) === normalized),
+    ) ?? null
+  );
+}
+
+export async function getBrandLogoSrc(brand: string): Promise<string | null> {
+  const logo = await getBrandLogo(brand);
+  return logo?.src ?? null;
 }
 
 export async function setBrandLogo(brand: string, logo: BrandLogo) {
@@ -119,4 +124,7 @@ export async function setBrandLogo(brand: string, logo: BrandLogo) {
       aliases: logo.aliases || [],
     });
   }
+
+  clearLogoCache();
 }
+

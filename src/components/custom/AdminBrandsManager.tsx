@@ -1,9 +1,9 @@
 "use client";
 
-import { Check, Edit2, Trash2, X } from "lucide-react";
+import { Check, Edit2, GripVertical, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState, useTransition } from "react";
+import { type FormEvent, useState, useEffect, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { BrandLogo } from "@/lib/brand-logos";
@@ -37,6 +37,17 @@ export default function AdminBrandsManager({
   const [editingBrand, setEditingBrand] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [deletingBrand, setDeletingBrand] = useState<string | null>(null);
+  const [brandSortOrder, setBrandSortOrder] = useState<"default" | "asc" | "desc">("default");
+
+  // Local state for brands list to enable drag-and-drop
+  const [localBrands, setLocalBrands] = useState<string[]>(brands);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+
+  useEffect(() => {
+    setLocalBrands(brands);
+  }, [brands]);
 
   // Migration states
   const [migrating, setMigrating] = useState(false);
@@ -121,6 +132,74 @@ export default function AdminBrandsManager({
       ) ?? null
     );
   };
+
+  function handleDragStart(e: React.DragEvent, index: number) {
+    if (brandSortOrder !== "default") return;
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", index.toString());
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    if (brandSortOrder !== "default") return;
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    setDragOverIndex(index);
+  }
+
+  function handleDragEnd() {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  }
+
+  async function handleDrop(e: React.DragEvent, targetIndex: number) {
+    if (brandSortOrder !== "default") return;
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const updatedBrands = [...localBrands];
+    const [draggedItem] = updatedBrands.splice(draggedIndex, 1);
+    updatedBrands.splice(targetIndex, 0, draggedItem);
+
+    setLocalBrands(updatedBrands);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+
+    await saveBrandOrder(updatedBrands);
+  }
+
+  async function saveBrandOrder(newOrder: string[]) {
+    setIsSavingOrder(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      const response = await fetch("/api/brands/reorder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ brands: newOrder }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save new order");
+      }
+      setSuccessMessage("Brand order updated successfully.");
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Something went wrong saving brand order"
+      );
+    } finally {
+      setIsSavingOrder(false);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -251,6 +330,12 @@ export default function AdminBrandsManager({
     });
   }
 
+  const sortedBrands = [...localBrands].sort((a, b) => {
+    if (brandSortOrder === "asc") return a.localeCompare(b);
+    if (brandSortOrder === "desc") return b.localeCompare(a);
+    return 0; // Default order
+  });
+
   return (
     <section className="grid gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#111318]">
       <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4 dark:border-white/10">
@@ -260,37 +345,81 @@ export default function AdminBrandsManager({
           </p>
           <h2 className="mt-2 text-2xl font-semibold">Manage brand list.</h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Keep the catalog brands in one place.
+            Keep the catalog brands in one place. {brandSortOrder === "default" ? "Drag and drop brand badges to reorder them." : "Switch to Default sort to enable drag and drop reordering."}
           </p>
         </div>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-white/5 dark:text-slate-300">
-          {brands.length} brands
-        </span>
+        <div className="flex items-center gap-2">
+          {isSavingOrder && (
+            <span className="text-xs text-slate-400 dark:text-slate-500 animate-pulse">
+              Saving order...
+            </span>
+          )}
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-white/5 dark:text-slate-300">
+            {brands.length} brands
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
-        <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-          All Registered Brands
-        </label>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+            All Registered Brands
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-450 dark:text-slate-450">
+              Sort:
+            </span>
+            <Select
+              value={brandSortOrder}
+              onValueChange={(val: any) => setBrandSortOrder(val)}
+            >
+              <SelectTrigger className="h-8 w-36 rounded-lg text-xs bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                <SelectValue placeholder="Default" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Default</SelectItem>
+                <SelectItem value="asc">A - Z (Alphabetical)</SelectItem>
+                <SelectItem value="desc">Z - A (Alphabetical)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <div className="flex flex-wrap gap-2.5">
-          {brands.length > 0 ? (
-            brands.map((brand) => {
+          {sortedBrands.length > 0 ? (
+            sortedBrands.map((brand) => {
+              const originalIndex = localBrands.indexOf(brand);
               const logo = getLogo(brand);
               const isEditing = editingBrand === brand;
               const isConfirmingDelete = deletingBrand === brand;
+              const isDraggable = brandSortOrder === "default" && !isEditing && !isConfirmingDelete;
 
               return (
                 <div
                   key={brand}
-                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm text-slate-700 transition-all dark:border-white/10 dark:bg-white/5 dark:text-slate-200 hover:border-slate-300 dark:hover:border-white/20"
+                  draggable={isDraggable}
+                  onDragStart={(e) => handleDragStart(e, originalIndex)}
+                  onDragOver={(e) => handleDragOver(e, originalIndex)}
+                  onDragEnd={handleDragEnd}
+                  onDrop={(e) => handleDrop(e, originalIndex)}
+                  className={`flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm text-slate-700 transition-all dark:border-white/10 dark:bg-white/5 dark:text-slate-200 select-none
+                    ${draggedIndex === originalIndex ? "opacity-30 border-dashed border-slate-400 dark:border-white/30" : ""}
+                    ${dragOverIndex === originalIndex ? "border-red-500 dark:border-red-400 bg-red-50/50 dark:bg-red-950/20 scale-105" : "hover:border-slate-300 dark:hover:border-white/20"}
+                    ${isDraggable ? "cursor-grab active:cursor-grabbing" : ""}
+                  `}
                 >
+                  {isDraggable && (
+                    <span className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 mr-0.5 shrink-0">
+                      <GripVertical size={13} />
+                    </span>
+                  )}
+
                   {logo?.src ? (
                     <Image
                       src={logo.src}
                       alt={logo.alt || brand}
                       width={24}
                       height={24}
-                      className="h-5 w-5 object-contain"
+                      className="h-5 w-5 object-contain shrink-0"
                       unoptimized
                     />
                   ) : null}

@@ -8,6 +8,8 @@ import {
 } from "./db-models";
 import { connectToDatabase } from "./mongodb";
 
+import { clearLogoCache } from "./brand-logos";
+
 export type Product = {
   id: string;
   brand: string;
@@ -187,22 +189,27 @@ export async function readProducts(): Promise<Product[]> {
   }
 }
 
+let isBrandsSeeded = false;
+
 export async function readBrands(): Promise<Brand[]> {
   try {
     await connectToDatabase();
-    const count = await BrandModel.countDocuments();
-    if (count === 0) {
-      console.log("==> Seeding default brands into database...");
-      await BrandModel.insertMany([
-        { name: "PTC GOLD" },
-        { name: "REX" },
-        { name: "ALTECH" },
-        { name: "ARIPLAST" },
-        { name: "HALLMARK" },
-        { name: "PANKAJ" },
-      ]);
+    if (!isBrandsSeeded) {
+      const count = await BrandModel.countDocuments();
+      if (count === 0) {
+        console.log("==> Seeding default brands into database...");
+        await BrandModel.insertMany([
+          { name: "PTC GOLD", position: 0 },
+          { name: "REX", position: 1 },
+          { name: "ALTECH", position: 2 },
+          { name: "ARIPLAST", position: 3 },
+          { name: "HALLMARK", position: 4 },
+          { name: "PANKAJ", position: 5 },
+        ]);
+      }
+      isBrandsSeeded = true;
     }
-    const docs = await BrandModel.find().lean();
+    const docs = await BrandModel.find().sort({ position: 1, name: 1 }).lean();
     return docs.map((doc: any) => doc.name);
   } catch (error) {
     console.error("Failed to read brands from database:", error);
@@ -228,7 +235,10 @@ export async function addBrand(name: string): Promise<Brand> {
     throw new Error("Brand already exists.");
   }
 
-  await BrandModel.create({ name: normalizedBrand });
+  const lastBrand = await BrandModel.findOne().sort({ position: -1 }).lean();
+  const nextPosition = lastBrand && typeof lastBrand.position === "number" ? lastBrand.position + 1 : 0;
+
+  await BrandModel.create({ name: normalizedBrand, position: nextPosition });
   return normalizedBrand;
 }
 
@@ -278,6 +288,8 @@ export async function updateBrand(
     { brand: oldRegex },
     { brand: normalizedNew },
   );
+
+  clearLogoCache();
 }
 
 export async function deleteBrand(name: string): Promise<void> {
@@ -298,6 +310,26 @@ export async function deleteBrand(name: string): Promise<void> {
 
   // Delete watermark
   await BrandWatermarkModel.deleteOne({ brand: regex });
+
+  clearLogoCache();
+}
+
+export async function reorderBrands(orderedNames: string[]): Promise<void> {
+  await connectToDatabase();
+  const bulkOps = orderedNames.map((name, index) => {
+    const escaped = name.trim().replace(/\s+/g, " ");
+    const regex = new RegExp(`^${escaped.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+    return {
+      updateOne: {
+        filter: { name: regex },
+        update: { $set: { position: index } },
+      },
+    };
+  });
+
+  if (bulkOps.length > 0) {
+    await BrandModel.bulkWrite(bulkOps);
+  }
 }
 
 export async function addProduct(product: ProductInput): Promise<Product> {

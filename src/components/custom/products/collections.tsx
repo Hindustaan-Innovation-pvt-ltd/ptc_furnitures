@@ -3,6 +3,7 @@
 import { sendGAEvent } from "@next/third-parties/google";
 import { motion } from "motion/react";
 import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProductCardWithHover from "@/components/custom/ProductCardWithHover";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ type ProductsCollectionsProps = {
   initialProducts: Product[];
   initialBrands: string[];
   initialSearchTerm: string;
+  initialBrand?: string;
   brandLogos?: { brand: string; src: string; alt: string; aliases: string[] }[];
 };
 
@@ -52,8 +54,12 @@ export default function ProductsCollections({
   initialProducts,
   initialBrands,
   initialSearchTerm,
+  initialBrand = "all",
   brandLogos,
 }: ProductsCollectionsProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [products, _setProducts] = React.useState<Product[]>(() =>
     expandLegacyProducts(initialProducts),
   );
@@ -61,6 +67,7 @@ export default function ProductsCollections({
   const [filters, setFilters] = React.useState<ProductFiltersState>({
     ...initialFilters,
     search: initialSearchTerm,
+    brand: initialBrand,
   });
   const [currentPage, setCurrentPage] = React.useState(1);
 
@@ -69,8 +76,8 @@ export default function ProductsCollections({
     [products],
   );
   const visibleProducts = React.useMemo(
-    () => filterAndSortProducts(products, filters),
-    [filters, products],
+    () => filterAndSortProducts(products, filters, brands),
+    [filters, products, brands],
   );
   const pagination = React.useMemo(
     () => paginateProducts(visibleProducts, currentPage, itemsPerPage),
@@ -83,8 +90,10 @@ export default function ProductsCollections({
   }, []);
   const _activeFilters = hasActiveProductFilters(filters);
   const brandOptions = React.useMemo(() => {
-    const list =
-      brands.length > 0 ? brands : products.map((product) => product.brand);
+    if (brands.length > 0) {
+      return brands.map((b) => b.trim()).filter(Boolean);
+    }
+    const list = products.map((product) => product.brand);
     return Array.from(new Set(list.map((b) => b.trim())))
       .filter(Boolean)
       .sort((a, b) => a.localeCompare(b));
@@ -98,8 +107,17 @@ export default function ProductsCollections({
   }, [initialSearchTerm]);
 
   React.useEffect(() => {
+    if (initialBrand) {
+      setFilters((current) => ({
+        ...current,
+        brand: initialBrand,
+      }));
+    }
+  }, [initialBrand]);
+
+  React.useEffect(() => {
     setCurrentPage(1);
-  }, []);
+  }, [filters]);
 
   function updateFilter<K extends keyof ProductFiltersState>(
     key: K,
@@ -152,11 +170,21 @@ export default function ProductsCollections({
                   key={label}
                   title={label}
                   onClick={() => {
-                    updateFilter("brand", brand);
+                    const newBrand = brand;
+                    updateFilter("brand", newBrand);
                     sendGAEvent("event", "filter_brand", {
-                      brand_selected: brand,
+                      brand_selected: newBrand,
                       label,
                     });
+
+                    const nextParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
+                    if (newBrand === "all") {
+                      nextParams.delete("brand");
+                    } else {
+                      nextParams.set("brand", newBrand);
+                    }
+                    const queryString = nextParams.toString();
+                    router.push(`/collections${queryString ? `?${queryString}` : ""}`, { scroll: false });
                   }}
                   className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
                     isSelected

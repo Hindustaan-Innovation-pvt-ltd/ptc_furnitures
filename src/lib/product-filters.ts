@@ -89,6 +89,7 @@ export function getProductFilterOptions(
 export function filterAndSortProducts(
   products: Product[],
   filters: ProductFiltersState,
+  brandOrder?: string[],
 ) {
   const searchQuery = normalizeValue(filters.search);
   const searchTokens = searchQuery.split(/\s+/).filter(Boolean);
@@ -118,13 +119,32 @@ export function filterAndSortProducts(
     return matchesBrand && matchesSearch;
   });
 
-  // Sort by custom position first, then newest-first.
   return filteredProducts.slice().sort((left, right) => {
+    // 1. Sort by custom brand position if brandOrder is provided
+    if (brandOrder && brandOrder.length > 0) {
+      const brandIndexA = brandOrder.findIndex(
+        (b) => b.trim().toLowerCase() === left.brand.trim().toLowerCase()
+      );
+      const brandIndexB = brandOrder.findIndex(
+        (b) => b.trim().toLowerCase() === right.brand.trim().toLowerCase()
+      );
+
+      const orderA = brandIndexA === -1 ? Infinity : brandIndexA;
+      const orderB = brandIndexB === -1 ? Infinity : brandIndexB;
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+    }
+
+    // 2. Sort by product's own custom position next
     const posA = left.position ?? 0;
     const posB = right.position ?? 0;
     if (posA !== posB) {
       return posA - posB;
     }
+
+    // 3. Fallback to newest-first
     return (
       new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
     );

@@ -14,7 +14,7 @@ export const unstable_instant = {
 export default async function page({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string | string[] }>;
+  searchParams?: Promise<{ q?: string | string[]; brand?: string | string[] }>;
 }) {
   return (
     <section>
@@ -45,7 +45,7 @@ export default async function page({
 async function CollectionsLoader({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string | string[] }>;
+  searchParams?: Promise<{ q?: string | string[]; brand?: string | string[] }>;
 }) {
   await connection();
   await loadLogosIntoCache();
@@ -59,12 +59,15 @@ async function CollectionsLoader({
   ]);
   const q = params?.q;
   const initialSearchTerm = Array.isArray(q) ? (q[0] ?? "") : (q ?? "");
+  const b = params?.brand;
+  const initialBrand = Array.isArray(b) ? (b[0] ?? "all") : (b ?? "all");
 
   return (
     <ProductsCollections
       initialProducts={initialProducts}
       initialBrands={initialBrands}
       initialSearchTerm={initialSearchTerm}
+      initialBrand={initialBrand}
       brandLogos={brandLogos}
     />
   );
