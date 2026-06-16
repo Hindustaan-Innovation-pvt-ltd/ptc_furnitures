@@ -36,7 +36,7 @@ export default function CatalogDownloadButton({
         action: isPrint ? "catalog_print" : "catalog_download",
         catalogUrl: href,
       }),
-    }).catch(() => {});
+    }).catch(() => { });
 
     // Track the action via Google Analytics
     sendGAEvent("event", isPrint ? "catalog_print" : "catalog_download", {
@@ -47,14 +47,56 @@ export default function CatalogDownloadButton({
     if (isPrint) {
       window.print();
     } else {
-      // Trigger the download programmatically
-      const a = document.createElement("a");
-      a.href = href;
-      a.download = "";
-      a.target = "_blank";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      try {
+        let downloadUrl = href;
+        if (href.startsWith("/api/images") || href.includes("/api/images?")) {
+          const url = new URL(href, window.location.origin);
+          url.searchParams.set("download", "1");
+          downloadUrl = url.toString();
+        }
+
+        const response = await fetch(downloadUrl);
+        if (!response.ok) throw new Error("Failed to fetch PDF catalog");
+
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        let filename = "catalog.pdf";
+        const contentDisposition = response.headers.get("Content-Disposition");
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/);
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1];
+          }
+        } else {
+          const urlParts = href.split(/[?#]/)[0].split("/");
+          const lastPart = urlParts[urlParts.length - 1];
+          if (lastPart && lastPart.toLowerCase().endsWith(".pdf")) {
+            filename = lastPart;
+          }
+        }
+
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => {
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+      } catch (error) {
+        console.error("Direct download failed, falling back to standard link:", error);
+        const a = document.createElement("a");
+        a.href = href;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.download = "";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
     }
   }
 

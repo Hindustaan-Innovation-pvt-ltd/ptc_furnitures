@@ -19,10 +19,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
+    const download = searchParams.get("download") === "1";
+
     const headers = new Headers();
     headers.set("Content-Type", file.contentType || "image/png");
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
-    headers.set("Content-Disposition", `inline; filename="${file.filename}"`);
+    headers.set(
+      "Content-Disposition",
+      `${download ? "attachment" : "inline"}; filename="${file.filename}"`
+    );
 
     // Stream the binary buffer back
     return new NextResponse(new Uint8Array(file.data), {
