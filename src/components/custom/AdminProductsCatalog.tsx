@@ -1069,14 +1069,6 @@ export default function AdminProductsCatalog({
                     </div>
                   ) : null}
 
-                  {product.premium && product.premiumDescription && (
-                    <div className="rounded-xl border border-amber-100 bg-amber-50/20 dark:border-amber-900/30 p-2.5 text-[11px] text-slate-600 dark:text-slate-300">
-                      <span className="font-bold text-[9px] uppercase tracking-wider text-amber-700 dark:text-amber-400 block mb-0.5">
-                        ⭐ Premium description
-                      </span>
-                      <p className="line-clamp-2 leading-relaxed italic">{product.premiumDescription}</p>
-                    </div>
-                  )}
 
                   {/* Brand Selector Dropdown */}
                   {!isReorderMode && (
@@ -1147,6 +1139,7 @@ export default function AdminProductsCatalog({
                       >
                         ⭐ Premium
                       </Button>
+
                       <Button
                         type="button"
                         variant="outline"

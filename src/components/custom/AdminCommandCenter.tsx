@@ -627,10 +627,11 @@ export default function AdminCommandCenter() {
                                     onClick={() =>
                                       togglePremium(p.id, !!p.premium)
                                     }
-                                    className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border transition-all ${p.premium
+                                    className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border transition-all ${
+                                      p.premium
                                         ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
                                         : "bg-slate-100 text-slate-400 dark:bg-white/5 border-transparent hover:text-slate-600 dark:hover:text-slate-300"
-                                      }`}
+                                    }`}
                                   >
                                     {p.premium ? "⭐ Premium" : "Make Premium"}
                                   </button>

@@ -462,26 +462,6 @@ export default function AdminProductForm({
                     ⭐ Featured Premium Selection (places at top of catalogs & home slider)
                   </Label>
                 </div>
-                {formState.premium && (
-                  <div className="grid gap-1.5 mt-2 animate-fade-in">
-                    <Label htmlFor="premiumDescription" className="text-xs font-semibold text-amber-900 dark:text-amber-300">
-                      Premium Description / Detailed Specs
-                    </Label>
-                    <textarea
-                      id="premiumDescription"
-                      rows={4}
-                      value={formState.premiumDescription}
-                      onChange={(event) =>
-                        setFormState((current) => ({
-                          ...current,
-                          premiumDescription: event.target.value,
-                        }))
-                      }
-                      placeholder="Specify premium details (e.g. Custom fabric choices, premium foam grade, luxury wood treatments...)"
-                      className="w-full rounded-xl border border-amber-200 dark:border-amber-900/50 bg-white/80 dark:bg-[#16181f] p-3 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-900 dark:text-slate-100"
-                    />
-                  </div>
-                )}
               </div>
             </div>
           </section>
