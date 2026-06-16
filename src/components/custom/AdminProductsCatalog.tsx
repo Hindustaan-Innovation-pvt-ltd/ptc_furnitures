@@ -452,7 +452,7 @@ export default function AdminProductsCatalog({
           if (!open) setEditingProduct(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl p-6">
+        <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl p-6">
           <DialogTitle className="text-lg font-bold">Edit Product</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
             Modify the details or images for this product. Click Save when finished.
@@ -718,7 +718,7 @@ export default function AdminProductsCatalog({
               rearrange. Visual cards will slide into place instantly.
             </p>
 
-            <div className="flex flex-col gap-2 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
+            <div className="flex flex-col gap-2 max-h-87.5 overflow-y-auto pr-1 scrollbar-thin">
               {orderedProducts.map((p, idx) => {
                 const displayImg =
                   p.originalImages?.[0] || p.images?.[0] || "";
@@ -1070,7 +1070,7 @@ export default function AdminProductsCatalog({
                   ) : null}
 
                   {product.premium && product.premiumDescription && (
-                    <div className="rounded-xl border border-amber-100 bg-amber-50/20 dark:border-amber-950/25 dark:border-amber-900/30 p-2.5 text-[11px] text-slate-600 dark:text-slate-300">
+                    <div className="rounded-xl border border-amber-100 bg-amber-50/20 dark:border-amber-900/30 p-2.5 text-[11px] text-slate-600 dark:text-slate-300">
                       <span className="font-bold text-[9px] uppercase tracking-wider text-amber-700 dark:text-amber-400 block mb-0.5">
                         ⭐ Premium description
                       </span>

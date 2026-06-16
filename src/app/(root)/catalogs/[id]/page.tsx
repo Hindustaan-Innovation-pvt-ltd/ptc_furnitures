@@ -255,7 +255,7 @@ async function CatalogDetailsLoader({
               </span>
 
               <h1
-                className={`text-4xl sm:text-6xl ${isGold ? "font-serif font-bold italic tracking-wide font-serif" : isDark ? "font-black tracking-tighter uppercase font-sans" : "font-extrabold tracking-tight font-sans"} mt-4 text-slate-900 dark:text-slate-100`}
+                className={`text-4xl sm:text-6xl ${isGold ? "font-serif font-bold italic tracking-wide" : isDark ? "font-black tracking-tighter uppercase font-sans" : "font-extrabold tracking-tight font-sans"} mt-4 text-slate-900 dark:text-slate-100`}
               >
                 {catalog.title}
               </h1>

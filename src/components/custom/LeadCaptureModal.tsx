@@ -68,7 +68,7 @@ export default function LeadCaptureModal({
         if (!loading) onOpenChange(o);
       }}
     >
-      <DialogContent className="max-w-sm rounded-3xl p-8 bg-white border border-slate-200 shadow-2xl dark:bg-white dark:border-slate-200 dark:text-slate-900">
+      <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-sm rounded-3xl p-8 bg-white border border-slate-200 shadow-2xl dark:bg-white dark:border-slate-200 dark:text-slate-900">
         <DialogTitle className="sr-only">
           Enter your details to {actionLabel}
         </DialogTitle>

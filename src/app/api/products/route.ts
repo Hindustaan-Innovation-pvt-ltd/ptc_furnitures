@@ -366,20 +366,42 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Connect to database and re-watermark ONLY if brand is changing!
+    // Connect to database and re-watermark if brand is changing!
     await connectToDatabase();
     const existingProduct = await Product.findOne({ id });
 
-    if (existingProduct) {
-      // Keep existing original images and images aligned (both pointing to the clean images)
-      const originalImagesToUse =
-        existingProduct.originalImages &&
-        existingProduct.originalImages.length > 0
-          ? existingProduct.originalImages
-          : existingProduct.images;
+    if (existingProduct && product.brand !== existingProduct.brand) {
+      // Re-watermark all retained images with the new brand!
+      const updatedImages: string[] = [];
+      const updatedOriginals: string[] = [];
 
-      product.originalImages = originalImagesToUse;
-      product.images = originalImagesToUse;
+      for (let i = 0; i < product.images.length; i++) {
+        const img = product.images[i];
+        const orig = product.originalImages?.[i] || img;
+
+        if (
+          existingProduct.images.includes(img) ||
+          (existingProduct.originalImages &&
+            existingProduct.originalImages.includes(orig))
+        ) {
+          try {
+            const newUrl = await rewatermarkImage(orig, product.brand);
+            const cleanUrl = newUrl.split("?")[0];
+            updatedImages.push(cleanUrl);
+            updatedOriginals.push(orig.split("?")[0]);
+          } catch (err) {
+            console.error("Failed to rewatermark image during PUT:", err);
+            updatedImages.push(img);
+            updatedOriginals.push(orig);
+          }
+        } else {
+          updatedImages.push(img);
+          updatedOriginals.push(orig);
+        }
+      }
+
+      product.images = updatedImages;
+      product.originalImages = updatedOriginals;
     }
 
     const savedProduct = await updateProduct(id, product);

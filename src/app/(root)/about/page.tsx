@@ -209,7 +209,7 @@ export default function page() {
           </div>
         </div>
         {/* Premium Chairs Slider Column */}
-        <div className="relative flex flex-col justify-between overflow-hidden bg-slate-50/50 dark:bg-slate-900/20 border-b lg:border-b-0 lg:border-l border-slate-200 dark:border-slate-600 p-6 sm:p-10 lg:p-12 min-h-[400px] lg:min-h-0">
+        <div className="relative flex flex-col justify-between overflow-hidden bg-slate-50/50 dark:bg-slate-900/20 border-b lg:border-b-0 lg:border-l border-slate-200 dark:border-slate-600 p-6 sm:p-10 lg:p-12 min-h-100 lg:min-h-0">
           {/* Glowing Radial Ambient Accent */}
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_40%,rgba(227,30,36,0.08),transparent_60%)]" />
 
@@ -250,7 +250,7 @@ export default function page() {
                 className="w-full flex flex-col items-center text-center"
               >
                 {/* Floating Chair Image Wrapper */}
-                <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-square flex items-center justify-center mb-6 rounded-2xl overflow-hidden p-6 sm:p-8 dark:bg-white transition-colors duration-300">
+                <div className="relative w-full max-w-85 sm:max-w-105 lg:max-w-115 aspect-square flex items-center justify-center mb-6 rounded-2xl overflow-hidden p-6 sm:p-8 dark:bg-white transition-colors duration-300">
                   {/* Subtle blur background reflection */}
                   <div className="absolute inset-2 rounded-full blur-2xl pointer-events-none" />
                   <motion.img
@@ -343,7 +343,7 @@ export default function page() {
                 Our Mission
               </h2>
               {/* Custom Divider matching the image */}
-              <div className="flex items-center gap-4 py-2 mx-auto lg:mx-0 max-w-[150px]">
+              <div className="flex items-center gap-4 py-2 mx-auto lg:mx-0 max-w-37.5">
                 <div className="h-px bg-red-700 w-full" />
                 <div className="size-2 rounded-full bg-red-700 shrink-0" />
                 <div className="h-px bg-red-700 w-full" />

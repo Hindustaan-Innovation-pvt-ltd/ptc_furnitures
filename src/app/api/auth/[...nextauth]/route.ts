@@ -35,7 +35,7 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "ptc_furnitures_nextauth_local_secret_key_12345",
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

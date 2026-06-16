@@ -177,7 +177,7 @@ function NavigationContent() {
         onConfirm={handleConfirmDownload}
       />
 
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200/50 bg-white/75 backdrop-blur-md dark:border-white/10 dark:bg-[#08090d]/80 transition-all duration-300 shadow-xs relative">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200/50 bg-white/75 backdrop-blur-md dark:border-white/10 dark:bg-[#08090d]/80 transition-all duration-300 shadow-xs">
         <nav className="relative mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
           {/* Logo & Navigation Links */}
           <div className="flex items-center gap-6 lg:gap-10">

@@ -398,7 +398,7 @@ export default function AdminCatalogsManager({
                           <h4 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 line-clamp-1">
                             {catalog.title}
                           </h4>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 line-clamp-2 min-h-[2rem]">
+                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 line-clamp-2 min-h-8">
                             {catalog.description || "No description provided."}
                           </p>
 
@@ -715,7 +715,7 @@ export default function AdminCatalogsManager({
                   </div>
 
                   {/* List Container */}
-                  <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/5 pr-1">
+                  <div className="max-h-87.5 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5 pr-1">
                     {filteredProducts.length === 0 ? (
                       <p className="text-xs text-slate-400 text-center py-10">
                         No matching products.
@@ -775,7 +775,7 @@ export default function AdminCatalogsManager({
                     </button>
                   </div>
 
-                  <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/5 pr-1">
+                  <div className="max-h-87.5 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5 pr-1">
                     {selectedProductIds.length === 0 ? (
                       <div className="py-16 text-center">
                         <p className="text-xs text-slate-400">
@@ -899,7 +899,7 @@ export default function AdminCatalogsManager({
             <Button
               type="submit"
               disabled={isPending}
-              className="rounded-full px-6 min-w-[120px]"
+              className="rounded-full px-6 min-w-30"
             >
               {isPending ? "Generating..." : "Generate Catalog"}
             </Button>
