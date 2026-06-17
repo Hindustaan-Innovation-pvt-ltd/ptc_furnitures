@@ -173,9 +173,14 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs tracking-wide sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-slate-300">
-            &copy;2026 PTC Furniture. All rights reserved.
-          </p>
+          <div>
+            <p className="text-slate-300">
+              &copy;2026 PTC Furniture. All rights reserved.
+            </p>
+            <p className="text-slate-500 mt-1 text-[11px]">
+              Made with 🤍 by <span className="font-semibold text-[#ffffff]">Hindustaan Innovations Pvt. Ltd.</span>
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             {(bankNames.length > 0 ? bankNames : []).map((card) => (
               <Link
