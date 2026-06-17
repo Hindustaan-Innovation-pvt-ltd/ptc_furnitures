@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
-import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
+import CatalogDownloadSelectionModal from "@/components/custom/CatalogDownloadSelectionModal";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { Button } from "@/components/ui/button";
 
@@ -78,26 +78,17 @@ function NavigationContent() {
     setLeadModalOpen(true);
   }
 
-  async function handleConfirmDownload(lead: { name: string; mobile: string }) {
+  async function handleConfirmDownload(lead: {
+    name: string;
+    mobile: string;
+    catalogUrl: string;
+    catalogTitle: string;
+  }) {
     if (downloadState !== "idle") return;
     setDownloadState("loading");
     try {
-      const res = await fetch("/api/catalogs", { cache: "no-store" });
-      if (!res.ok) throw new Error("Failed to fetch catalogs");
-      const data = await res.json();
-
-      const pdfCatalogs = (data.catalogs || []).filter(
-        (c: any) => c.type === "pdf" && c.pdfUrl,
-      );
-      let downloadUrl = "/uploads/catalogs/ptc-furniture-brochure-2026.pdf";
-      let fileName = "ptc-furniture-brochure-2026.pdf";
-
-      const defaultPdf = pdfCatalogs.find((c: any) => c.isDefault);
-      if (defaultPdf) {
-        downloadUrl = defaultPdf.pdfUrl;
-        fileName =
-          defaultPdf.pdfUrl.split("/").pop() || "ptc-furniture-brochure.pdf";
-      }
+      const downloadUrl = lead.catalogUrl;
+      const fileName = downloadUrl.split("/").pop() || "ptc-furniture-brochure.pdf";
 
       // Save lead to database
       await fetch("/api/download-leads", {
@@ -132,6 +123,7 @@ function NavigationContent() {
       setDownloadState("success");
       sendGAEvent("event", "catalog_download", {
         file_name: fileName,
+        catalog_title: lead.catalogTitle,
         source: "navigation",
       });
       setTimeout(() => setDownloadState("idle"), 2500);
@@ -170,10 +162,9 @@ function NavigationContent() {
                 }
             `}</style>
 
-      <LeadCaptureModal
+      <CatalogDownloadSelectionModal
         open={leadModalOpen}
         onOpenChange={setLeadModalOpen}
-        actionLabel="Download Catalog"
         onConfirm={handleConfirmDownload}
       />
 

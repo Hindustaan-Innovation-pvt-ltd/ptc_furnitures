@@ -221,36 +221,7 @@ export default function AdminCatalogsManager({
     }
   };
 
-  const handleSetDefault = async (id: string) => {
-    try {
-      const response = await fetch(`/api/catalogs/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          isDefault: true,
-        }),
-      });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Unable to set default catalog.");
-      }
-
-      setCatalogs((prev) =>
-        prev.map((c) => ({
-          ...c,
-          isDefault: c.id === id,
-        }))
-      );
-      startTransition(() => {
-        router.refresh();
-      });
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Error setting default catalog.");
-    }
-  };
 
   return (
     <div className="grid gap-8">
@@ -416,14 +387,6 @@ export default function AdminCatalogsManager({
                                   {catalog.brand}
                                 </span>
                               )}
-                              {catalog.isDefault && (
-                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-0.5">
-                                  <svg className="w-2 h-2 fill-current" viewBox="0 0 24 24">
-                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                                  </svg>
-                                  Default
-                                </span>
-                              )}
                             </div>
                             <span className="text-[9px] text-slate-400">
                               {new Date(catalog.createdAt).toLocaleDateString(
@@ -510,15 +473,6 @@ export default function AdminCatalogsManager({
                           </a>
 
                           <div className="flex items-center gap-3">
-                            {catalog.type === "pdf" && !catalog.isDefault && (
-                              <button
-                                type="button"
-                                onClick={() => handleSetDefault(catalog.id)}
-                                className="text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition"
-                              >
-                                Set as Default
-                              </button>
-                            )}
                             <button
                               type="button"
                               onClick={() =>
@@ -720,21 +674,6 @@ export default function AdminCatalogsManager({
                     </div>
                   )}
                 </div>
-              </div>
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="isDefaultCheckbox"
-                  checked={isDefault}
-                  onChange={(e) => setIsDefault(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 dark:border-white/10 text-red-600 focus:ring-red-500 cursor-pointer"
-                />
-                <label
-                  htmlFor="isDefaultCheckbox"
-                  className="text-xs font-bold text-slate-650 dark:text-slate-300 cursor-pointer select-none"
-                >
-                  Set as Default Official Catalog for Download (replaces current default)
-                </label>
               </div>
             </div>
           ) : (
