@@ -238,10 +238,17 @@ export default function CatalogDownloadSelectionModal({
                     setErrors((prev) => ({ ...prev, catalog: undefined }));
                   }}
                 >
-                  <SelectTrigger className="w-full text-slate-800 border-slate-200 bg-slate-50 rounded-xl h-[42px] focus:ring-red-500/20 focus:border-red-500">
+                  <SelectTrigger className="w-full text-slate-800 border-slate-200 bg-slate-50 rounded-xl h-10.5 focus:ring-red-500/20 focus:border-red-500">
                     <SelectValue placeholder="Select a catalog brochure" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border border-slate-200 shadow-xl rounded-xl max-h-56">
+                  <SelectContent
+                    className="bg-white border border-slate-200 shadow-xl rounded-xl max-h-56"
+                    style={{
+                      color: "oklch(0.145 0 0)",
+                      "--accent-foreground": "oklch(0.205 0 0)",
+                      "--popover-foreground": "oklch(0.145 0 0)",
+                    } as React.CSSProperties}
+                  >
                     {catalogs.map((c) => (
                       <SelectItem
                         key={c.id}
@@ -250,7 +257,7 @@ export default function CatalogDownloadSelectionModal({
                       >
                         <span className="font-semibold">{c.title}</span>
                         {c.brand && (
-                          <span className="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-slate-105">
+                          <span className="ml-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-600">
                             {c.brand}
                           </span>
                         )}

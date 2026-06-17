@@ -572,7 +572,7 @@ export default function AdminProductsManager({
                 rearrange. Visual cards will slide into place instantly.
               </p>
 
-              <div className="flex flex-col gap-2 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
+              <div className="flex flex-col gap-2 max-h-87.5 overflow-y-auto pr-1 scrollbar-thin">
                 {orderedProducts.map((p, idx) => {
                   const displayImg =
                     p.originalImages?.[0] || p.images?.[0] || "";

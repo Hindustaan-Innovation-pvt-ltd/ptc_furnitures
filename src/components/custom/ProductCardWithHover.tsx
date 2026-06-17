@@ -76,9 +76,9 @@ export default function ProductCardWithHover({
   const [newRating, setNewRating] = React.useState(5);
   const [newText, setNewText] = React.useState("");
   const displayImages = React.useMemo(() => {
-    return product.originalImages && product.originalImages.length > 0
-      ? product.originalImages
-      : product.images || [];
+    return product.images && product.images.length > 0
+      ? product.images
+      : product.originalImages || [];
   }, [product.originalImages, product.images]);
 
   const getProductImage = (index: number) => {
@@ -167,8 +167,8 @@ export default function ProductCardWithHover({
       image_index: index ?? 0,
     });
 
-    const cleanUrl = getProductImage(index ?? 0);
-    const downloadUrl = `/api/download?src=${encodeURIComponent(cleanUrl)}&brand=${encodeURIComponent(product.brand)}`;
+    const originalImg = product.originalImages?.[index ?? 0] || product.images?.[index ?? 0] || "";
+    const downloadUrl = `/api/download?src=${encodeURIComponent(originalImg)}&brand=${encodeURIComponent(product.brand)}`;
     window.open(downloadUrl, "_blank");
   }
 

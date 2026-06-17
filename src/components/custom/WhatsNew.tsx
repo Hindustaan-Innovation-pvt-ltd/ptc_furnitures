@@ -196,8 +196,9 @@ export default function WhatsNew({ products: rawProducts }: WhatsNewProps) {
                 <div className="relative w-full max-w-xs aspect-square transition-transform duration-500 group-hover:scale-105">
                   <AssetImage
                     src={
+                      activeProduct.images?.[0] ||
                       activeProduct.originalImages?.[0] ||
-                      activeProduct.images[0]
+                      ""
                     }
                     alt={activeProduct.name || "On-order Product"}
                     fill
@@ -241,7 +242,7 @@ export default function WhatsNew({ products: rawProducts }: WhatsNewProps) {
                 </div>
 
                 {/* Description / highlights */}
-                <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-light font-normal">
+                <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
                   {activeProduct.tag ||
                     `This piece is crafted exclusively upon order, allowing you to select the exact fabric, finish, and configuration that fits your workspace. Ideal for bulk and institutional purchases with lead times of 10–20 business days.`}
                 </p>
