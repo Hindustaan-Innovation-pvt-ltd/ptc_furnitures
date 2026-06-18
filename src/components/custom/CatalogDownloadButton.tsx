@@ -55,37 +55,27 @@ export default function CatalogDownloadButton({
           downloadUrl = url.toString();
         }
 
-        const response = await fetch(downloadUrl);
-        if (!response.ok) throw new Error("Failed to fetch PDF catalog");
-
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
+        // Check if file exists using a HEAD request (very fast, doesn't download the body)
+        const checkResponse = await fetch(downloadUrl, { method: "HEAD" });
+        if (!checkResponse.ok && checkResponse.status !== 405) {
+          throw new Error("Failed to fetch PDF catalog");
+        }
 
         let filename = "catalog.pdf";
-        const contentDisposition = response.headers.get("Content-Disposition");
-        if (contentDisposition) {
-          const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/);
-          if (filenameMatch && filenameMatch[1]) {
-            filename = filenameMatch[1];
-          }
-        } else {
-          const urlParts = href.split(/[?#]/)[0].split("/");
-          const lastPart = urlParts[urlParts.length - 1];
-          if (lastPart && lastPart.toLowerCase().endsWith(".pdf")) {
-            filename = lastPart;
-          }
+        const urlParts = href.split(/[?#]/)[0].split("/");
+        const lastPart = urlParts[urlParts.length - 1];
+        if (lastPart && lastPart.toLowerCase().endsWith(".pdf")) {
+          filename = lastPart;
         }
 
         const a = document.createElement("a");
-        a.href = blobUrl;
+        a.href = downloadUrl;
         a.download = filename;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
         document.body.appendChild(a);
         a.click();
         a.remove();
-
-        setTimeout(() => {
-          window.URL.revokeObjectURL(blobUrl);
-        }, 100);
       } catch (error) {
         console.error("Direct download failed, falling back to standard link:", error);
         const a = document.createElement("a");

@@ -106,18 +106,28 @@ function NavigationContent() {
 
       setDownloadState("downloading");
 
-      const response = await fetch(downloadUrl);
-      if (!response.ok)
-        throw new Error("Catalog brochure file is not available");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      // For DB-served images/files, force the attachment download header
+      let finalDownloadUrl = downloadUrl;
+      if (downloadUrl.startsWith("/api/images") || downloadUrl.includes("/api/images?")) {
+        const url = new URL(downloadUrl, window.location.origin);
+        url.searchParams.set("download", "1");
+        finalDownloadUrl = url.toString();
+      }
 
+      // Check if file exists using a HEAD request (very fast, doesn't download the body)
+      const checkResponse = await fetch(finalDownloadUrl, { method: "HEAD" });
+      if (!checkResponse.ok && checkResponse.status !== 405) {
+        throw new Error("Catalog brochure file is not available");
+      }
+
+      // Trigger native browser download directly
       const a = document.createElement("a");
-      a.href = url;
+      a.href = finalDownloadUrl;
       a.download = fileName;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       a.remove();
 
       setDownloadState("success");
