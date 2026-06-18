@@ -250,12 +250,12 @@ export default function WhatsNew({ products: rawProducts }: WhatsNewProps) {
                 {/* Price + CTA */}
                 <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-white/5">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">
+                    {/* <span className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider">
                       Price Model
                     </span>
                     <span className="text-base font-bold text-slate-700 dark:text-slate-200">
                       By Inquiry
-                    </span>
+                    </span> */}
                   </div>
 
                   <Button
