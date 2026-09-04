@@ -1,10 +1,21 @@
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import BreadcrumbJsonLd from "@/components/custom/BreadcrumbJsonLd";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import ProductsCollections from "@/components/custom/products/collections";
 import { getBrandLogos, loadLogosIntoCache } from "@/lib/brand-logos";
 import { readBrands, readProducts } from "@/lib/products";
+
+export const metadata: Metadata = {
+  title: "Curated Collections",
+  description:
+    "Explore our complete collection of commercial, executive, and ergonomic furniture crafted for modern living and workspaces.",
+  alternates: {
+    canonical: "/collections",
+  },
+};
 
 export const unstable_instant = {
   prefetch: "static",
@@ -18,6 +29,12 @@ export default async function page({
 }) {
   return (
     <section>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Collections", url: "/collections" },
+        ]}
+      />
       <Navigation />
       <div className="max-w-2xl mx-auto py-12 pb-24 px-4 text-center transition-colors duration-300">
         <h1 className="text-6xl font-bold mb-4">

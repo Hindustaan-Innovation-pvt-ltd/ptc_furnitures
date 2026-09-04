@@ -31,7 +31,8 @@ const nextConfig: NextConfig = {
   experimental: {
     instantNavigationDevToolsToggle: true,
   },
-  // Long-lived cache headers for all uploaded media
+  poweredByHeader: false,
+  // Long-lived cache headers for all uploaded media + security/SEO headers
   async headers() {
     return [
       {
@@ -43,6 +44,66 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      // 301 Redirect non-www and www .com domain to .in
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "ptcfurnitures.com",
+          },
+        ],
+        destination: "https://ptcfurnitures.in/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "www.ptcfurnitures.com",
+          },
+        ],
+        destination: "https://ptcfurnitures.in/:path*",
+        permanent: true,
+      },
+      // 301 Redirect www.ptcfurnitures.in to non-www canonical
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "www.ptcfurnitures.in",
+          },
+        ],
+        destination: "https://ptcfurnitures.in/:path*",
+        permanent: true,
+      },
     ];
   },
   async rewrites() {
@@ -52,11 +113,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/upload/:path*",
-        destination: "https://ptcfurnitures.com/upload/:path*",
+        destination: "https://ptcfurnitures.in/upload/:path*",
       },
       {
         source: "/uploads/:path*",
-        destination: "https://ptcfurnitures.com/uploads/:path*",
+        destination: "https://ptcfurnitures.in/uploads/:path*",
       },
     ];
   },

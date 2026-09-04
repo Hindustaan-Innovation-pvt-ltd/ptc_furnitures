@@ -4,9 +4,12 @@ import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | PTC Furniture",
+  title: "Privacy Policy",
   description:
-    "Learn how PTC Furniture collects, uses, and protects your personal information and trade data.",
+    "Learn how PTC Furnitures collects, uses, and protects your personal information and trade data.",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

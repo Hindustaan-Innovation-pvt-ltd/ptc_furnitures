@@ -11,9 +11,12 @@ import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 
 export const metadata: Metadata = {
-  title: "Terms of Use | PTC Furniture",
+  title: "Terms of Use",
   description:
-    "Read the terms and conditions governing the use of PTC Furniture trade platforms, catalog requests, and dealer programs.",
+    "Read the terms and conditions governing the use of PTC Furnitures trade platforms, catalog requests, and dealer programs.",
+  alternates: {
+    canonical: "/terms-of-use",
+  },
 };
 
 export default function TermsOfUsePage() {

@@ -15,9 +15,12 @@ export const unstable_instant = {
 };
 
 export const metadata: Metadata = {
-  title: "Payment & Banking Details | PTC Furnitures",
+  title: "Payment & Banking Details",
   description:
     "View PTC Furnitures banking details and UPI QR code for secure payments via NEFT, RTGS, IMPS or UPI.",
+  alternates: {
+    canonical: "/payment",
+  },
 };
 
 type BankEntry = {

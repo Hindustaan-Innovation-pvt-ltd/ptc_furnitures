@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import BreadcrumbJsonLd from "@/components/custom/BreadcrumbJsonLd";
 import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
@@ -14,6 +16,44 @@ export const unstable_instant = {
   prefetch: "static",
   unstable_disableValidation: true,
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const catalogs = await readCatalogs();
+  const catalog = catalogs.find((c) => c.id === id);
+
+  if (!catalog) {
+    return {
+      title: "Catalog Not Found",
+      alternates: {
+        canonical: `/catalogs/${id}`,
+      },
+    };
+  }
+
+  const title = `${catalog.title} | PTC Furnitures`;
+  const description =
+    catalog.description ||
+    `Explore the ${catalog.title} furniture brochure and collection by PTC Furnitures.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/catalogs/${id}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `https://ptcfurnitures.in/catalogs/${id}`,
+      type: "article",
+    },
+  };
+}
 
 export default async function CatalogDetailsPage({
   params,
@@ -79,10 +119,17 @@ async function CatalogDetailsLoader({
     <section
       className={`min-h-screen ${isGold ? "bg-[#fdfbf7] dark:bg-[#0c0a08]" : isDark ? "bg-[#07080a] text-slate-100" : "bg-white dark:bg-[#0c0d11]"} text-slate-900 dark:text-slate-100 flex flex-col justify-between transition-colors duration-300`}
     >
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Catalogs", url: "/catalogs" },
+          { name: catalog.title, url: `/catalogs/${catalog.id}` },
+        ]}
+      />
       {/* Dynamic CSS for Print layouts and Cover styling */}
       <style
-        dangerouslySetInnerHTML={{
-          __html: `
+          dangerouslySetInnerHTML={{
+            __html: `
         @media print {
           body {
             background-color: white !important;

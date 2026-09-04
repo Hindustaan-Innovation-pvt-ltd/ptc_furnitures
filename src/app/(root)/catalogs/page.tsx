@@ -1,12 +1,23 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import BreadcrumbJsonLd from "@/components/custom/BreadcrumbJsonLd";
 import CatalogDownloadButton from "@/components/custom/CatalogDownloadButton";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 import { readCatalogs } from "@/lib/catalogs";
 import { readBrands, readProducts } from "@/lib/products";
+
+export const metadata: Metadata = {
+  title: "Brochures & Catalogs",
+  description:
+    "Explore custom-curated digital portfolios or download official physical catalogs to inspire your interior designs.",
+  alternates: {
+    canonical: "/catalogs",
+  },
+};
 
 export const unstable_instant = {
   prefetch: "static",
@@ -22,6 +33,12 @@ export default async function PublicCatalogsPage({
 }: PublicCatalogsPageProps) {
   return (
     <section className="min-h-screen bg-[#fcfcfd] dark:bg-[#08090d] text-slate-900 dark:text-slate-100 flex flex-col justify-between transition-colors duration-300">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Catalogs", url: "/catalogs" },
+        ]}
+      />
       <div>
         <Navigation />
 

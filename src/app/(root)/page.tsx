@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import Footer from "@/components/custom/Footer";
@@ -8,6 +9,15 @@ import Reviews from "@/components/custom/reviews";
 import WhatsNew from "@/components/custom/WhatsNew";
 import { getBrandLogos, loadLogosIntoCache } from "@/lib/brand-logos";
 import { readBrands, readProducts } from "@/lib/products";
+
+export const metadata: Metadata = {
+  title: "PTC Furnitures | Re-imagined Furniture & Seating Solutions",
+  description:
+    "Discover high-quality chairs, office desks, curated collections, and digital catalogs by PTC Furnitures.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export const unstable_instant = {
   prefetch: "static",

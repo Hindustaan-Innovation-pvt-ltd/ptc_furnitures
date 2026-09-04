@@ -1,10 +1,27 @@
+import type { Metadata } from "next";
+import BreadcrumbJsonLd from "@/components/custom/BreadcrumbJsonLd";
 import ContactForm from "@/components/custom/ContactForm";
 import Footer from "@/components/custom/Footer";
 import Navigation from "@/components/custom/Navigation";
 
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Get in touch with PTC Furnitures for orders, custom furniture quotes, dealer inquiries, and support.",
+  alternates: {
+    canonical: "/contact",
+  },
+};
+
 export default function ContactPage() {
   return (
     <div className="min-h-screen dark:bg-[#08090d]">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Contact", url: "/contact" },
+        ]}
+      />
       <Navigation />
 
       <header className="mx-auto max-w-7xl px-4 py-12 text-center sm:px-6 sm:py-16 lg:px-8">
