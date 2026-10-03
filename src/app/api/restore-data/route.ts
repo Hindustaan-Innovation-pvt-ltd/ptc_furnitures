@@ -1,16 +1,21 @@
-import { Product, BrandModel, BgRemovedCacheModel } from "./db-models";
+import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { connectToDatabase } from "@/lib/mongodb";
+import { Product, BrandModel, BgRemovedCacheModel } from "@/lib/db-models";
 import productsData from "@/data/furnitures.products.json";
 import brandsData from "@/data/furnitures.brands.json";
 import bgCacheData from "@/data/furnitures.bgremovedcaches.json";
 
-let hasRestored = false;
+export const dynamic = "force-dynamic";
 
-export async function autoRestoreIfEmpty() {
-  if (hasRestored) return;
-
+export async function GET() {
   try {
+    await connectToDatabase();
+
+    let insertedProducts = 0;
+    let existingProducts = 0;
+
     if (Array.isArray(productsData) && productsData.length > 0) {
-      console.log(`==> [RESTORE-SYNC] Syncing ${productsData.length} backup products with current database...`);
       const productOps = productsData.map((p: any) => {
         const doc = { ...p };
         if (doc._id && typeof doc._id === "object" && doc._id.$oid) {
@@ -25,7 +30,8 @@ export async function autoRestoreIfEmpty() {
         };
       });
       const result = await Product.bulkWrite(productOps, { ordered: false });
-      console.log(`==> [RESTORE-SYNC] Products synced! Inserted: ${result.upsertedCount}, Existing untouched: ${result.matchedCount}`);
+      insertedProducts = result.upsertedCount;
+      existingProducts = result.matchedCount;
     }
 
     if (Array.isArray(brandsData) && brandsData.length > 0) {
@@ -60,8 +66,18 @@ export async function autoRestoreIfEmpty() {
       }
     }
 
-    hasRestored = true;
-  } catch (err: any) {
-    console.error("==> [RESTORE-SYNC] Error during restore-sync:", err.message || err);
+    const totalProducts = await Product.countDocuments();
+    revalidatePath("/", "layout");
+
+    return NextResponse.json({
+      success: true,
+      message: `Restore complete! Added ${insertedProducts} backup products. Total products in database: ${totalProducts}.`,
+      insertedProducts,
+      existingProducts,
+      totalProducts,
+    });
+  } catch (error: any) {
+    console.error("Restore failed:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
