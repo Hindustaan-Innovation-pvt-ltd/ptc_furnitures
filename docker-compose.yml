@@ -5,10 +5,11 @@ services:
     image: mongo:8.0.5
     container_name: furnitures-mongodb
     restart: always
+    command: ["--auth"]
     volumes:
       - mongodb_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "-u", "94312Hindustaan@", "-p", "94312Hindustaan@", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,7 +27,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongodb:27017/ptc_furnitures
+      - MONGODB_URI=mongodb://hindustaan_Innovations:94312Hindustaan@mongodb:27017/ptc_furnitures?authSource=admin
       - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}
       - MSG91_AUTH_KEY=${MSG91_AUTH_KEY}
       - MSG91_TEMPLATE_ID=${MSG91_TEMPLATE_ID}
