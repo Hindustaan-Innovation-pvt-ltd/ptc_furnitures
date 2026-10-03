@@ -35,6 +35,10 @@ export async function connectToDatabase() {
 
           await loadLogosIntoCache();
           await loadWatermarksIntoCache();
+
+          // Auto-restore products if database was empty
+          const { autoRestoreIfEmpty } = await import("./restore-backup");
+          await autoRestoreIfEmpty();
         } catch (err) {
           console.error("==> MongoDB Cache Warmup failed:", err);
         }
