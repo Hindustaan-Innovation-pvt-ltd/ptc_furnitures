@@ -6,7 +6,7 @@ import productsData from "@/data/furnitures.products.json";
 import brandsData from "@/data/furnitures.brands.json";
 import bgCacheData from "@/data/furnitures.bgremovedcaches.json";
 
-export const dynamic = "force-dynamic";
+
 
 export async function GET() {
   try {
