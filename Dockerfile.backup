@@ -1,0 +1,23 @@
+FROM node:20-bookworm-slim
+
+# Install mongodump from official MongoDB 8.0 repository
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    gnupg \
+    && curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg \
+    && echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/8.0 main" | tee /etc/apt/sources.list.d/mongodb-org-8.0.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends mongodb-org-tools \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Ensure backup directory exists
+RUN mkdir -p /backups
+
+# Copy backup script
+COPY scripts/backup-service.js /app/backup-service.js
+
+CMD ["node", "backup-service.js"]

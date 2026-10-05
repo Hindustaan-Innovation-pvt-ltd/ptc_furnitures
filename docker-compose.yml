@@ -9,7 +9,7 @@ services:
     volumes:
       - mongodb_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "-u", "hindustaan_Innovations", "-p", "94312Hindustaan@", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "-u", "${MONGO_USER}", "-p", "${MONGO_PASSWORD}", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,7 +27,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://hindustaan_Innovations:94312Hindustaan%40@mongodb:27017/ptc_furnitures?authSource=admin
+      - MONGODB_URI=${MONGODB_URI}
       - NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}
       - MSG91_AUTH_KEY=${MSG91_AUTH_KEY}
       - MSG91_TEMPLATE_ID=${MSG91_TEMPLATE_ID}
@@ -48,5 +48,28 @@ services:
     volumes:
       - ./public/upload:/app/public/upload
 
+  mongodb-backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: furnitures-mongodb-backup
+    restart: always
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - mongodb_backups:/backups
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - GDRIVE_CLIENT_ID=${GDRIVE_CLIENT_ID}
+      - GDRIVE_CLIENT_SECRET=${GDRIVE_CLIENT_SECRET}
+      - GDRIVE_REFRESH_TOKEN=${GDRIVE_REFRESH_TOKEN}
+      - GOOGLE_DRIVE_FOLDER_ID=${GOOGLE_DRIVE_FOLDER_ID}
+      - RETENTION_DAYS=${RETENTION_DAYS:-14}
+      - RETENTION_DRIVE_COUNT=${RETENTION_DRIVE_COUNT:-30}
+    env_file:
+      - .env
+
 volumes:
   mongodb_data:
+  mongodb_backups:

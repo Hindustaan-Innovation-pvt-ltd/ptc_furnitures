@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "db:backup": "node scripts/backup-service.js --now",
     "lint": "biome check",
     "format": "biome format --write"
   },
