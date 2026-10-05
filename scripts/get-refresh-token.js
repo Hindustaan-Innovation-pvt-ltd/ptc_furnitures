@@ -28,12 +28,18 @@ function loadEnv() {
 }
 loadEnv();
 
-const CLIENT_ID = process.env.GDRIVE_CLIENT_ID;
-const CLIENT_SECRET = process.env.GDRIVE_CLIENT_SECRET;
+const CLIENT_ID =
+  process.env.BACKUP_GDRIVE_CLIENT_ID || process.env.GDRIVE_CLIENT_ID;
+const CLIENT_SECRET =
+  process.env.BACKUP_GDRIVE_CLIENT_SECRET || process.env.GDRIVE_CLIENT_SECRET;
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
-  console.error('\n[ERROR] GDRIVE_CLIENT_ID and GDRIVE_CLIENT_SECRET are required!');
-  console.error('Please add them to your .env file before running this script.\n');
+  console.error(
+    '\n[ERROR] BACKUP_GDRIVE_CLIENT_ID and BACKUP_GDRIVE_CLIENT_SECRET are required!'
+  );
+  console.error(
+    'Please add them to your .env file before running this script.\n'
+  );
   process.exit(1);
 }
 

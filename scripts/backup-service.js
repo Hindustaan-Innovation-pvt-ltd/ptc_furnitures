@@ -33,22 +33,32 @@ const BACKUP_DIR =
     ? path.join(process.cwd(), 'backups')
     : '/backups');
 const MONGODB_URI = process.env.MONGODB_URI;
-const RETENTION_DAYS = parseInt(process.env.RETENTION_DAYS || '14', 10);
-const RETENTION_DRIVE_COUNT = parseInt(process.env.RETENTION_DRIVE_COUNT || '30', 10);
+const RETENTION_DAYS = parseInt(
+  process.env.BACKUP_RETENTION_DAYS || process.env.RETENTION_DAYS || '14',
+  10
+);
+const RETENTION_DRIVE_COUNT = parseInt(
+  process.env.BACKUP_RETENTION_DRIVE_COUNT || process.env.RETENTION_DRIVE_COUNT || '30',
+  10
+);
 
 // Google Drive Folder ID
-let GOOGLE_DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID;
+let GOOGLE_DRIVE_FOLDER_ID =
+  process.env.BACKUP_GDRIVE_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID;
 
 function loadCredentials() {
-  if (
-    process.env.GDRIVE_CLIENT_ID &&
-    process.env.GDRIVE_CLIENT_SECRET &&
-    process.env.GDRIVE_REFRESH_TOKEN
-  ) {
+  const clientId =
+    process.env.BACKUP_GDRIVE_CLIENT_ID || process.env.GDRIVE_CLIENT_ID;
+  const clientSecret =
+    process.env.BACKUP_GDRIVE_CLIENT_SECRET || process.env.GDRIVE_CLIENT_SECRET;
+  const refreshToken =
+    process.env.BACKUP_GDRIVE_REFRESH_TOKEN || process.env.GDRIVE_REFRESH_TOKEN;
+
+  if (clientId && clientSecret && refreshToken) {
     return {
-      client_id: process.env.GDRIVE_CLIENT_ID,
-      client_secret: process.env.GDRIVE_CLIENT_SECRET,
-      refresh_token: process.env.GDRIVE_REFRESH_TOKEN,
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
     };
   }
 
