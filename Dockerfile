@@ -94,8 +94,12 @@ ENV HOSTNAME="0.0.0.0"
 # Copy production assets
 COPY --from=builder --chown=node:node /app/public ./public
 
-# Back up pre-seeded upload images to ensure they aren't shadowed by Docker volume mounts
-RUN cp -r /app/public/upload /app/public/upload_default && chown -R node:node /app/public/upload_default
+# Ensure upload directory and fallback backup exist without failing if public/upload is missing or empty
+RUN mkdir -p /app/public/upload /app/public/upload_default && \
+    if [ -d /app/public/upload ] && [ "$(ls -A /app/public/upload 2>/dev/null)" ]; then \
+        cp -rn /app/public/upload/. /app/public/upload_default/ 2>/dev/null || true; \
+    fi && \
+    chown -R node:node /app/public/upload /app/public/upload_default
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
