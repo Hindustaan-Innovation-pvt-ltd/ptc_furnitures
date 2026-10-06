@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/furnitures";
 
 let cached = (global as any).mongoose;
 
@@ -13,6 +11,9 @@ export async function connectToDatabase() {
   if (cached.conn) {
     return cached.conn;
   }
+
+  const MONGODB_URI =
+    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/ptc_furnitures";
 
   if (!cached.promise) {
     const opts = {

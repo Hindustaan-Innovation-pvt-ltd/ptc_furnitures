@@ -76,9 +76,9 @@ export default function ProductCardWithHover({
   const [newRating, setNewRating] = React.useState(5);
   const [newText, setNewText] = React.useState("");
   const displayImages = React.useMemo(() => {
-    return product.images && product.images.length > 0
-      ? product.images
-      : product.originalImages || [];
+    return product.originalImages && product.originalImages.length > 0
+      ? product.originalImages
+      : product.images || [];
   }, [product.originalImages, product.images]);
 
   const getProductImage = (index: number) => {
@@ -336,7 +336,7 @@ export default function ProductCardWithHover({
                             side="top"
                             className="px-2 py-1 rounded bg-slate-950 text-white text-[10px] font-bold z-50"
                           >
-                            <span>Download watermarked</span>
+                            <span>Download image</span>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -394,7 +394,7 @@ export default function ProductCardWithHover({
                         side="top"
                         className="px-2 py-1 rounded font-bold text-[9px] z-50 bg-slate-950 text-white"
                       >
-                        <span>Download Watermarked PNG</span>
+                        <span>Download Image (PNG)</span>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

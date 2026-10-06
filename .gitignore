@@ -48,3 +48,11 @@ next-env.d.ts
 .gdrive-credentials.json
 gentle-shell-*.json
 *.json.key
+
+# Uploads
+/public/upload/
+/public/upload/*
+/public/uploads/
+/public/uploads/*
+public/upload/
+public/uploads/

@@ -70,6 +70,8 @@ export async function compositeBrandWatermark(
   imageBuffer: Buffer,
   brand: string,
 ): Promise<Buffer> {
+  // Watermark disabled — return clean standardized image
+  return imageBuffer;
   let logo = await getBrandLogo(brand);
 
   // Fallback to PTC logo as default watermark
