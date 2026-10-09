@@ -107,19 +107,28 @@ export interface ICategory extends Document {
   id: string;
   name: string;
   brands: string[];
+  productIds?: string[];
   position?: number;
   description?: string;
   createdAt?: string;
 }
 
-const CategorySchema = new Schema<ICategory>({
-  id: { type: String, required: true, unique: true },
-  name: { type: String, required: true, unique: true },
-  brands: { type: [String], default: [] },
-  position: { type: Number, default: 0 },
-  description: { type: String, default: "" },
-  createdAt: { type: String, default: () => new Date().toISOString() },
-});
+const CategorySchema = new Schema<ICategory>(
+  {
+    id: { type: String, required: true, unique: true },
+    name: { type: String, required: true, unique: true },
+    brands: { type: [String], default: [] },
+    productIds: { type: [String], default: [] },
+    position: { type: Number, default: 0 },
+    description: { type: String, default: "" },
+    createdAt: { type: String, default: () => new Date().toISOString() },
+  },
+  { strict: false },
+);
+
+if (mongoose.models.Category && !mongoose.models.Category.schema.paths.productIds) {
+  delete mongoose.models.Category;
+}
 
 export const CategoryModel =
   mongoose.models.Category ||

@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     }
 
-    const { name, brands, description } = body;
+    const { name, brands, productIds, description } = body;
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
         { error: "Category name is required." },
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
     const category = await addCategory({
       name,
       brands: Array.isArray(brands) ? brands : [],
+      productIds: Array.isArray(productIds) ? productIds : [],
       description,
     });
 
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, brands, description, position } = body;
+    const { id, name, brands, productIds, description, position } = body;
 
     if (!id || typeof id !== "string") {
       return NextResponse.json(
@@ -75,6 +76,7 @@ export async function PUT(request: Request) {
     const category = await updateCategory(id, {
       name,
       brands,
+      productIds,
       description,
       position,
     });

@@ -90,7 +90,7 @@ export function filterAndSortProducts(
   products: Product[],
   filters: ProductFiltersState,
   brandOrder?: string[],
-  categories?: Array<{ id: string; name: string; brands: string[] }>,
+  categories?: Array<{ id: string; name: string; brands: string[]; productIds?: string[] }>,
 ) {
   const searchQuery = normalizeValue(filters.search);
   const searchTokens = searchQuery.split(/\s+/).filter(Boolean);
@@ -98,7 +98,9 @@ export function filterAndSortProducts(
     .map((t) => cleanAlphanumeric(t))
     .filter(Boolean);
 
+  let categoryProductIds: Set<string> | null = null;
   let categoryBrands: string[] | null = null;
+
   if (filters.category && filters.category !== "all" && categories) {
     const activeCat = categories.find(
       (c) =>
@@ -106,15 +108,33 @@ export function filterAndSortProducts(
         normalizeValue(c.name) === normalizeValue(filters.category),
     );
     if (activeCat) {
-      categoryBrands = activeCat.brands.map((b) => normalizeValue(b));
+      if (activeCat.productIds && activeCat.productIds.length > 0) {
+        categoryProductIds = new Set(
+          activeCat.productIds.flatMap((id) => [
+            String(id),
+            String(id).replace(/-img-\d+$/, ""),
+          ]),
+        );
+      }
+      if (activeCat.brands && activeCat.brands.length > 0) {
+        categoryBrands = activeCat.brands.map((b) => normalizeValue(b));
+      }
     }
   }
 
   const filteredProducts = products.filter((product) => {
     const productBrandNorm = normalizeValue(product.brand);
+    const productIdStr = String(product.id);
+    const productBaseId = productIdStr.replace(/-img-\d+$/, "");
 
-    const matchesCategory =
-      !categoryBrands || categoryBrands.includes(productBrandNorm);
+    let matchesCategory = true;
+    if (categoryProductIds) {
+      matchesCategory =
+        categoryProductIds.has(productIdStr) ||
+        categoryProductIds.has(productBaseId);
+    } else if (categoryBrands) {
+      matchesCategory = categoryBrands.includes(productBrandNorm);
+    }
 
     const matchesBrand =
       filters.brand === "all" ||

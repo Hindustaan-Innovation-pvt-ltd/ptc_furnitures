@@ -3,15 +3,18 @@ import AdminDashboardShell from "@/components/custom/AdminDashboardShell";
 import AdminSettingsTabs from "@/components/custom/AdminSettingsTabs";
 import { getBrandLogos } from "@/lib/brand-logos";
 import { readCategories } from "@/lib/categories";
-import { readBrands } from "@/lib/products";
+import { readBrands, readProducts } from "@/lib/products";
 
 export default async function AdminSettingsPage() {
   await connection();
-  const [brands, brandLogos, categories] = await Promise.all([
+  const [brands, brandLogos, categories, rawProducts] = await Promise.all([
     readBrands(),
     getBrandLogos(),
     readCategories(),
+    readProducts(),
   ]);
+
+  const products = JSON.parse(JSON.stringify(rawProducts));
 
   return (
     <AdminDashboardShell
@@ -22,6 +25,7 @@ export default async function AdminSettingsPage() {
         brands={brands}
         brandLogos={brandLogos}
         categories={categories}
+        products={products}
       />
     </AdminDashboardShell>
   );

@@ -97,14 +97,94 @@ export default function ProductsCollections({
   }, []);
   const _activeFilters = hasActiveProductFilters(filters);
   const brandOptions = React.useMemo(() => {
-    if (brands.length > 0) {
-      return brands.map((b) => b.trim()).filter(Boolean);
+    let pool = brands;
+    if (
+      filters.category &&
+      filters.category !== "all" &&
+      categories &&
+      categories.length > 0
+    ) {
+      const activeCat = categories.find(
+        (c) =>
+          c.id === filters.category ||
+          c.name.toLowerCase() === filters.category.toLowerCase(),
+      );
+      if (activeCat) {
+        if (activeCat.productIds && activeCat.productIds.length > 0) {
+          const allowedIds = new Set(
+            activeCat.productIds.flatMap((id) => [
+              String(id),
+              String(id).replace(/-img-\d+$/, ""),
+            ]),
+          );
+          const catProductBrands = products
+            .filter((p) => {
+              const pid = String(p.id);
+              const baseId = pid.replace(/-img-\d+$/, "");
+              return allowedIds.has(pid) || allowedIds.has(baseId);
+            })
+            .map((p) => p.brand.trim())
+            .filter(Boolean);
+          if (catProductBrands.length > 0) {
+            pool = Array.from(new Set(catProductBrands));
+          } else if (activeCat.brands && activeCat.brands.length > 0) {
+            pool = activeCat.brands;
+          }
+        } else if (activeCat.brands && activeCat.brands.length > 0) {
+          pool = activeCat.brands;
+        }
+      }
+    }
+
+    if (pool.length > 0) {
+      return Array.from(new Set(pool.map((b) => b.trim()))).filter(Boolean);
     }
     const list = products.map((product) => product.brand);
     return Array.from(new Set(list.map((b) => b.trim())))
       .filter(Boolean)
       .sort((a, b) => a.localeCompare(b));
-  }, [brands, products]);
+  }, [brands, products, filters.category, categories]);
+
+  React.useEffect(() => {
+    if (
+      filters.category &&
+      filters.category !== "all" &&
+      categories &&
+      categories.length > 0
+    ) {
+      const activeCat = categories.find(
+        (c) =>
+          c.id === filters.category ||
+          c.name.toLowerCase() === filters.category.toLowerCase(),
+      );
+      if (activeCat) {
+        let allowed: string[] = [];
+        if (activeCat.productIds && activeCat.productIds.length > 0) {
+          const allowedIds = new Set(
+            activeCat.productIds.flatMap((id) => [
+              String(id),
+              String(id).replace(/-img-\d+$/, ""),
+            ]),
+          );
+          allowed = products
+            .filter((p) => {
+              const pid = String(p.id);
+              const baseId = pid.replace(/-img-\d+$/, "");
+              return allowedIds.has(pid) || allowedIds.has(baseId);
+            })
+            .map((p) => p.brand.trim().toLowerCase());
+        } else if (activeCat.brands) {
+          allowed = activeCat.brands.map((b) => b.trim().toLowerCase());
+        }
+        if (
+          filters.brand !== "all" &&
+          !allowed.includes(filters.brand.trim().toLowerCase())
+        ) {
+          setFilters((prev) => ({ ...prev, brand: "all" }));
+        }
+      }
+    }
+  }, [filters.category, categories, filters.brand, products]);
 
   React.useEffect(() => {
     setFilters((current) => ({
@@ -159,165 +239,21 @@ export default function ProductsCollections({
     <div className="border-t border-slate-200 py-4 transition-colors duration-300 dark:border-white/10">
       <div className="mx-auto mb-8 flex max-w-7xl items-center gap-4 px-4 py-4 text-slate-900 dark:text-slate-100 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 w-full">
-          <div className="flex items-center gap-2 sm:gap-4 pb-2 flex-wrap sm:pb-0">
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
-              Brands
-            </span>
-
-            {/* 1. All Brands Button */}
-            <button
-              title="All Brands"
-              onClick={() => {
-                updateFilter("brand", "all");
-                updateFilter("category", "all");
-                const nextParams = new URLSearchParams(
-                  searchParams ? searchParams.toString() : "",
-                );
-                nextParams.delete("brand");
-                nextParams.delete("category");
-                const queryString = nextParams.toString();
-                router.push(
-                  `/collections${queryString ? `?${queryString}` : ""}`,
-                  { scroll: false },
-                );
-              }}
-              className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
-                filters.brand === "all" && filters.category === "all"
-                  ? "text-white dark:text-slate-950"
-                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
-              }`}
-            >
-              {filters.brand === "all" && filters.category === "all" && (
-                <motion.span
-                  layoutId="activeBrand"
-                  className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
-                  transition={{
-                    type: "spring",
-                    stiffness: 380,
-                    damping: 30,
-                  }}
-                />
-              )}
-              <span className="relative z-10 flex items-center justify-center">
-                <span
-                  className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full border ${
-                    filters.brand === "all" && filters.category === "all"
-                      ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
-                      : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
-                  }`}
-                >
-                  <svg
-                    className="size-4 sm:size-5 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                    />
-                  </svg>
-                </span>
+          {/* Categories Filter Row */}
+          {categories && categories.length > 0 && (
+            <div className="flex items-center gap-2 sm:gap-4 pb-2 flex-wrap border-b border-slate-100 dark:border-white/5">
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 w-24 shrink-0 flex items-center gap-1.5">
+                <FolderTree className="size-3.5 text-red-500" />
+                Categories
               </span>
-            </button>
-
-            {/* 2. Categories as pills in the Brands row */}
-            {categories?.map((cat) => {
-              const isSelected =
-                filters.category === cat.id && filters.brand === "all";
-              return (
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <button
-                  key={`cat-${cat.id}`}
-                  title={`${cat.name} (${cat.brands.join(", ")})`}
+                  type="button"
                   onClick={() => {
-                    const newCat = isSelected ? "all" : cat.id;
-                    updateFilter("category", newCat);
-                    updateFilter("brand", "all");
-                    const nextParams = new URLSearchParams(
-                      searchParams ? searchParams.toString() : "",
-                    );
-                    if (newCat === "all") {
-                      nextParams.delete("category");
-                    } else {
-                      nextParams.set("category", cat.id);
-                    }
-                    nextParams.delete("brand");
-                    const queryString = nextParams.toString();
-                    router.push(
-                      `/collections${queryString ? `?${queryString}` : ""}`,
-                      { scroll: false },
-                    );
-                  }}
-                  className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
-                    isSelected
-                      ? "text-white dark:text-slate-950"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
-                  }`}
-                >
-                  {isSelected && (
-                    <motion.span
-                      layoutId="activeBrand"
-                      className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
-                      transition={{
-                        type: "spring",
-                        stiffness: 380,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center justify-center">
-                    <span
-                      className={`inline-flex px-3.5 sm:px-4 h-7 sm:h-10 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
-                        isSelected
-                          ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
-                          : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
-                      }`}
-                    >
-                      <span>{cat.name}</span>
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-
-            {/* 3. Individual Brands */}
-            {brandOptions.map((brand) => {
-              const isSelected =
-                filters.brand === brand && filters.category === "all";
-              const logo = brandLogos?.find((l) => {
-                const normB = brand.trim().toLowerCase();
-                const normL = l.brand.trim().toLowerCase();
-                return (
-                  normL === normB ||
-                  l.aliases.some(
-                    (alias) => alias.trim().toLowerCase() === normB,
-                  )
-                );
-              });
-
-              return (
-                <button
-                  key={brand}
-                  title={brand}
-                  onClick={() => {
-                    const newBrand = isSelected ? "all" : brand;
-                    updateFilter("brand", newBrand);
                     updateFilter("category", "all");
-                    sendGAEvent("event", "filter_brand", {
-                      brand_selected: newBrand,
-                    });
-
                     const nextParams = new URLSearchParams(
                       searchParams ? searchParams.toString() : "",
                     );
-                    if (newBrand === "all") {
-                      nextParams.delete("brand");
-                    } else {
-                      nextParams.set("brand", newBrand);
-                    }
                     nextParams.delete("category");
                     const queryString = nextParams.toString();
                     router.push(
@@ -325,6 +261,116 @@ export default function ProductsCollections({
                       { scroll: false },
                     );
                   }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer select-none ${
+                    filters.category === "all"
+                      ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+                  }`}
+                >
+                  All Categories
+                </button>
+                {categories.map((cat) => {
+                  const isSelected =
+                    filters.category === cat.id ||
+                    filters.category.toLowerCase() === cat.name.toLowerCase();
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      title={
+                        cat.description ||
+                        `${cat.name} (${cat.brands.length} brands)`
+                      }
+                      onClick={() => {
+                        const newCat = isSelected ? "all" : cat.id;
+                        updateFilter("category", newCat);
+                        // When selecting category, reset specific brand filter so all category brands are shown
+                        updateFilter("brand", "all");
+
+                        const nextParams = new URLSearchParams(
+                          searchParams ? searchParams.toString() : "",
+                        );
+                        if (newCat === "all") {
+                          nextParams.delete("category");
+                        } else {
+                          nextParams.set("category", cat.id);
+                        }
+                        nextParams.delete("brand");
+                        const queryString = nextParams.toString();
+                        router.push(
+                          `/collections${queryString ? `?${queryString}` : ""}`,
+                          { scroll: false },
+                        );
+                      }}
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer select-none ${
+                        isSelected
+                          ? "bg-red-600 text-white shadow-xs"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+                      }`}
+                    >
+                      <span>{cat.name}</span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          isSelected
+                            ? "bg-white/20 text-white"
+                            : "bg-slate-200/80 text-slate-600 dark:bg-white/10 dark:text-slate-400"
+                        }`}
+                      >
+                        {cat.brands.length} {cat.brands.length === 1 ? "Brand" : "Brands"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 sm:gap-4 pb-2 flex-wrap sm:pb-0">
+            <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-24 shrink-0">
+              Brands
+            </span>
+            {["all", ...brandOptions].map((brand) => {
+              const label = brand === "all" ? "All Brands" : brand;
+              const isSelected = filters.brand === brand;
+
+              const logo =
+                brand === "all"
+                  ? null
+                  : brandLogos?.find((l) => {
+                      const normB = brand.trim().toLowerCase();
+                      const normL = l.brand.trim().toLowerCase();
+                      return (
+                        normL === normB ||
+                        l.aliases.some(
+                          (alias) => alias.trim().toLowerCase() === normB,
+                        )
+                      );
+                    });
+
+              return (
+                <button
+                  key={label}
+                  title={label}
+                  onClick={() => {
+                    const newBrand = brand;
+                    updateFilter("brand", newBrand);
+                    sendGAEvent("event", "filter_brand", {
+                      brand_selected: newBrand,
+                      label,
+                    });
+
+                    const nextParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
+                    if (newBrand === "all") {
+                      nextParams.delete("brand");
+                    } else {
+                      nextParams.set("brand", newBrand);
+                    }
+                    if (filters.category && filters.category !== "all") {
+                      nextParams.set("category", filters.category);
+                    }
+                    const queryString = nextParams.toString();
+                    router.push(`/collections${queryString ? `?${queryString}` : ""}`, { scroll: false });
+                  }}
                   className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
                     isSelected
                       ? "text-white dark:text-slate-950"
@@ -343,7 +389,30 @@ export default function ProductsCollections({
                     />
                   )}
                   <span className="relative z-10 flex items-center justify-center">
-                    {logo?.src ? (
+                    {brand === "all" ? (
+                      <span
+                        className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full border ${
+                          isSelected
+                            ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
+                            : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
+                        }`}
+                      >
+                        <svg
+                          className="size-4 sm:size-5 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                          />
+                        </svg>
+                      </span>
+                    ) : logo?.src ? (
                       <span
                         className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full bg-white p-1 sm:p-1.5 border overflow-hidden ${
                           isSelected

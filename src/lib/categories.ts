@@ -5,6 +5,7 @@ export type Category = {
   id: string;
   name: string;
   brands: string[];
+  productIds?: string[];
   position: number;
   description?: string;
   createdAt?: string;
@@ -34,6 +35,7 @@ export async function readCategories(): Promise<Category[]> {
             id: "office-series",
             name: "Office Series",
             brands: ["PTC", "PTC GOLD"],
+            productIds: [],
             position: 0,
             description: "Ergonomic chairs, desks, and corporate workspaces",
           },
@@ -41,6 +43,7 @@ export async function readCategories(): Promise<Category[]> {
             id: "living-seating",
             name: "Living & Seating",
             brands: ["ALTECH", "REX"],
+            productIds: [],
             position: 1,
             description: "Modern comfort and executive premium seating",
           },
@@ -58,6 +61,7 @@ export async function readCategories(): Promise<Category[]> {
       id: String(doc.id || doc._id),
       name: String(doc.name || ""),
       brands: Array.isArray(doc.brands) ? doc.brands.map(String) : [],
+      productIds: Array.isArray(doc.productIds) ? doc.productIds.map(String) : [],
       position: typeof doc.position === "number" ? doc.position : 0,
       description: doc.description ? String(doc.description) : undefined,
       createdAt: doc.createdAt ? String(doc.createdAt) : undefined,
@@ -71,6 +75,7 @@ export async function readCategories(): Promise<Category[]> {
 export async function addCategory(params: {
   name: string;
   brands: string[];
+  productIds?: string[];
   description?: string;
 }): Promise<Category> {
   const normalizedName = params.name.trim();
@@ -98,11 +103,15 @@ export async function addCategory(params: {
   const brands = Array.from(
     new Set((params.brands || []).map((b) => b.trim()).filter(Boolean)),
   );
+  const productIds = Array.from(
+    new Set((params.productIds || []).map((p) => String(p).trim()).filter(Boolean)),
+  );
 
   const newDoc = await CategoryModel.create({
     id,
     name: normalizedName,
     brands,
+    productIds,
     position: nextPosition,
     description: params.description?.trim() || "",
     createdAt: new Date().toISOString(),
@@ -112,6 +121,7 @@ export async function addCategory(params: {
     id: newDoc.id,
     name: newDoc.name,
     brands: newDoc.brands,
+    productIds: newDoc.productIds,
     position: newDoc.position,
     description: newDoc.description || undefined,
     createdAt: newDoc.createdAt,
@@ -123,6 +133,7 @@ export async function updateCategory(
   updates: {
     name?: string;
     brands?: string[];
+    productIds?: string[];
     position?: number;
     description?: string;
   },
@@ -134,6 +145,8 @@ export async function updateCategory(
     throw new Error("Category not found.");
   }
 
+  const updateDoc: Record<string, any> = {};
+
   if (updates.name !== undefined) {
     const trimmed = updates.name.trim();
     if (!trimmed) throw new Error("Category name cannot be empty.");
@@ -143,32 +156,43 @@ export async function updateCategory(
       name: { $regex: new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
     });
     if (dup) throw new Error("Another category already has this name.");
-    existing.name = trimmed;
+    updateDoc.name = trimmed;
   }
 
   if (updates.brands !== undefined) {
-    existing.brands = Array.from(
+    updateDoc.brands = Array.from(
       new Set((updates.brands || []).map((b) => b.trim()).filter(Boolean)),
     );
   }
 
+  if (updates.productIds !== undefined) {
+    updateDoc.productIds = Array.from(
+      new Set((updates.productIds || []).map((p) => String(p).trim()).filter(Boolean)),
+    );
+  }
+
   if (typeof updates.position === "number") {
-    existing.position = updates.position;
+    updateDoc.position = updates.position;
   }
 
   if (updates.description !== undefined) {
-    existing.description = updates.description.trim();
+    updateDoc.description = updates.description.trim();
   }
 
-  await existing.save();
+  const updated: any = await CategoryModel.findOneAndUpdate(
+    { id },
+    { $set: updateDoc },
+    { new: true, returnDocument: "after" },
+  ).lean();
 
   return {
-    id: existing.id,
-    name: existing.name,
-    brands: existing.brands,
-    position: existing.position,
-    description: existing.description || undefined,
-    createdAt: existing.createdAt,
+    id: String(updated.id || updated._id),
+    name: String(updated.name || ""),
+    brands: Array.isArray(updated.brands) ? updated.brands.map(String) : [],
+    productIds: Array.isArray(updated.productIds) ? updated.productIds.map(String) : [],
+    position: typeof updated.position === "number" ? updated.position : 0,
+    description: updated.description ? String(updated.description) : undefined,
+    createdAt: updated.createdAt ? String(updated.createdAt) : undefined,
   };
 }
 

@@ -6,17 +6,20 @@ import AdminBrandsManager from "@/components/custom/AdminBrandsManager";
 import AdminCategoryManager from "@/components/custom/AdminCategoryManager";
 import type { BrandLogo } from "@/lib/brand-logos";
 import type { Category } from "@/lib/categories";
+import type { Product } from "@/lib/products";
 
 type AdminSettingsTabsProps = {
   brands: string[];
   brandLogos: BrandLogo[];
   categories: Category[];
+  products: Product[];
 };
 
 export default function AdminSettingsTabs({
   brands,
   brandLogos,
   categories,
+  products,
 }: AdminSettingsTabsProps) {
   const [activeTab, setActiveTab] = useState<"categories" | "brands">("categories");
 
@@ -59,7 +62,11 @@ export default function AdminSettingsTabs({
 
       {/* Tab Panels */}
       {activeTab === "categories" ? (
-        <AdminCategoryManager brands={brands} initialCategories={categories} />
+        <AdminCategoryManager
+          brands={brands}
+          initialCategories={categories}
+          products={products}
+        />
       ) : (
         <AdminBrandsManager brands={brands} initialBrandLogos={brandLogos} />
       )}

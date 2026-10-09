@@ -9,26 +9,307 @@ import {
   Tag,
   Trash2,
   X,
-  GripVertical,
   CheckSquare,
   Square,
   AlertCircle,
   Sparkles,
+  Search,
+  Image as ImageIcon,
+  PackageCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Category } from "@/lib/categories";
+import type { Product } from "@/lib/products";
 
 type AdminCategoryManagerProps = {
   brands: string[];
   initialCategories: Category[];
+  products: Product[];
 };
+
+function ProductPickerSection({
+  products,
+  selectedBrands,
+  selectedProductIds,
+  onToggleProduct,
+  onSelectAll,
+  onDeselectAll,
+  onSelectBrand,
+  onDeselectBrand,
+}: {
+  products: Product[];
+  selectedBrands: string[];
+  selectedProductIds: string[];
+  onToggleProduct: (id: string) => void;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
+  onSelectBrand: (brand: string) => void;
+  onDeselectBrand: (brand: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [activeBrandTab, setActiveBrandTab] = useState<string>("all");
+
+  const availableProducts = useMemo(() => {
+    const brandSet = new Set(selectedBrands.map((b) => b.trim().toLowerCase()));
+    return products.filter((p) => brandSet.has(p.brand.trim().toLowerCase()));
+  }, [products, selectedBrands]);
+
+  const displayedProducts = useMemo(() => {
+    let list = availableProducts;
+    if (activeBrandTab !== "all") {
+      list = list.filter(
+        (p) => p.brand.trim().toLowerCase() === activeBrandTab.trim().toLowerCase(),
+      );
+    }
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter((p) => {
+        const name = (p.name || "").toLowerCase();
+        const brand = (p.brand || "").toLowerCase();
+        const tag = (p.tag || "").toLowerCase();
+        const id = String(p.id).toLowerCase();
+        return name.includes(q) || brand.includes(q) || tag.includes(q) || id.includes(q);
+      });
+    }
+    return list;
+  }, [availableProducts, activeBrandTab, search]);
+
+  if (selectedBrands.length === 0) {
+    return (
+      <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-white/10 text-center text-xs text-slate-400">
+        Select one or more brands above to curate specific products for this category.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.01]">
+      {/* Header & Quick stats */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <PackageCheck className="size-4 text-red-500" />
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            Curate Products for this Category
+          </span>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400">
+            {selectedProductIds.length} Selected
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onSelectAll}
+            className="text-xs text-red-600 dark:text-red-400 hover:underline flex items-center gap-1 font-medium cursor-pointer"
+          >
+            <CheckSquare className="size-3" /> Select All ({availableProducts.length})
+          </button>
+          <span className="text-slate-300 dark:text-white/20">|</span>
+          <button
+            type="button"
+            onClick={onDeselectAll}
+            className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 font-medium cursor-pointer"
+          >
+            <Square className="size-3" /> Clear Selection
+          </button>
+        </div>
+      </div>
+
+      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+        {selectedProductIds.length > 0 ? (
+          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+            Strict Mode Active: Only the {selectedProductIds.length} chosen products will appear under this category. When a brand (e.g. REX) is selected, only its products from this list will show.
+          </span>
+        ) : (
+          <span>
+            Optional: If no products are selected, all products from the assigned brands will be shown by default.
+          </span>
+        )}
+      </p>
+
+      {/* Toolbar: Brand sub-tabs & search */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
+        {/* Brand Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <button
+            type="button"
+            onClick={() => setActiveBrandTab("all")}
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap cursor-pointer select-none ${
+              activeBrandTab === "all"
+                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-xs"
+                : "bg-slate-200/70 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300"
+            }`}
+          >
+            All Brands ({availableProducts.length})
+          </button>
+          {selectedBrands.map((b) => {
+            const brandCount = availableProducts.filter(
+              (p) => p.brand.trim().toLowerCase() === b.trim().toLowerCase(),
+            ).length;
+            const brandSelectedCount = availableProducts.filter((p) => {
+              const pid = String(p.id);
+              const baseId = pid.replace(/-img-\d+$/, "");
+              return (
+                p.brand.trim().toLowerCase() === b.trim().toLowerCase() &&
+                (selectedProductIds.includes(pid) ||
+                  selectedProductIds.includes(baseId))
+              );
+            }).length;
+            const isTabActive = activeBrandTab.toLowerCase() === b.toLowerCase();
+            return (
+              <button
+                key={b}
+                type="button"
+                onClick={() => setActiveBrandTab(b)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap cursor-pointer select-none ${
+                  isTabActive
+                    ? "bg-red-600 text-white shadow-xs"
+                    : "bg-slate-200/70 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300"
+                }`}
+              >
+                <span>{b}</span>
+                <span
+                  className={`text-[9px] px-1 py-0.2 rounded-full font-bold ${
+                    isTabActive
+                      ? "bg-white/20 text-white"
+                      : brandSelectedCount > 0
+                      ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                      : "bg-slate-300/70 text-slate-600 dark:bg-white/10 dark:text-slate-400"
+                  }`}
+                >
+                  {brandSelectedCount}/{brandCount}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search Input */}
+        <div className="relative min-w-[180px] sm:w-52">
+          <Search className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search items..."
+            className="h-8 pl-8 pr-7 text-xs rounded-xl border-slate-200 dark:border-white/10"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              <X className="size-3" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Brand-specific quick toggle */}
+      {activeBrandTab !== "all" && (
+        <div className="flex items-center justify-between py-1 text-[11px] text-slate-500 border-b border-slate-200/50 dark:border-white/5">
+          <span>
+            Brand: <strong>{activeBrandTab}</strong>
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onSelectBrand(activeBrandTab)}
+              className="text-red-600 dark:text-red-400 hover:underline font-semibold cursor-pointer"
+            >
+              Select All {activeBrandTab}
+            </button>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => onDeselectBrand(activeBrandTab)}
+              className="text-slate-500 hover:underline cursor-pointer"
+            >
+              Clear {activeBrandTab}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Product items grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-64 overflow-y-auto p-1.5 rounded-xl border border-slate-200/70 dark:border-white/10 bg-white/60 dark:bg-black/20">
+        {displayedProducts.length === 0 ? (
+          <div className="col-span-full py-8 text-center text-xs text-slate-400">
+            No products found matching your filter.
+          </div>
+        ) : (
+          displayedProducts.map((p) => {
+            const pid = String(p.id);
+            const baseId = pid.replace(/-img-\d+$/, "");
+            const isSelected =
+              selectedProductIds.includes(pid) ||
+              selectedProductIds.includes(baseId);
+            const imgSrc = p.frontImage || p.images?.[0];
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onToggleProduct(baseId)}
+                className={`flex flex-col text-left p-2 rounded-xl border transition-all cursor-pointer select-none relative group ${
+                  isSelected
+                    ? "border-red-500/80 bg-red-500/[0.08] dark:bg-red-950/20 shadow-xs ring-1 ring-red-500/40"
+                    : "border-slate-200/70 dark:border-white/5 bg-white dark:bg-[#15181f] hover:border-slate-300 dark:hover:border-white/15"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1 mb-1.5 w-full">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 truncate max-w-[70%]">
+                    {p.brand}
+                  </span>
+                  <div
+                    className={`size-4 rounded flex items-center justify-center shrink-0 transition-colors ${
+                      isSelected
+                        ? "bg-red-600 text-white"
+                        : "border border-slate-300 dark:border-white/20 group-hover:border-slate-400"
+                    }`}
+                  >
+                    {isSelected && <Check className="size-3 stroke-[3]" />}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="size-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-white/5 shrink-0 border border-slate-200/40 dark:border-white/5 flex items-center justify-center">
+                    {imgSrc ? (
+                      <img
+                        src={imgSrc}
+                        alt={p.name || p.brand}
+                        className="size-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <ImageIcon className="size-4 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-slate-900 dark:text-slate-100 truncate">
+                      {p.name || `Item #${String(p.id).slice(-5)}`}
+                    </p>
+                    {p.tag && (
+                      <p className="text-[9px] text-slate-400 dark:text-slate-500 truncate">
+                        {p.tag}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminCategoryManager({
   brands,
   initialCategories,
+  products,
 }: AdminCategoryManagerProps) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>(initialCategories);
@@ -38,6 +319,7 @@ export default function AdminCategoryManager({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,6 +329,7 @@ export default function AdminCategoryManager({
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editBrands, setEditBrands] = useState<string[]>([]);
+  const [editProductIds, setEditProductIds] = useState<string[]>([]);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // Delete state
@@ -54,14 +337,26 @@ export default function AdminCategoryManager({
 
   // Toggle brand in Create form
   const toggleBrand = (brand: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
-    );
+    setSelectedBrands((prev) => {
+      const isRemoving = prev.includes(brand);
+      if (isRemoving) {
+        // Remove products from unselected brand
+        setSelectedProductIds((curr) =>
+          curr.filter((id) => {
+            const prod = products.find((p) => String(p.id) === String(id));
+            return prod?.brand.trim().toLowerCase() !== brand.trim().toLowerCase();
+          }),
+        );
+        return prev.filter((b) => b !== brand);
+      }
+      return [...prev, brand];
+    });
   };
 
   const selectAllBrands = () => {
     if (selectedBrands.length === brands.length) {
       setSelectedBrands([]);
+      setSelectedProductIds([]);
     } else {
       setSelectedBrands([...brands]);
     }
@@ -69,17 +364,82 @@ export default function AdminCategoryManager({
 
   // Toggle brand in Edit form
   const toggleEditBrand = (brand: string) => {
-    setEditBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
-    );
+    setEditBrands((prev) => {
+      const isRemoving = prev.includes(brand);
+      if (isRemoving) {
+        setEditProductIds((curr) =>
+          curr.filter((id) => {
+            const prod = products.find((p) => String(p.id) === String(id));
+            return prod?.brand.trim().toLowerCase() !== brand.trim().toLowerCase();
+          }),
+        );
+        return prev.filter((b) => b !== brand);
+      }
+      return [...prev, brand];
+    });
   };
 
   const selectAllEditBrands = () => {
     if (editBrands.length === brands.length) {
       setEditBrands([]);
+      setEditProductIds([]);
     } else {
       setEditBrands([...brands]);
     }
+  };
+
+  // Product selection helpers
+  const toggleProduct = (id: string, isEdit = false) => {
+    const baseId = id.replace(/-img-\d+$/, "");
+    const setFn = isEdit ? setEditProductIds : setSelectedProductIds;
+    setFn((prev) => {
+      const hasIt = prev.some(
+        (item) => item === baseId || item.replace(/-img-\d+$/, "") === baseId,
+      );
+      if (hasIt) {
+        return prev.filter(
+          (item) => item !== baseId && item.replace(/-img-\d+$/, "") !== baseId,
+        );
+      }
+      return [...prev, baseId];
+    });
+  };
+
+  const selectAllProducts = (activeBrands: string[], isEdit = false) => {
+    const brandSet = new Set(activeBrands.map((b) => b.trim().toLowerCase()));
+    const ids = products
+      .filter((p) => brandSet.has(p.brand.trim().toLowerCase()))
+      .map((p) => String(p.id).replace(/-img-\d+$/, ""));
+    const setFn = isEdit ? setEditProductIds : setSelectedProductIds;
+    setFn(Array.from(new Set(ids)));
+  };
+
+  const clearAllProducts = (isEdit = false) => {
+    const setFn = isEdit ? setEditProductIds : setSelectedProductIds;
+    setFn([]);
+  };
+
+  const selectBrandProducts = (brand: string, isEdit = false) => {
+    const brandIds = products
+      .filter((p) => p.brand.trim().toLowerCase() === brand.trim().toLowerCase())
+      .map((p) => String(p.id).replace(/-img-\d+$/, ""));
+    const setFn = isEdit ? setEditProductIds : setSelectedProductIds;
+    setFn((prev) => Array.from(new Set([...prev, ...brandIds])));
+  };
+
+  const deselectBrandProducts = (brand: string, isEdit = false) => {
+    const brandIds = new Set(
+      products
+        .filter((p) => p.brand.trim().toLowerCase() === brand.trim().toLowerCase())
+        .map((p) => String(p.id).replace(/-img-\d+$/, "")),
+    );
+    const setFn = isEdit ? setEditProductIds : setSelectedProductIds;
+    setFn((prev) =>
+      prev.filter(
+        (id) =>
+          !brandIds.has(id) && !brandIds.has(id.replace(/-img-\d+$/, "")),
+      ),
+    );
   };
 
   // Handle Create
@@ -107,6 +467,7 @@ export default function AdminCategoryManager({
         body: JSON.stringify({
           name: trimmedName,
           brands: selectedBrands,
+          productIds: selectedProductIds,
           description: description.trim(),
         }),
       });
@@ -120,6 +481,7 @@ export default function AdminCategoryManager({
       setName("");
       setDescription("");
       setSelectedBrands([]);
+      setSelectedProductIds([]);
       setSuccessMessage(`Category "${trimmedName}" created successfully!`);
 
       startTransition(() => {
@@ -138,6 +500,7 @@ export default function AdminCategoryManager({
     setEditName(cat.name);
     setEditDescription(cat.description || "");
     setEditBrands([...cat.brands]);
+    setEditProductIds(cat.productIds ? [...cat.productIds] : []);
     setErrorMessage(null);
     setSuccessMessage(null);
   };
@@ -147,6 +510,7 @@ export default function AdminCategoryManager({
     setEditName("");
     setEditDescription("");
     setEditBrands([]);
+    setEditProductIds([]);
   };
 
   // Save Edit
@@ -171,6 +535,7 @@ export default function AdminCategoryManager({
           id,
           name: trimmedName,
           brands: editBrands,
+          productIds: editProductIds,
           description: editDescription.trim(),
         }),
       });
@@ -240,7 +605,7 @@ export default function AdminCategoryManager({
           </div>
           <button
             onClick={() => setErrorMessage(null)}
-            className="text-red-400 hover:text-red-600"
+            className="text-red-400 hover:text-red-600 cursor-pointer"
           >
             <X className="size-4" />
           </button>
@@ -255,7 +620,7 @@ export default function AdminCategoryManager({
           </div>
           <button
             onClick={() => setSuccessMessage(null)}
-            className="text-emerald-400 hover:text-emerald-600"
+            className="text-emerald-400 hover:text-emerald-600 cursor-pointer"
           >
             <X className="size-4" />
           </button>
@@ -273,7 +638,7 @@ export default function AdminCategoryManager({
               Create Brand Category
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Group multiple brands together. When customers click this category, all products from these brands will be displayed.
+              Group brands and curate specific products. When customers select this category, only your curated products are displayed.
             </p>
           </div>
         </div>
@@ -285,7 +650,7 @@ export default function AdminCategoryManager({
                 Category Name *
               </label>
               <Input
-                placeholder="e.g. Office Collection, Luxury Living, Cafeteria"
+                placeholder="e.g. Visiting Chair, Office Collection, Luxury Living"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="rounded-xl border-slate-200 dark:border-white/10"
@@ -318,7 +683,7 @@ export default function AdminCategoryManager({
               <button
                 type="button"
                 onClick={selectAllBrands}
-                className="text-xs text-red-600 dark:text-red-400 font-medium hover:underline flex items-center gap-1"
+                className="text-xs text-red-600 dark:text-red-400 font-medium hover:underline flex items-center gap-1 cursor-pointer"
               >
                 {selectedBrands.length === brands.length ? (
                   <>
@@ -361,6 +726,18 @@ export default function AdminCategoryManager({
               })}
             </div>
           </div>
+
+          {/* Product Curation Section */}
+          <ProductPickerSection
+            products={products}
+            selectedBrands={selectedBrands}
+            selectedProductIds={selectedProductIds}
+            onToggleProduct={(id) => toggleProduct(id, false)}
+            onSelectAll={() => selectAllProducts(selectedBrands, false)}
+            onDeselectAll={() => clearAllProducts(false)}
+            onSelectBrand={(brand) => selectBrandProducts(brand, false)}
+            onDeselectBrand={(brand) => deselectBrandProducts(brand, false)}
+          />
 
           <div className="flex justify-end pt-2">
             <Button
@@ -408,42 +785,44 @@ export default function AdminCategoryManager({
                 return (
                   <div
                     key={cat.id}
-                    className="p-5 rounded-2xl border border-red-500/40 bg-red-500/[0.02] dark:bg-red-950/[0.1] space-y-4"
+                    className="p-5 rounded-2xl border border-red-500/40 bg-red-500/[0.02] dark:bg-red-950/[0.1] space-y-4 md:col-span-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">
-                        Edit Category
+                        Edit Category & Curated Products
                       </span>
                       <button
                         onClick={cancelEdit}
-                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                       >
                         <X className="size-4" />
                       </button>
                     </div>
 
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                          Name
-                        </label>
-                        <Input
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          className="rounded-xl h-9 text-xs"
-                          placeholder="Category Name"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                          Description
-                        </label>
-                        <Input
-                          value={editDescription}
-                          onChange={(e) => setEditDescription(e.target.value)}
-                          className="rounded-xl h-9 text-xs"
-                          placeholder="Description"
-                        />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                            Name
+                          </label>
+                          <Input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="rounded-xl h-9 text-xs"
+                            placeholder="Category Name"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                            Description
+                          </label>
+                          <Input
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            className="rounded-xl h-9 text-xs"
+                            placeholder="Description"
+                          />
+                        </div>
                       </div>
 
                       <div>
@@ -454,14 +833,14 @@ export default function AdminCategoryManager({
                           <button
                             type="button"
                             onClick={selectAllEditBrands}
-                            className="text-[11px] text-red-600 dark:text-red-400 hover:underline"
+                            className="text-[11px] text-red-600 dark:text-red-400 hover:underline cursor-pointer"
                           >
                             {editBrands.length === brands.length
                               ? "Clear All"
                               : "Select All"}
                           </button>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-40 overflow-y-auto p-1 border rounded-xl border-slate-200 dark:border-white/10">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1.5 max-h-40 overflow-y-auto p-1.5 border rounded-xl border-slate-200 dark:border-white/10">
                           {brands.map((brand) => {
                             const isChecked = editBrands.includes(brand);
                             return (
@@ -469,7 +848,7 @@ export default function AdminCategoryManager({
                                 key={brand}
                                 type="button"
                                 onClick={() => toggleEditBrand(brand)}
-                                className={`text-[11px] p-2 rounded-lg border text-left flex items-center justify-between ${
+                                className={`text-[11px] p-2 rounded-lg border text-left flex items-center justify-between cursor-pointer ${
                                   isChecked
                                     ? "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400 font-medium"
                                     : "border-slate-100 dark:border-white/5 text-slate-600 dark:text-slate-400"
@@ -482,6 +861,18 @@ export default function AdminCategoryManager({
                           })}
                         </div>
                       </div>
+
+                      {/* Product Picker Section in Edit mode */}
+                      <ProductPickerSection
+                        products={products}
+                        selectedBrands={editBrands}
+                        selectedProductIds={editProductIds}
+                        onToggleProduct={(id) => toggleProduct(id, true)}
+                        onSelectAll={() => selectAllProducts(editBrands, true)}
+                        onDeselectAll={() => clearAllProducts(true)}
+                        onSelectBrand={(brand) => selectBrandProducts(brand, true)}
+                        onDeselectBrand={(brand) => deselectBrandProducts(brand, true)}
+                      />
                     </div>
 
                     <div className="flex justify-end gap-2 pt-2">
@@ -490,7 +881,7 @@ export default function AdminCategoryManager({
                         variant="outline"
                         size="sm"
                         onClick={cancelEdit}
-                        className="rounded-lg h-8 text-xs cursor-pointer"
+                        className="rounded-lg h-9 text-xs cursor-pointer"
                       >
                         Cancel
                       </Button>
@@ -499,7 +890,7 @@ export default function AdminCategoryManager({
                         size="sm"
                         disabled={isSavingEdit || !editName.trim() || editBrands.length === 0}
                         onClick={() => saveEdit(cat.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white rounded-lg h-8 text-xs cursor-pointer gap-1.5"
+                        className="bg-red-600 hover:bg-red-700 text-white rounded-lg h-9 text-xs cursor-pointer gap-1.5"
                       >
                         <Check className="size-3.5" />
                         <span>{isSavingEdit ? "Saving..." : "Save Changes"}</span>
@@ -517,13 +908,23 @@ export default function AdminCategoryManager({
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                             {cat.name}
                           </h4>
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/30">
                             {cat.brands.length} {cat.brands.length === 1 ? "Brand" : "Brands"}
                           </span>
+                          {cat.productIds && cat.productIds.length > 0 ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/30 flex items-center gap-1">
+                              <Check className="size-2.5" />
+                              {cat.productIds.length} Products Curated
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-200/70 dark:bg-white/10 text-slate-600 dark:text-slate-400">
+                              All Brand Products
+                            </span>
+                          )}
                         </div>
                         {cat.description && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
@@ -538,7 +939,7 @@ export default function AdminCategoryManager({
                           size="icon"
                           onClick={() => startEdit(cat)}
                           className="size-8 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg cursor-pointer"
-                          title="Edit Category"
+                          title="Edit Category & Products"
                         >
                           <Edit2 className="size-3.5" />
                         </Button>
@@ -579,7 +980,9 @@ export default function AdminCategoryManager({
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-400">
-                    <span>ID: <code className="font-mono text-[10px]">{cat.id}</code></span>
+                    <span>
+                      ID: <code className="font-mono text-[10px]">{cat.id}</code>
+                    </span>
                     <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
                       <Sparkles className="size-3 text-amber-500" />
                       Live on Storefront
