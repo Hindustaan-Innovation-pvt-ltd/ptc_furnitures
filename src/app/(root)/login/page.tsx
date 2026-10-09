@@ -51,9 +51,8 @@ function LoginForm() {
         setError("Invalid credentials. Access Denied.");
         setLoading(false);
       } else {
-        // Successful login
-        router.push(callbackUrl);
-        router.refresh();
+        // Successful login: perform direct navigation so session cookies are immediately active
+        window.location.href = callbackUrl;
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");

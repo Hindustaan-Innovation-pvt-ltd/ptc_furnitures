@@ -23,12 +23,17 @@ import {
   PaginationPrevious,
 } from "../ui/pagination";
 
+import { FolderTree } from "lucide-react";
+import type { Category } from "@/lib/categories";
+
 type ProductsProps = {
   initialProducts: Product[];
   initialBrands: string[];
   initialSearchTerm: string;
+  initialCategory?: string;
   maxItems?: number;
   brandLogos?: { brand: string; src: string; alt: string; aliases: string[] }[];
+  categories?: Category[];
 };
 
 const initialFilters: ProductFiltersState = {
@@ -45,8 +50,10 @@ export default function Products({
   initialProducts,
   initialBrands,
   initialSearchTerm,
+  initialCategory = "all",
   maxItems,
   brandLogos,
+  categories,
 }: ProductsProps) {
   const [products, _setProducts] = React.useState<Product[]>(() =>
     expandLegacyProducts(initialProducts),
@@ -55,14 +62,15 @@ export default function Products({
   const [filters, setFilters] = React.useState<ProductFiltersState>({
     ...initialFilters,
     search: initialSearchTerm,
+    category: initialCategory,
   });
   const [currentPage, setCurrentPage] = React.useState(1);
 
   const router = useRouter();
 
   const visibleProducts = React.useMemo(
-    () => filterAndSortProducts(products, filters, brands),
-    [filters, products, brands],
+    () => filterAndSortProducts(products, filters, brands, categories),
+    [filters, products, brands, categories],
   );
 
   const pagination = React.useMemo(
@@ -130,35 +138,72 @@ export default function Products({
             <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
               Brands
             </span>
-            {["all", ...brandOptions].map((brand) => {
-              const label = brand === "all" ? "All Brands" : brand;
-              const isSelected = filters.brand === brand;
 
-              const logo =
-                brand === "all"
-                  ? null
-                  : brandLogos?.find((l) => {
-                      const normB = brand.trim().toLowerCase();
-                      const normL = l.brand.trim().toLowerCase();
-                      return (
-                        normL === normB ||
-                        l.aliases.some(
-                          (alias) => alias.trim().toLowerCase() === normB,
-                        )
-                      );
-                    });
+            {/* 1. All Brands Button */}
+            <button
+              title="All Brands"
+              onClick={() => {
+                updateFilter("brand", "all");
+                updateFilter("category", "all");
+              }}
+              className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
+                filters.brand === "all" && filters.category === "all"
+                  ? "text-white dark:text-slate-950"
+                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
+              }`}
+            >
+              {filters.brand === "all" && filters.category === "all" && (
+                <motion.span
+                  layoutId="activeBrand"
+                  className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
+                  transition={{
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 30,
+                  }}
+                />
+              )}
+              <span className="relative z-10 flex items-center justify-center">
+                <span
+                  className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full border ${
+                    filters.brand === "all" && filters.category === "all"
+                      ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
+                      : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
+                  }`}
+                >
+                  <svg
+                    className="size-4 sm:size-5 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
+                  </svg>
+                </span>
+              </span>
+            </button>
 
+            {/* 2. Categories as pills in the Brands row */}
+            {categories?.map((cat) => {
+              const isSelected =
+                filters.category === cat.id && filters.brand === "all";
               return (
                 <button
-                  key={label}
-                  title={label}
+                  key={`cat-${cat.id}`}
+                  title={`${cat.name} (${cat.brands.join(", ")})`}
                   onClick={() => {
-                    sendGAEvent("event", "filter_brand", {
-                      brand_selected: brand,
-                      label,
+                    sendGAEvent("event", "filter_category", {
+                      category_selected: cat.id,
+                      name: cat.name,
                     });
-                    const brandParam = brand === "all" ? "" : `brand=${encodeURIComponent(brand)}`;
-                    router.push(`/collections${brandParam ? `?${brandParam}` : ""}`);
+                    updateFilter("category", isSelected ? "all" : cat.id);
+                    updateFilter("brand", "all");
                   }}
                   className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
                     isSelected
@@ -178,30 +223,65 @@ export default function Products({
                     />
                   )}
                   <span className="relative z-10 flex items-center justify-center">
-                    {brand === "all" ? (
-                      <span
-                        className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full border ${
-                          isSelected
-                            ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
-                            : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
-                        }`}
-                      >
-                        <svg
-                          className="size-4 sm:size-5 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2.5}
-                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                          />
-                        </svg>
-                      </span>
-                    ) : logo?.src ? (
+                    <span
+                      className={`inline-flex px-3.5 sm:px-4 h-7 sm:h-10 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
+                        isSelected
+                          ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
+                          : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
+                      }`}
+                    >
+                      <span>{cat.name}</span>
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* 3. Individual Brands */}
+            {brandOptions.map((brand) => {
+              const isSelected =
+                filters.brand === brand && filters.category === "all";
+              const logo = brandLogos?.find((l) => {
+                const normB = brand.trim().toLowerCase();
+                const normL = l.brand.trim().toLowerCase();
+                return (
+                  normL === normB ||
+                  l.aliases.some(
+                    (alias) => alias.trim().toLowerCase() === normB,
+                  )
+                );
+              });
+
+              return (
+                <button
+                  key={brand}
+                  title={brand}
+                  onClick={() => {
+                    sendGAEvent("event", "filter_brand", {
+                      brand_selected: brand,
+                    });
+                    updateFilter("brand", isSelected ? "all" : brand);
+                    updateFilter("category", "all");
+                  }}
+                  className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
+                    isSelected
+                      ? "text-white dark:text-slate-950"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {isSelected && (
+                    <motion.span
+                      layoutId="activeBrand"
+                      className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center justify-center">
+                    {logo?.src ? (
                       <span
                         className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full bg-white p-1 sm:p-1.5 border overflow-hidden ${
                           isSelected

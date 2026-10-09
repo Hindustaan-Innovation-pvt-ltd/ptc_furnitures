@@ -7,6 +7,25 @@ if (!cached) {
   cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
+let warmupStarted = false;
+
+async function runWarmup() {
+  if (warmupStarted) return;
+  warmupStarted = true;
+  try {
+    const { loadLogosIntoCache } = await import("./brand-logos");
+    const { loadWatermarksIntoCache } = await import("./brand-watermarks");
+
+    await loadLogosIntoCache();
+    await loadWatermarksIntoCache();
+
+    const { autoRestoreIfEmpty } = await import("./restore-backup");
+    await autoRestoreIfEmpty();
+  } catch (err) {
+    console.error("==> MongoDB Cache Warmup failed:", err);
+  }
+}
+
 export async function connectToDatabase() {
   if (cached.conn) {
     return cached.conn;
@@ -25,28 +44,17 @@ export async function connectToDatabase() {
 
     cached.promise = mongoose
       .connect(MONGODB_URI, opts)
-      .then(async (mongooseInstance) => {
+      .then((mongooseInstance) => {
         console.log("==> Connected to MongoDB successfully.");
-        try {
-          // Dynamic imports to break circular dependencies at startup
-          const { loadLogosIntoCache } = await import("./brand-logos");
-          const { loadWatermarksIntoCache } = await import(
-            "./brand-watermarks"
-          );
-
-          await loadLogosIntoCache();
-          await loadWatermarksIntoCache();
-
-          // Auto-restore products if database was empty
-          const { autoRestoreIfEmpty } = await import("./restore-backup");
-          await autoRestoreIfEmpty();
-        } catch (err) {
-          console.error("==> MongoDB Cache Warmup failed:", err);
-        }
+        cached.conn = mongooseInstance;
+        runWarmup().catch((err) =>
+          console.error("==> Background warmup error:", err),
+        );
         return mongooseInstance;
       })
       .catch((err) => {
         cached.promise = null;
+        cached.conn = null;
         throw err;
       });
   }

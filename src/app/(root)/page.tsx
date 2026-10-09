@@ -50,24 +50,27 @@ export default async function Home({
   );
 }
 
+import { readCategories } from "@/lib/categories";
+
 async function HomeProductsLoader({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string | string[] }>;
+  searchParams?: Promise<{ q?: string | string[]; category?: string | string[] }>;
 }) {
   await connection();
   await loadLogosIntoCache();
-  const brandLogos = await getBrandLogos();
-  const productsPromise = readProducts();
-  const brandsPromise = readBrands();
-
-  const [initialProducts, initialBrands, params] = await Promise.all([
-    productsPromise,
-    brandsPromise,
-    searchParams || Promise.resolve(undefined),
-  ]);
+  const [brandLogos, categories, initialProducts, initialBrands, params] =
+    await Promise.all([
+      getBrandLogos(),
+      readCategories(),
+      readProducts(),
+      readBrands(),
+      searchParams || Promise.resolve(undefined),
+    ]);
   const q = params?.q;
   const initialSearchTerm = Array.isArray(q) ? (q[0] ?? "") : (q ?? "");
+  const c = params?.category;
+  const initialCategory = Array.isArray(c) ? (c[0] ?? "all") : (c ?? "all");
 
   return (
     <>
@@ -75,7 +78,9 @@ async function HomeProductsLoader({
         initialProducts={initialProducts}
         initialBrands={initialBrands}
         initialSearchTerm={initialSearchTerm}
+        initialCategory={initialCategory}
         brandLogos={brandLogos}
+        categories={categories}
         maxItems={9}
       />
       <hr className="border-slate-200 dark:border-white/10" />

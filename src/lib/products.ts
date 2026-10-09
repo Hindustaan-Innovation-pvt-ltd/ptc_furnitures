@@ -163,17 +163,26 @@ export async function readProducts(): Promise<Product[]> {
       .sort({ position: 1, createdAt: -1 })
       .lean();
     return docs.map((doc: any) => ({
-      id: doc.id,
+      id: String(doc.id || doc._id || ""),
       brand: doc.brand || "",
-      images: doc.images || [],
-      originalImages: doc.originalImages || [],
-      createdAt: doc.createdAt,
+      images: Array.isArray(doc.images) ? doc.images.map(String) : [],
+      originalImages: Array.isArray(doc.originalImages) ? doc.originalImages.map(String) : [],
+      createdAt: doc.createdAt
+        ? doc.createdAt instanceof Date
+          ? doc.createdAt.toISOString()
+          : String(doc.createdAt)
+        : new Date().toISOString(),
       name: doc.name || undefined,
       price: doc.price || undefined,
       material: doc.material || undefined,
       craftedBy: doc.craftedBy || undefined,
       tag: doc.tag || undefined,
-      customFields: doc.customFields || [],
+      customFields: Array.isArray(doc.customFields)
+        ? doc.customFields.map((cf: any) => ({
+            label: String(cf.label || ""),
+            value: String(cf.value || ""),
+          }))
+        : [],
       premium: !!doc.premium,
       position: doc.position ?? 0,
       frontImage: doc.frontImage || undefined,

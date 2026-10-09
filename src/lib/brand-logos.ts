@@ -8,7 +8,26 @@ export type BrandLogo = {
   aliases: string[];
 };
 
-const defaultLogos: BrandLogo[] = [];
+const defaultLogos: BrandLogo[] = [
+  {
+    brand: "PTC",
+    src: "/PTC.png",
+    alt: "PTC logo",
+    aliases: ["ptc", "ptc furniture"],
+  },
+  {
+    brand: "PTC-Gold",
+    src: "/PTC-Gold.png",
+    alt: "PTC Gold logo",
+    aliases: ["ptc gold", "ptc-gold", "ptc gold furniture"],
+  },
+  {
+    brand: "ALTECH",
+    src: "/AL.png",
+    alt: "ALTECH logo",
+    aliases: ["altech"],
+  },
+];
 
 function normalizeBrand(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
@@ -27,29 +46,11 @@ export function clearLogoCache() {
 export async function loadLogosIntoCache() {
   if (isSeeded) return;
   try {
+    await connectToDatabase();
     const count = await BrandLogoModel.countDocuments();
     if (count === 0) {
       console.log("==> Seeding default brand logos into database...");
-      await BrandLogoModel.insertMany([
-        {
-          brand: "PTC",
-          src: "/PTC.png",
-          alt: "PTC logo",
-          aliases: ["ptc", "ptc furniture"],
-        },
-        {
-          brand: "PTC-Gold",
-          src: "/PTC-Gold.png",
-          alt: "PTC Gold logo",
-          aliases: ["ptc gold", "ptc-gold", "ptc gold furniture"],
-        },
-        {
-          brand: "ALTECH",
-          src: "/AL.png",
-          alt: "ALTECH logo",
-          aliases: ["altech"],
-        },
-      ]);
+      await BrandLogoModel.insertMany(defaultLogos);
     }
     isSeeded = true;
   } catch (err) {
@@ -63,18 +64,23 @@ export async function getBrandLogos(): Promise<BrandLogo[]> {
     return cacheLogos;
   }
 
-  await connectToDatabase();
-  await loadLogosIntoCache();
+  try {
+    await connectToDatabase();
+    await loadLogosIntoCache();
 
-  const docs = await BrandLogoModel.find().lean();
-  cacheLogos = docs.map((doc: any) => ({
-    brand: doc.brand,
-    src: doc.src,
-    alt: doc.alt,
-    aliases: doc.aliases || [],
-  }));
-  cacheLogosTime = now;
-  return cacheLogos;
+    const docs = await BrandLogoModel.find().lean();
+    cacheLogos = docs.map((doc: any) => ({
+      brand: doc.brand,
+      src: doc.src,
+      alt: doc.alt,
+      aliases: doc.aliases || [],
+    }));
+    cacheLogosTime = now;
+    return cacheLogos;
+  } catch (err) {
+    console.error("Failed to load brand logos from database:", err);
+    return defaultLogos;
+  }
 }
 
 export async function getBrandLogo(brand: string): Promise<BrandLogo | null> {

@@ -59,25 +59,34 @@ export default async function page({
   );
 }
 
+import { readCategories } from "@/lib/categories";
+
 async function CollectionsLoader({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string | string[]; brand?: string | string[] }>;
+  searchParams?: Promise<{
+    q?: string | string[];
+    brand?: string | string[];
+    category?: string | string[];
+  }>;
 }) {
   await connection();
   await loadLogosIntoCache();
-  const brandLogos = await getBrandLogos();
-  const productsPromise = readProducts();
-  const brandsPromise = readBrands();
-  const [initialProducts, initialBrands, params] = await Promise.all([
-    productsPromise,
-    brandsPromise,
-    searchParams || Promise.resolve(undefined),
-  ]);
+  const [brandLogos, categories, initialProducts, initialBrands, params] =
+    await Promise.all([
+      getBrandLogos(),
+      readCategories(),
+      readProducts(),
+      readBrands(),
+      searchParams || Promise.resolve(undefined),
+    ]);
+
   const q = params?.q;
   const initialSearchTerm = Array.isArray(q) ? (q[0] ?? "") : (q ?? "");
   const b = params?.brand;
   const initialBrand = Array.isArray(b) ? (b[0] ?? "all") : (b ?? "all");
+  const c = params?.category;
+  const initialCategory = Array.isArray(c) ? (c[0] ?? "all") : (c ?? "all");
 
   return (
     <ProductsCollections
@@ -85,7 +94,9 @@ async function CollectionsLoader({
       initialBrands={initialBrands}
       initialSearchTerm={initialSearchTerm}
       initialBrand={initialBrand}
+      initialCategory={initialCategory}
       brandLogos={brandLogos}
+      categories={categories}
     />
   );
 }

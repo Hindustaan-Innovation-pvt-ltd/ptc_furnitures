@@ -101,6 +101,32 @@ export const BrandModel =
   mongoose.models.Brand || mongoose.model<IBrand>("Brand", BrandSchema);
 
 // ==========================================
+// 3.1 Category Schema (Brand Grouping)
+// ==========================================
+export interface ICategory extends Document {
+  id: string;
+  name: string;
+  brands: string[];
+  position?: number;
+  description?: string;
+  createdAt?: string;
+}
+
+const CategorySchema = new Schema<ICategory>({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true, unique: true },
+  brands: { type: [String], default: [] },
+  position: { type: Number, default: 0 },
+  description: { type: String, default: "" },
+  createdAt: { type: String, default: () => new Date().toISOString() },
+});
+
+export const CategoryModel =
+  mongoose.models.Category ||
+  mongoose.model<ICategory>("Category", CategorySchema);
+
+
+// ==========================================
 // 4. Catalog Schema
 // ==========================================
 export interface ICatalog extends Document {

@@ -22,15 +22,19 @@ import {
   type ProductFiltersState,
   paginateProducts,
 } from "@/lib/product-filters";
+import { FolderTree } from "lucide-react";
 import { type Product } from "@/lib/products";
 import { expandLegacyProducts } from "@/lib/product-utils";
+import type { Category } from "@/lib/categories";
 
 type ProductsCollectionsProps = {
   initialProducts: Product[];
   initialBrands: string[];
   initialSearchTerm: string;
   initialBrand?: string;
+  initialCategory?: string;
   brandLogos?: { brand: string; src: string; alt: string; aliases: string[] }[];
+  categories?: Category[];
 };
 
 const _sortOptions = [
@@ -55,7 +59,9 @@ export default function ProductsCollections({
   initialBrands,
   initialSearchTerm,
   initialBrand = "all",
+  initialCategory = "all",
   brandLogos,
+  categories,
 }: ProductsCollectionsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -68,6 +74,7 @@ export default function ProductsCollections({
     ...initialFilters,
     search: initialSearchTerm,
     brand: initialBrand,
+    category: initialCategory,
   });
   const [currentPage, setCurrentPage] = React.useState(1);
 
@@ -76,8 +83,8 @@ export default function ProductsCollections({
     [products],
   );
   const visibleProducts = React.useMemo(
-    () => filterAndSortProducts(products, filters, brands),
-    [filters, products, brands],
+    () => filterAndSortProducts(products, filters, brands, categories),
+    [filters, products, brands, categories],
   );
   const pagination = React.useMemo(
     () => paginateProducts(visibleProducts, currentPage, itemsPerPage),
@@ -116,6 +123,15 @@ export default function ProductsCollections({
   }, [initialBrand]);
 
   React.useEffect(() => {
+    if (initialCategory) {
+      setFilters((current) => ({
+        ...current,
+        category: initialCategory,
+      }));
+    }
+  }, [initialCategory]);
+
+  React.useEffect(() => {
     setCurrentPage(1);
   }, [filters]);
 
@@ -147,44 +163,93 @@ export default function ProductsCollections({
             <span className="text-sm font-medium text-slate-600 dark:text-slate-300 w-12 shrink-0">
               Brands
             </span>
-            {["all", ...brandOptions].map((brand) => {
-              const label = brand === "all" ? "All Brands" : brand;
-              const isSelected = filters.brand === brand;
 
-              const logo =
-                brand === "all"
-                  ? null
-                  : brandLogos?.find((l) => {
-                      const normB = brand.trim().toLowerCase();
-                      const normL = l.brand.trim().toLowerCase();
-                      return (
-                        normL === normB ||
-                        l.aliases.some(
-                          (alias) => alias.trim().toLowerCase() === normB,
-                        )
-                      );
-                    });
+            {/* 1. All Brands Button */}
+            <button
+              title="All Brands"
+              onClick={() => {
+                updateFilter("brand", "all");
+                updateFilter("category", "all");
+                const nextParams = new URLSearchParams(
+                  searchParams ? searchParams.toString() : "",
+                );
+                nextParams.delete("brand");
+                nextParams.delete("category");
+                const queryString = nextParams.toString();
+                router.push(
+                  `/collections${queryString ? `?${queryString}` : ""}`,
+                  { scroll: false },
+                );
+              }}
+              className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
+                filters.brand === "all" && filters.category === "all"
+                  ? "text-white dark:text-slate-950"
+                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
+              }`}
+            >
+              {filters.brand === "all" && filters.category === "all" && (
+                <motion.span
+                  layoutId="activeBrand"
+                  className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
+                  transition={{
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 30,
+                  }}
+                />
+              )}
+              <span className="relative z-10 flex items-center justify-center">
+                <span
+                  className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full border ${
+                    filters.brand === "all" && filters.category === "all"
+                      ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
+                      : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
+                  }`}
+                >
+                  <svg
+                    className="size-4 sm:size-5 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
+                  </svg>
+                </span>
+              </span>
+            </button>
 
+            {/* 2. Categories as pills in the Brands row */}
+            {categories?.map((cat) => {
+              const isSelected =
+                filters.category === cat.id && filters.brand === "all";
               return (
                 <button
-                  key={label}
-                  title={label}
+                  key={`cat-${cat.id}`}
+                  title={`${cat.name} (${cat.brands.join(", ")})`}
                   onClick={() => {
-                    const newBrand = brand;
-                    updateFilter("brand", newBrand);
-                    sendGAEvent("event", "filter_brand", {
-                      brand_selected: newBrand,
-                      label,
-                    });
-
-                    const nextParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
-                    if (newBrand === "all") {
-                      nextParams.delete("brand");
+                    const newCat = isSelected ? "all" : cat.id;
+                    updateFilter("category", newCat);
+                    updateFilter("brand", "all");
+                    const nextParams = new URLSearchParams(
+                      searchParams ? searchParams.toString() : "",
+                    );
+                    if (newCat === "all") {
+                      nextParams.delete("category");
                     } else {
-                      nextParams.set("brand", newBrand);
+                      nextParams.set("category", cat.id);
                     }
+                    nextParams.delete("brand");
                     const queryString = nextParams.toString();
-                    router.push(`/collections${queryString ? `?${queryString}` : ""}`, { scroll: false });
+                    router.push(
+                      `/collections${queryString ? `?${queryString}` : ""}`,
+                      { scroll: false },
+                    );
                   }}
                   className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
                     isSelected
@@ -204,30 +269,81 @@ export default function ProductsCollections({
                     />
                   )}
                   <span className="relative z-10 flex items-center justify-center">
-                    {brand === "all" ? (
-                      <span
-                        className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full border ${
-                          isSelected
-                            ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
-                            : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
-                        }`}
-                      >
-                        <svg
-                          className="size-4 sm:size-5 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2.5}
-                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                          />
-                        </svg>
-                      </span>
-                    ) : logo?.src ? (
+                    <span
+                      className={`inline-flex px-3.5 sm:px-4 h-7 sm:h-10 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
+                        isSelected
+                          ? "bg-white/10 text-white dark:bg-black/10 dark:text-slate-800 border-transparent"
+                          : "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300 border-slate-200 dark:border-white/10"
+                      }`}
+                    >
+                      <span>{cat.name}</span>
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* 3. Individual Brands */}
+            {brandOptions.map((brand) => {
+              const isSelected =
+                filters.brand === brand && filters.category === "all";
+              const logo = brandLogos?.find((l) => {
+                const normB = brand.trim().toLowerCase();
+                const normL = l.brand.trim().toLowerCase();
+                return (
+                  normL === normB ||
+                  l.aliases.some(
+                    (alias) => alias.trim().toLowerCase() === normB,
+                  )
+                );
+              });
+
+              return (
+                <button
+                  key={brand}
+                  title={brand}
+                  onClick={() => {
+                    const newBrand = isSelected ? "all" : brand;
+                    updateFilter("brand", newBrand);
+                    updateFilter("category", "all");
+                    sendGAEvent("event", "filter_brand", {
+                      brand_selected: newBrand,
+                    });
+
+                    const nextParams = new URLSearchParams(
+                      searchParams ? searchParams.toString() : "",
+                    );
+                    if (newBrand === "all") {
+                      nextParams.delete("brand");
+                    } else {
+                      nextParams.set("brand", newBrand);
+                    }
+                    nextParams.delete("category");
+                    const queryString = nextParams.toString();
+                    router.push(
+                      `/collections${queryString ? `?${queryString}` : ""}`,
+                      { scroll: false },
+                    );
+                  }}
+                  className={`relative p-0.5 sm:p-0.5 rounded-full shrink-0 transition-colors duration-300 cursor-pointer select-none flex items-center justify-center ${
+                    isSelected
+                      ? "text-white dark:text-slate-950"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {isSelected && (
+                    <motion.span
+                      layoutId="activeBrand"
+                      className="absolute inset-0 bg-slate-900 dark:bg-slate-50 rounded-full z-0"
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center justify-center">
+                    {logo?.src ? (
                       <span
                         className={`inline-flex w-16 h-7 sm:w-24 sm:h-10 shrink-0 items-center justify-center rounded-full bg-white p-1 sm:p-1.5 border overflow-hidden ${
                           isSelected

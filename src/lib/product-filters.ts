@@ -90,6 +90,7 @@ export function filterAndSortProducts(
   products: Product[],
   filters: ProductFiltersState,
   brandOrder?: string[],
+  categories?: Array<{ id: string; name: string; brands: string[] }>,
 ) {
   const searchQuery = normalizeValue(filters.search);
   const searchTokens = searchQuery.split(/\s+/).filter(Boolean);
@@ -97,10 +98,27 @@ export function filterAndSortProducts(
     .map((t) => cleanAlphanumeric(t))
     .filter(Boolean);
 
+  let categoryBrands: string[] | null = null;
+  if (filters.category && filters.category !== "all" && categories) {
+    const activeCat = categories.find(
+      (c) =>
+        c.id === filters.category ||
+        normalizeValue(c.name) === normalizeValue(filters.category),
+    );
+    if (activeCat) {
+      categoryBrands = activeCat.brands.map((b) => normalizeValue(b));
+    }
+  }
+
   const filteredProducts = products.filter((product) => {
+    const productBrandNorm = normalizeValue(product.brand);
+
+    const matchesCategory =
+      !categoryBrands || categoryBrands.includes(productBrandNorm);
+
     const matchesBrand =
       filters.brand === "all" ||
-      normalizeValue(product.brand) === normalizeValue(filters.brand);
+      productBrandNorm === normalizeValue(filters.brand);
 
     let matchesSearch = true;
     if (searchQuery.length > 0) {
@@ -116,7 +134,7 @@ export function filterAndSortProducts(
       }
     }
 
-    return matchesBrand && matchesSearch;
+    return matchesCategory && matchesBrand && matchesSearch;
   });
 
   return filteredProducts.slice().sort((left, right) => {
