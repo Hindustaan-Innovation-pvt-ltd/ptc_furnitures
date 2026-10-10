@@ -168,13 +168,13 @@ export default function AdminProductForm({
     formData.set("brand", formState.brand);
     formData.set("name", formState.name);
     formData.set("price", "");
-    if (formState.material) formData.set("material", formState.material);
-    if (formState.craftedBy) formData.set("craftedBy", formState.craftedBy);
-    if (formState.tag) formData.set("tag", formState.tag);
+    formData.set("material", formState.material ? formState.material.trim() : "");
+    formData.set("craftedBy", formState.craftedBy ? formState.craftedBy.trim() : "");
+    formData.set("tag", formState.tag ? formState.tag.trim() : "");
     formData.set("premium", String(formState.premium));
     formData.set("customFields", JSON.stringify(normalizedCustomFields));
-    if (formState.color) formData.set("color", formState.color);
-    if (formState.premiumDescription) formData.set("premiumDescription", formState.premiumDescription);
+    formData.set("color", formState.color ? formState.color.trim() : "");
+    formData.set("premiumDescription", formState.premiumDescription ? formState.premiumDescription.trim() : "");
 
     if (product) formData.set("id", product.id);
 

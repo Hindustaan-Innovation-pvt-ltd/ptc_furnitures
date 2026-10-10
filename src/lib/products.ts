@@ -437,17 +437,17 @@ export async function updateProduct(
     originalImages: finalOriginalImages,
     name: product.name?.trim() || undefined,
     price: product.price?.trim() || undefined,
-    material: product.material?.trim() || undefined,
-    craftedBy: product.craftedBy?.trim() || undefined,
-    tag: product.tag?.trim() || undefined,
+    material: product.material?.trim() || null,
+    craftedBy: product.craftedBy?.trim() || null,
+    tag: product.tag?.trim() || null,
     customFields: product.customFields || [],
     premium: !!product.premium,
     frontImage: product.frontImage || undefined,
     backImage: product.backImage || undefined,
     originalFrontImage: product.originalFrontImage || undefined,
     originalBackImage: product.originalBackImage || undefined,
-    color: product.color?.trim() || undefined,
-    premiumDescription: product.premiumDescription?.trim() || undefined,
+    color: product.color?.trim() || null,
+    premiumDescription: product.premiumDescription?.trim() || null,
   };
 
   if (product.position !== undefined) {

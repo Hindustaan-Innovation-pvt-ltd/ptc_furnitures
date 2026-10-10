@@ -1054,7 +1054,9 @@ export default function AdminProductsCatalog({
                   </div>
 
                   {/* Metadata Details Tag Badges */}
-                  {product.material || product.tag ? (
+                  {product.material ||
+                  product.tag ||
+                  (product.customFields && product.customFields.length > 0) ? (
                     <div className="flex flex-wrap gap-1.5 min-h-5.5">
                       {product.material ? (
                         <span className="rounded-full bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-white/5 dark:border-white/5 dark:text-slate-300">
@@ -1066,6 +1068,14 @@ export default function AdminProductsCatalog({
                           {product.tag}
                         </span>
                       ) : null}
+                      {product.customFields?.slice(0, 2).map((field) => (
+                        <span
+                          key={`${product.id}-${field.label}`}
+                          className="rounded-full bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-white/5 dark:border-white/5 dark:text-slate-300 truncate max-w-28"
+                        >
+                          {field.label}: {field.value}
+                        </span>
+                      ))}
                     </div>
                   ) : null}
 

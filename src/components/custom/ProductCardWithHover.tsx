@@ -1,6 +1,6 @@
 "use client";
 import { sendGAEvent } from "@next/third-parties/google";
-import { Download, Eye, Loader2, Send, Star } from "lucide-react";
+import { Download, Eye, FileText, Layers, Loader2, Send, Star } from "lucide-react";
 import React from "react";
 import AssetImage from "@/components/custom/AssetImage";
 import LeadCaptureModal from "@/components/custom/LeadCaptureModal";
@@ -84,6 +84,21 @@ export default function ProductCardWithHover({
   const getProductImage = (index: number) => {
     return displayImages[index] ?? "";
   };
+
+  const validCustomFields = React.useMemo(() => {
+    return (product.customFields || []).filter(
+      (field) => field && (Boolean(field.label?.trim()) || Boolean(field.value?.trim())),
+    );
+  }, [product.customFields]);
+
+  const hasAttributes =
+    validCustomFields.length > 0 ||
+    Boolean(product.material?.trim()) ||
+    Boolean(product.color?.trim()) ||
+    Boolean(product.craftedBy?.trim());
+
+  const descriptionText =
+    product.tag?.trim() || product.premiumDescription?.trim() || "";
 
   // Carousel APIs and active index trackers
   const [mainApi, setMainApi] = React.useState<CarouselApi>();
@@ -281,12 +296,20 @@ export default function ProductCardWithHover({
                 </span>
               </div>
             </div>
-            <div className="mt-1 flex flex-wrap gap-2 text-[10px] font-semibold text-slate-500 tracking-wider uppercase">
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] font-semibold text-slate-500 tracking-wider uppercase">
               {product.brand ? (
                 <span>{product.brand}</span>
               ) : (
                 <span>minimalist</span>
               )}
+              {product.tag ? (
+                <>
+                  <span className="text-slate-300">•</span>
+                  <span className="truncate max-w-[140px] normal-case text-slate-500 font-medium">
+                    {product.tag}
+                  </span>
+                </>
+              ) : null}
             </div>
           </div>
         </div>
@@ -400,6 +423,86 @@ export default function ProductCardWithHover({
                   </TooltipProvider>
                 </div>
               </div>
+
+              {/* Product Description / Tag - ONLY shown if present in DB */}
+              {descriptionText ? (
+                <div className="flex flex-col gap-2 rounded-2xl bg-slate-50/80 border border-slate-200/70 p-4 transition-all">
+                  <div className="flex items-center gap-1.5">
+                    <FileText className="size-3.5 text-red-600" />
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                      Product Description
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line pl-5">
+                    {descriptionText}
+                  </p>
+                </div>
+              ) : null}
+
+              {/* Specifications & Custom Attributes - ONLY shown if present in DB */}
+              {hasAttributes ? (
+                <div className="flex flex-col gap-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <Layers className="size-3.5 text-red-600" />
+                    <span className="text-xs uppercase tracking-wider font-extrabold text-slate-500">
+                      Specifications & Details
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {/* Material */}
+                    {product.material?.trim() ? (
+                      <div className="flex flex-col gap-0.5 rounded-xl border border-slate-200/70 bg-slate-50/80 p-2.5 transition-all hover:border-slate-300">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Material
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 break-words">
+                          {product.material.trim()}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    {/* Color / Finish */}
+                    {product.color?.trim() ? (
+                      <div className="flex flex-col gap-0.5 rounded-xl border border-slate-200/70 bg-slate-50/80 p-2.5 transition-all hover:border-slate-300">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Color / Finish
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 break-words">
+                          {product.color.trim()}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    {/* Crafted By */}
+                    {product.craftedBy?.trim() ? (
+                      <div className="flex flex-col gap-0.5 rounded-xl border border-slate-200/70 bg-slate-50/80 p-2.5 transition-all hover:border-slate-300">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Crafted By
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 break-words">
+                          {product.craftedBy.trim()}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    {/* Dynamic Custom Fields */}
+                    {validCustomFields.map((field, idx) => (
+                      <div
+                        key={`${field.label}-${idx}`}
+                        className="flex flex-col gap-0.5 rounded-xl border border-slate-200/70 bg-slate-50/80 p-2.5 transition-all hover:border-slate-300"
+                      >
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
+                          {field.label.trim()}
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 break-words">
+                          {field.value.trim()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
 
               {/* Reviews list */}
               <div className="flex flex-col gap-2">

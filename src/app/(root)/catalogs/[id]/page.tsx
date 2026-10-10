@@ -397,7 +397,11 @@ async function CatalogDetailsLoader({
                             {product.name || "Unnamed Furnishing"}
                           </h3>
 
-
+                          {product.tag && (
+                            <p className="mt-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                              {product.tag}
+                            </p>
+                          )}
 
                           <div className="mt-5 space-y-3.5 text-xs text-slate-500 dark:text-slate-400">
                             {product.material && (
@@ -406,6 +410,15 @@ async function CatalogDetailsLoader({
                                   Material:
                                 </span>
                                 <span>{product.material}</span>
+                              </p>
+                            )}
+
+                            {product.color && (
+                              <p className="flex items-center gap-2">
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                  Color / Finish:
+                                </span>
+                                <span>{product.color}</span>
                               </p>
                             )}
 
